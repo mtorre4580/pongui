@@ -1,0 +1,113 @@
+// Buscador automático de soluciones (BFS entre rebotes).
+// Sirve para verificar que cada nivel se puede ganar con la física real del juego.
+import { STEP } from './constants';
+import type { ParsedLevel } from './level';
+import { cloneState, World, type InputState, type WorldState } from './physics';
+
+export interface Decision {
+  dir: -1 | 0 | 1;
+  dur: number; // segundos que se mantiene la dirección
+  jump: boolean; // saltar mantenido hasta el próximo rebote
+}
+
+export interface SolveResult {
+  solved: boolean;
+  nodes: number;
+  plan: Decision[];
+  time: number; // segundos de juego de la solución
+  /** Para diagnosticar niveles sin solución: el estado que más ítems juntó. */
+  best: { items: string[]; x: number; y: number; tilesChanged: number };
+}
+
+const DECISIONS: Decision[] = [];
+for (const jump of [false, true]) {
+  DECISIONS.push({ dir: 0, dur: 0, jump });
+  for (const dir of [-1, 1] as const) for (const dur of [0.04, 0.1, 0.2, 99]) DECISIONS.push({ dir, dur, jump });
+}
+
+const MAX_FLIGHT_STEPS = 480;
+
+function hashTiles(s: WorldState): number {
+  let h = 2166136261;
+  for (let i = 0; i < s.tiles.length; i++) {
+    h ^= s.tiles[i] * 7 + s.hits[i];
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+function key(s: WorldState): string {
+  let mask = 0;
+  for (let i = 0; i < s.items.length; i++) if (s.items[i].taken) mask |= 1 << i;
+  return `${Math.round(s.x / 2)}|${Math.round(s.y / 2)}|${Math.round(s.vx / 10)}|${Math.round(s.vy / 20)}|${s.lockVx ?? 'n'}|${s.drops}|${s.hammers}|${mask}|${hashTiles(s)}`;
+}
+
+type Outcome = 'bounce' | 'win' | 'dead' | 'timeout';
+
+function fly(w: World, d: Decision): Outcome {
+  const inp: InputState = { left: false, right: false, jump: d.jump, jumpPressed: false };
+  for (let i = 0; i < MAX_FLIGHT_STEPS; i++) {
+    const held = i * STEP < d.dur;
+    inp.left = held && d.dir < 0;
+    inp.right = held && d.dir > 0;
+    const ev = w.step(STEP, inp);
+    if (w.s.status === 'won') return 'win';
+    if (w.s.status === 'dead') return 'dead';
+    if (ev.some((e) => e.type === 'bounce')) return 'bounce';
+  }
+  return 'timeout';
+}
+
+export function solve(level: ParsedLevel, maxNodes = 400000): SolveResult {
+  const world = new World(level);
+  const seen = new Set<string>();
+  type Node = { s: WorldState; parent: Node | null; d: Decision | null };
+  // Búsqueda "primero lo más prometedor": se expanden antes los estados con más ítems juntados.
+  const buckets: Node[][] = [];
+  const heads: number[] = [];
+  const taken = (s: WorldState) => s.items.reduce((n, i) => n + (i.taken ? 1 : 0), 0);
+  const push = (n: Node) => {
+    const b = taken(n.s);
+    (buckets[b] ??= []).push(n);
+    heads[b] ??= 0;
+  };
+  const pop = (): Node | null => {
+    for (let b = buckets.length - 1; b >= 0; b--) {
+      const q = buckets[b];
+      if (q && heads[b] < q.length) return q[heads[b]++];
+    }
+    return null;
+  };
+  const planOf = (n: Node | null, last: Decision): Decision[] => {
+    const out = [last];
+    for (let p = n; p && p.d; p = p.parent) out.push(p.d);
+    return out.reverse();
+  };
+  const summary = (s: WorldState) => ({
+    items: s.items.filter((i) => i.taken).map((i) => `${i.kind}@${i.col},${i.row}`),
+    x: Math.round(s.x),
+    y: Math.round(s.y),
+    tilesChanged: s.tiles.reduce((n, t, i) => n + (t !== level.tiles[i] ? 1 : 0), 0),
+  });
+
+  push({ s: cloneState(world.s), parent: null, d: null });
+  seen.add(key(world.s));
+  let nodes = 0;
+  let best = world.s;
+  for (let node = pop(); node && nodes < maxNodes; node = pop()) {
+    for (const d of DECISIONS) {
+      if (node.s.lockVx !== null && d.dir !== 0) continue; // en rampa la dirección no importa
+      world.s = cloneState(node.s);
+      const out = fly(world, d);
+      nodes++;
+      if (out === 'win') return { solved: true, nodes, plan: planOf(node, d), time: world.s.time, best: summary(world.s) };
+      if (out !== 'bounce') continue;
+      const k = key(world.s);
+      if (seen.has(k)) continue;
+      seen.add(k);
+      if (taken(world.s) > taken(best)) best = world.s;
+      push({ s: world.s, parent: node, d });
+    }
+  }
+  return { solved: false, nodes, plan: [], time: 0, best: summary(best) };
+}

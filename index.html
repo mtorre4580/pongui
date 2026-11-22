@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <title>Rebotín</title>
+    <meta name="description" content="Puzzle de pelota rebotadora: juntá las gemas y encontrá la salida." />
+    <meta name="theme-color" content="#1d2147" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Rebotín" />
+    <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+    <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  </head>
+  <body>
+    <div id="game"></div>
+
+    <div id="touch" hidden>
+      <div class="tc-pad">
+        <button id="tc-l" class="tc-btn" aria-label="Izquierda">
+          <svg viewBox="0 0 24 24"><path d="M15 5 8 12l7 7" /></svg>
+        </button>
+        <button id="tc-r" class="tc-btn" aria-label="Derecha">
+          <svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7" /></svg>
+        </button>
+      </div>
+      <button id="tc-j" class="tc-btn tc-jump" aria-label="Saltar alto">
+        <svg viewBox="0 0 24 24"><path d="m6 14 6-6 6 6" /><path d="m6 19 6-6 6 6" opacity=".5" /></svg>
+      </button>
+    </div>
+
+    <div id="rotate">
+      <svg viewBox="0 0 64 64" width="72" height="72"><rect x="18" y="6" width="28" height="48" rx="5" /><path d="M10 40a24 24 0 0 0 24 18" /><path d="m30 54 4 4-4 4" /></svg>
+      <p>Girá el dispositivo para jugar</p>
+    </div>
+
+    <div id="loading">Cargando…</div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
