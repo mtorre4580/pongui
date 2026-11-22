@@ -1,4 +1,4 @@
-// Efectos de sonido sintetizados con Web Audio (sin archivos de audio: todo original y offline).
+// Sound effects synthesized with Web Audio (no audio files: all original and offline).
 import { loadSave, persist } from '../save';
 
 let ctx: AudioContext | null = null;
@@ -8,7 +8,9 @@ let enabled = loadSave().sound;
 
 export function unlockAudio() {
   if (!ctx) {
-    const AC = window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    const AC =
+      window.AudioContext ??
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     if (!AC) return;
     ctx = new AC();
     master = ctx.createGain();
@@ -32,7 +34,14 @@ export function setSound(on: boolean) {
   });
 }
 
-function tone(f0: number, f1: number, dur: number, type: OscillatorType = 'sine', vol = 0.3, delay = 0) {
+function tone(
+  f0: number,
+  f1: number,
+  dur: number,
+  type: OscillatorType = 'sine',
+  vol = 0.3,
+  delay = 0,
+) {
   if (!enabled || !ctx || !master) return;
   const t = ctx.currentTime + delay;
   const o = ctx.createOscillator();
@@ -48,7 +57,14 @@ function tone(f0: number, f1: number, dur: number, type: OscillatorType = 'sine'
   o.stop(t + dur + 0.02);
 }
 
-function noise(dur: number, vol: number, freq: number, q = 1, delay = 0, type: BiquadFilterType = 'bandpass') {
+function noise(
+  dur: number,
+  vol: number,
+  freq: number,
+  q = 1,
+  delay = 0,
+  type: BiquadFilterType = 'bandpass',
+) {
   if (!enabled || !ctx || !master || !noiseBuf) return;
   const t = ctx.currentTime + delay;
   const src = ctx.createBufferSource();
@@ -102,7 +118,9 @@ export const sfx = {
     noise(0.3, 0.2, 600, 1);
   },
   win: () => {
-    [523, 659, 784, 1046, 784, 1046, 1318].forEach((f, i) => tone(f, f, 0.16, 'triangle', 0.17, i * 0.09));
+    [523, 659, 784, 1046, 784, 1046, 1318].forEach((f, i) =>
+      tone(f, f, 0.16, 'triangle', 0.17, i * 0.09),
+    );
   },
   click: () => tone(700, 500, 0.05, 'sine', 0.15),
   star: (i: number) => tone(880 + i * 220, 880 + i * 220, 0.18, 'triangle', 0.18),

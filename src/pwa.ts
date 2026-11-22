@@ -1,4 +1,4 @@
-// Instalación como app (PWA) y pantalla completa.
+// App install (PWA) and fullscreen.
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -41,7 +41,9 @@ export const isStandalone = () =>
   (navigator as unknown as { standalone?: boolean }).standalone === true;
 
 export const isIOS = () =>
-  /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+  // iPadOS reports itself as a Mac: tell them apart by touch support
+  (/macintosh/i.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
 
 export const canFullscreen = () => !!document.fullscreenEnabled && !isStandalone();
 
@@ -55,6 +57,6 @@ export async function toggleFullscreen() {
       await o.lock?.('landscape').catch(() => undefined);
     }
   } catch {
-    /* el navegador no lo permite */
+    /* the browser does not allow it */
   }
 }

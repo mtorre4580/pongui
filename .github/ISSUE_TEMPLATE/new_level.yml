@@ -1,0 +1,16 @@
+name: Level idea
+description: Propose a new level or a new tile mechanic
+labels: [level]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What does the level teach or test?
+    validations:
+      required: true
+  - type: textarea
+    id: map
+    attributes:
+      label: Map (optional)
+      description: 12 rows of 20 characters, using the legend in CONTRIBUTING.md.
+      render: text

@@ -6,9 +6,11 @@ import { C } from './textures';
 
 export const FONT = 'Fredoka, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
 
-/** Zoom 2: el mundo mide 640×416 pero se dibuja a 1280×832 para que se vea nítido. */
+/** Zoom 2: the world is 640×416 but is drawn at 1280×832 so it stays sharp. */
 export function setupCamera(scene: Phaser.Scene) {
   scene.cameras.main.setZoom(ZOOM).centerOn(GAME_W / 2, GAME_H / 2);
+  // The game is a single canvas: expose the visible screen for browser tests and debugging
+  document.body.dataset.scene = scene.scene.key;
 }
 
 export function text(
@@ -55,7 +57,14 @@ export function button(
     bg.fillStyle(0x000000, 0.25).fillRoundedRect(-w / 2, -h / 2 + 3, w, h, h / 2);
     bg.fillStyle(color, 1).fillRoundedRect(-w / 2, -h / 2, w, h, h / 2);
     bg.fillStyle(0xffffff, 0.12).fillRoundedRect(-w / 2 + 4, -h / 2 + 3, w - 8, h / 2 - 3, h / 4);
-    if (focus) bg.lineStyle(3, C.accent, 1).strokeRoundedRect(-w / 2 - 3, -h / 2 - 3, w + 6, h + 6, h / 2 + 3);
+    if (focus)
+      bg.lineStyle(3, C.accent, 1).strokeRoundedRect(
+        -w / 2 - 3,
+        -h / 2 - 3,
+        w + 6,
+        h + 6,
+        h / 2 + 3,
+      );
   };
   draw(false);
   const t = text(scene, 0, -1, label, opts.size ?? 17);
@@ -80,8 +89,8 @@ export function button(
 }
 
 /**
- * Navegación con flechas / cruceta entre botones, y confirmación con Enter / A.
- * `cols` define el ancho de la grilla (1 = lista vertical).
+ * Arrow / D-pad navigation between buttons, confirmed with Enter / A.
+ * `cols` sets the grid width (1 = vertical list).
  */
 export class ButtonGroup {
   private focus = -1;
@@ -122,8 +131,10 @@ export class ButtonGroup {
   }
 }
 
-/** Transición con fundido a otra escena. */
+/** Fade-out transition to another scene. */
 export function goTo(scene: Phaser.Scene, key: string, data?: object) {
   scene.cameras.main.fadeOut(160, 13, 16, 36);
-  scene.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => scene.scene.start(key, data));
+  scene.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () =>
+    scene.scene.start(key, data),
+  );
 }

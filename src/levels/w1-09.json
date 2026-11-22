@@ -1,7 +1,15 @@
 {
   "id": "w1-09",
-  "name": "Derrumbe",
-  "hint": "Los bloques naranjas aguantan 3 rebotes; los amarillos, uno solo.",
+  "name": {
+    "en": "Collapse",
+    "es": "Derrumbe",
+    "pt-BR": "Desmoronamento"
+  },
+  "hint": {
+    "en": "Orange blocks last 3 bounces; yellow ones, just one.",
+    "es": "Los bloques naranjas aguantan 3 rebotes; los amarillos, uno solo.",
+    "pt-BR": "Os blocos laranja aguentam 3 quiques; os amarelos, só um."
+  },
   "par": 30,
   "map": [
     "####################",

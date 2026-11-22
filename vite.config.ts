@@ -9,10 +9,11 @@ export default defineConfig({
       injectRegister: 'auto',
       includeAssets: ['icons/icon.svg', 'icons/apple-touch-icon.png', 'icons/favicon-32.png'],
       manifest: {
-        name: 'Rebotín',
-        short_name: 'Rebotín',
-        description: 'Puzzle de pelota rebotadora: juntá las gemas y encontrá la salida.',
-        lang: 'es',
+        name: 'Boinky',
+        short_name: 'Boinky',
+        description: 'A bouncing-ball puzzle game: collect every gem and find the exit.',
+        lang: 'en',
+        categories: ['games', 'entertainment'],
         start_url: './',
         scope: './',
         display: 'fullscreen',
@@ -22,7 +23,12 @@ export default defineConfig({
         icons: [
           { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png' },
-          { src: 'icons/maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          {
+            src: 'icons/maskable-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable',
+          },
         ],
       },
       workbox: {

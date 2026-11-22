@@ -1,15 +1,15 @@
 export const T = {
   EMPTY: 0,
   SOLID: 1,
-  FRAGILE: 2, // se rompe después de 1 rebote
-  FRAGILE3: 3, // se rompe después de 3 rebotes
-  FIRE: 4, // mata, salvo que tengas una gota de agua (que lo apaga)
-  SPRING: 5, // rebote súper alto
-  RAMP_L: 6, // te lanza hacia la izquierda
-  RAMP_R: 7, // te lanza hacia la derecha
-  WALL: 8, // muro de ladrillos: se rompe con el martillo
-  SPIKE: 9, // pinchos: mata
-  ASH: 10, // fuego apagado (sólido)
+  FRAGILE: 2, // breaks after 1 bounce
+  FRAGILE3: 3, // breaks after 3 bounces
+  FIRE: 4, // deadly, unless you carry a water drop (which puts it out)
+  SPRING: 5, // super high bounce
+  RAMP_L: 6, // launches you to the left
+  RAMP_R: 7, // launches you to the right
+  WALL: 8, // brick wall: the hammer breaks it
+  SPIKE: 9, // spikes: deadly
+  ASH: 10, // extinguished fire (solid)
 } as const;
 
 export type TileCode = (typeof T)[keyof typeof T];

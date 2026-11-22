@@ -4,7 +4,8 @@ import { GAME_H, GAME_W } from '../game/constants';
 import { C, drawBackground } from '../gfx/textures';
 import { button, ButtonGroup, goTo, setupCamera, text, type Button } from '../gfx/ui';
 import { controls } from '../input/controls';
-import { LEVELS, WORLD_NAME } from '../levels';
+import { localized, t } from '../i18n';
+import { LEVELS } from '../levels';
 import { loadSave } from '../save';
 
 export class LevelSelect extends Phaser.Scene {
@@ -23,7 +24,11 @@ export class LevelSelect extends Phaser.Scene {
     drawBackground(this, GAME_W, GAME_H, 3);
     const save = loadSave();
 
-    text(this, GAME_W / 2, 40, WORLD_NAME, 26, '#ffffff', { fontStyle: '700', stroke: '#161a33', strokeThickness: 6 });
+    text(this, GAME_W / 2, 40, t('select.world', { n: 1, name: t('world.1') }), 26, '#ffffff', {
+      fontStyle: '700',
+      stroke: '#161a33',
+      strokeThickness: 6,
+    });
     const totalStars = LEVELS.reduce((n, l) => n + (save.levels[l.id]?.stars ?? 0), 0);
     this.add.image(GAME_W / 2 - 34, 74, 'star').setScale(0.36);
     text(this, GAME_W / 2 + 8, 74, `${totalStars} / ${LEVELS.length * 3}`, 15, '#ffd166');
@@ -40,15 +45,26 @@ export class LevelSelect extends Phaser.Scene {
       const y = y0 + Math.floor(i / cols) * ch;
       const locked = i > save.unlocked;
       const stars = save.levels[lvl.id]?.stars ?? 0;
-      const card = this.levelCard(x, y, i, lvl.name, locked, stars);
+      const card = this.levelCard(x, y, i, localized(lvl.name), locked, stars);
       cards.push(card);
     });
 
-    const back = button(this, 70, GAME_H - 30, '← Menú', () => goTo(this, 'Menu'), { w: 110, h: 32, size: 15 });
+    const back = button(this, 70, GAME_H - 30, t('select.back'), () => goTo(this, 'Menu'), {
+      w: 110,
+      h: 32,
+      size: 15,
+    });
     this.group = new ButtonGroup([...cards, back], cols, () => goTo(this, 'Menu'));
   }
 
-  private levelCard(x: number, y: number, i: number, name: string, locked: boolean, stars: number): Button {
+  private levelCard(
+    x: number,
+    y: number,
+    i: number,
+    name: string,
+    locked: boolean,
+    stars: number,
+  ): Button {
     const w = 88;
     const h = 100;
     const bg = this.add.graphics();
@@ -56,8 +72,10 @@ export class LevelSelect extends Phaser.Scene {
       bg.clear();
       bg.fillStyle(0x000000, 0.25).fillRoundedRect(-w / 2, -h / 2 + 4, w, h, 14);
       bg.fillStyle(locked ? 0x262a52 : C.ui, 1).fillRoundedRect(-w / 2, -h / 2, w, h, 14);
-      if (!locked) bg.fillStyle(0xffffff, 0.07).fillRoundedRect(-w / 2 + 4, -h / 2 + 4, w - 8, 38, 10);
-      if (focus) bg.lineStyle(3, C.accent, 1).strokeRoundedRect(-w / 2 - 3, -h / 2 - 3, w + 6, h + 6, 16);
+      if (!locked)
+        bg.fillStyle(0xffffff, 0.07).fillRoundedRect(-w / 2 + 4, -h / 2 + 4, w - 8, 38, 10);
+      if (focus)
+        bg.lineStyle(3, C.accent, 1).strokeRoundedRect(-w / 2 - 3, -h / 2 - 3, w + 6, h + 6, 16);
     };
     draw(false);
     const parts: Phaser.GameObjects.GameObject[] = [bg];
@@ -65,7 +83,9 @@ export class LevelSelect extends Phaser.Scene {
       parts.push(this.add.image(0, -10, 'lock').setScale(0.6));
     } else {
       parts.push(text(this, 0, -22, String(i + 1), 30, '#ffffff', { fontStyle: '700' }));
-      parts.push(text(this, 0, 10, name, 10, '#c9cff7', { align: 'center', wordWrap: { width: w - 10 } }));
+      parts.push(
+        text(this, 0, 10, name, 10, '#c9cff7', { align: 'center', wordWrap: { width: w - 10 } }),
+      );
       for (let s = 0; s < 3; s++) {
         parts.push(this.add.image(-22 + s * 22, 34, s < stars ? 'star' : 'star-off').setScale(0.3));
       }

@@ -1,7 +1,15 @@
 {
   "id": "w1-10",
-  "name": "Gran final",
-  "hint": "Todo lo que aprendiste, junto. ¡Vos podés!",
+  "name": {
+    "en": "Grand finale",
+    "es": "Gran final",
+    "pt-BR": "Grande final"
+  },
+  "hint": {
+    "en": "Everything you learned, all together. You can do it!",
+    "es": "Todo lo que aprendiste, junto. ¡Vos podés!",
+    "pt-BR": "Tudo o que você aprendeu, junto. Você consegue!"
+  },
   "par": 32,
   "map": [
     "####################",

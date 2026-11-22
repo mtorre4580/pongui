@@ -9,7 +9,7 @@ export class Boot extends Phaser.Scene {
   create() {
     createTextures(this);
     const params = new URLSearchParams(location.search);
-    const lvl = params.get('nivel');
+    const lvl = params.get('level');
     if (lvl) this.scene.start('Game', { index: Math.max(0, Number(lvl) - 1) });
     else this.scene.start('Menu');
   }

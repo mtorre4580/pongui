@@ -1,6 +1,14 @@
 node_modules
 dist
 dev-dist
+*.local
+coverage
 .DS_Store
-.claude/
+*.tsbuildinfo
+.vite
 *.log
+
+# Browser tests and Lighthouse output
+.lighthouseci
+playwright-report
+test-results

@@ -1,7 +1,15 @@
 {
   "id": "w1-08",
-  "name": "Pinchos",
-  "hint": "Aterrizá con precisión: la pelota se apoya donde está su centro.",
+  "name": {
+    "en": "Spikes",
+    "es": "Pinchos",
+    "pt-BR": "Espinhos"
+  },
+  "hint": {
+    "en": "Land precisely: the ball rests where its center is.",
+    "es": "Aterrizá con precisión: la pelota se apoya donde está su centro.",
+    "pt-BR": "Aterrisse com precisão: a bola se apoia onde está o seu centro."
+  },
   "par": 18,
   "map": [
     "####################",
