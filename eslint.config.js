@@ -1,0 +1,30 @@
+import js from '@eslint/js';
+import globals from 'globals';
+import tseslint from 'typescript-eslint';
+import prettier from 'eslint-config-prettier';
+
+export default tseslint.config(
+  { ignores: ['dist', 'dev-dist', 'coverage', 'playwright-report', 'test-results'] },
+  {
+    extends: [js.configs.recommended, ...tseslint.configs.recommended],
+    files: ['**/*.{ts,mts}'],
+    languageOptions: {
+      ecmaVersion: 2023,
+      globals: { ...globals.browser, ...globals.node },
+      // Type-aware linting, needed by `@typescript-eslint/no-deprecated`
+      parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname },
+    },
+    rules: {
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/consistent-type-imports': 'error',
+      // Team standard: no new code may use APIs marked `@deprecated` (Phaser, DOM, Node, our own)
+      '@typescript-eslint/no-deprecated': 'error',
+    },
+  },
+  {
+    files: ['**/*.{js,mjs}'],
+    extends: [js.configs.recommended],
+    languageOptions: { ecmaVersion: 2023, globals: { ...globals.node } },
+  },
+  prettier,
+);
