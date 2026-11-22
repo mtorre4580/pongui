@@ -1,0 +1,186 @@
+# CLAUDE.md — Boinky
+
+Context guide for working in this repo. Read all of it before touching code.
+
+## What it is
+
+A bouncing-ball puzzle game that runs in the browser on desktop, tablet and phone, and installs
+as a PWA (no app stores). The ball bounces on its own; the player steers it in the air, holds
+jump for high bounces, collects every gem to open the exit and avoids hazards. It is an original
+game in the genre of the late-80s bouncing-ball puzzlers: its own name, character, art, sounds
+and levels. Never copy names, art, music or level layouts from an existing game.
+
+The repository is **private** for now. The CodeQL, Dependency Review and Pages deploy workflows
+skip themselves while it is private and switch on when it becomes public.
+
+## Stack
+
+| Area | Choice | Notes |
+|---|---|---|
+| Runtime | Node LTS (24) | `.nvmrc` at the root |
+| Packages | pnpm | Never use npm or yarn. Commit `pnpm-lock.yaml` |
+| Build | Vite + vite-plugin-pwa (Workbox `generateSW`) | `base: './'`: the build works from any folder |
+| Engine | Phaser 3, **Canvas renderer** | WebGL shader compilation blocked start-up for over a second (see Performance) |
+| Language | Strict TypeScript | |
+| Physics | Custom, grid based (`src/game/physics.ts`) | Pure TS, no Phaser: deterministic and unit tested |
+| Graphics | Vector textures generated at start-up | No image assets besides the app icons |
+| Audio | Web Audio synthesis (`src/audio/sfx.ts`) | No audio files |
+| i18n | Custom typed dictionaries in `src/i18n` | en (default), es, pt-BR; no dependencies |
+| Tests | Vitest (unit), Playwright + `@axe-core/playwright` (browser), Lighthouse CI | |
+| Lint / format | ESLint (typescript-eslint, type-aware) + Prettier | `@typescript-eslint/no-deprecated` is an error |
+| Git hooks | husky + commitlint (`@commitlint/config-conventional`) | `pre-push` runs `pnpm lint` and `pnpm test:run` |
+| CI | GitHub Actions | lint, typecheck, level validation, unit tests, build + bundle budget, `pnpm audit`, Playwright + axe, Lighthouse; CodeQL and dependency review once public |
+
+## Commands
+
+```bash
+pnpm install
+pnpm dev                # development server (?level=N opens a level)
+pnpm build              # typecheck + production build with the service worker
+pnpm preview            # serve the build
+pnpm test               # Vitest in watch mode
+pnpm test:run           # Vitest once (CI)
+pnpm lint
+pnpm typecheck          # tsc --noEmit
+pnpm validate:levels    # parse every level, check its texts, prove it is solvable
+pnpm check:bundle       # gzip budget per chunk (after pnpm build)
+pnpm test:e2e           # Playwright + axe on desktop and phone (after pnpm build)
+pnpm lhci               # Lighthouse CI on the built game
+pnpm media              # README screenshots, GIF and video into docs/media (needs ffmpeg)
+pnpm icons              # regenerate public/icons
+```
+
+## Structure
+
+```
+src/
+  main.ts              # Phaser config, scenes, font loading, resize observer
+  dev.ts               # dev-only console helpers: replay(i), demo(i), tick(n)
+  game/                # pure game logic, no Phaser
+    constants.ts       # grid, physics constants
+    tiles.ts           # tile codes and map characters
+    level.ts           # level JSON → ParsedLevel
+    physics.ts         # World: step(dt, input) → events
+    solver.ts          # best-first search between bounces (level validation, demos)
+  scenes/              # Boot, Menu, LevelSelect, Game, Overlay (pause / complete / game over)
+  gfx/                 # textures.ts (vector textures, baked layers), ui.ts (text, buttons, nav)
+  input/controls.ts    # keyboard + touch (HTML buttons) + gamepad, one API
+  audio/sfx.ts         # synthesized sound effects
+  i18n/                # t(), localized(), locale detection, messages/{en,es,pt-BR}.ts
+  levels/              # w<world>-<nn>.json, loaded in alphabetical order
+  save.ts              # progress in localStorage (`boinky:save`)
+  pwa.ts               # install prompt, iOS detection, fullscreen
+tests/                 # Vitest: physics, levels, i18n
+e2e/                   # Playwright: smoke, PWA/offline, axe
+scripts/               # validate-levels, check-bundle, capture-media, make-icons
+```
+
+## Physics
+
+- Fixed step of 1/120 s. The world is 20×12 tiles of 32 px; the ball is a 20 px box.
+- The ball always bounces. A normal bounce climbs 1 tile, a high bounce (jump held at landing,
+  buffered 0.12 s before or "upgraded" up to 0.07 s after) climbs 3, a spring climbs 6.
+- Air control only: acceleration 2400 px/s², top speed 160 px/s.
+- When landing or bumping a ceiling, hazards count only for the tile under the ball's center (or
+  when they are all the ball touches). Side contacts always count.
+- Ramps catch the ball on any contact (even over a hazard), snap it to the ramp's center and
+  launch it with a fixed high arc (about 5 tiles). They must never be skippable by accident.
+- A water drop puts out every fire tile of one contact (fire becomes solid ash). A hammer breaks
+  the whole connected brick wall and the ball keeps going.
+- `World.step` returns events (`bounce`, `break`, `collect`, `die`, `win`…); scenes only render
+  them. Never put gameplay rules in scenes.
+
+## Levels
+
+- JSON in `src/levels/`: `id`, `name` and `hint` as `{ en, es, pt-BR }`, `par` (seconds for the
+  time star) and `map` (12 strings of 20 characters). The legend is in `CONTRIBUTING.md`.
+- Every level teaches or tests one idea, introduced in its hint the first time it appears.
+- `pnpm validate:levels` must pass: the map parses, every text exists in all languages, the solver
+  beats it and the par time is above the solver's time (rule of thumb: 2.5× + 5 s).
+- Fairness rules learnt the hard way: ramps at least 2 tiles wide with a low ceiling before them,
+  gems over pits placed on the ramp's launch path, no soft locks (a restart always works).
+- Play every new level by hand, and simulate naive play when in doubt (hold right, hold jump,
+  different start timings): the solver only proves a level is possible, not that it is fair.
+
+## Design
+
+- Modern flat vector look: navy gradient background with soft bubbles, teal solid blocks, a coral
+  ball with eyes, bright tiles that read at a glance (yellow fragile, orange strong fragile, fire,
+  purple spring, blue ramp, brick wall, steel spikes). Font: Fredoka (Latin subset, bundled).
+- The canvas is 1280×832 with a 2× camera zoom over a 640×416 world, scaled with
+  `Phaser.Scale.FIT`. Textures are drawn at 2× and shown at 0.5.
+- **Canvas renderer rules**: no `tint` (use `sparkTexture(color)`), no `fillGradientStyle` (bake
+  gradients with a 2D canvas), and bake static layers (background, solid blocks) into textures
+  instead of redrawing Graphics every frame.
+- Touch controls are HTML buttons. While a level is open, `body.touch-ui` reserves side strips so
+  the controls never cover the level; the strip stays during pause so the canvas does not resize.
+- Portrait on touch screens shows a "rotate your device" notice.
+
+## Performance
+
+- Lighthouse (desktop) must stay at 100/100/100/100. Main-thread blocking was 1.3 s with WebGL and
+  is ~10 ms with Canvas.
+- Bundle budget in `bundle-budget.json` (Phaser is ~340 KB gzip of the 370 KB `index.js` limit).
+
+## Accessibility (mandatory)
+
+- Playable with keyboard, touch and gamepad; menus navigate with arrows/D-pad and confirm with
+  Enter/Space/A. Escape pauses and goes back.
+- The HTML shell passes axe (WCAG 2.2 AA) on desktop and phone: `lang` follows the locale, the
+  canvas container has an accessible name, touch buttons have translated `aria-label`s, and zoom
+  is not disabled in the viewport meta.
+- The visible scene is exposed as `body[data-scene]` for tests.
+
+## Conventions
+
+- **Every code comment is written in English**, no exceptions (team standard).
+- **i18n**: English by default; the browser language picks Spanish or Portuguese; the choice is
+  stored in `boinky:locale`. No visible text is hardcoded: use `t('key')` for UI and
+  `localized(value)` for level texts. Keys live in `src/i18n/messages/en.ts` (source of truth);
+  `es.ts` and `pt-BR.ts` have exactly the same keys and placeholders (enforced by type and tests).
+- Tone: plain English; neutral Rioplatense Spanish (“juntá”, “probá”); Brazilian Portuguese.
+- Gameplay logic stays in `src/game` (pure, deterministic, tested); scenes render and route input.
+- Do not add dependencies without explaining in the PR why the existing ones are not enough.
+- **No deprecated APIs** in new or changed code. `@typescript-eslint/no-deprecated` enforces it for
+  typed code; before committing or opening a PR, run the `check-deprecations` skill
+  (`.claude/skills/`) to cover what the linter cannot see.
+
+## Testing
+
+- Pure logic (physics, level parsing, i18n dictionaries, bundle budget): Vitest unit tests.
+- Levels: `pnpm validate:levels` (also in CI) runs the solver on every level.
+- Browser: Playwright against the production build, on desktop Chrome and a landscape phone:
+  boot without errors, keyboard flow menu → level → pause, `?level=N`, touch controls only on
+  phones, locale, installable manifest, offline reload, axe.
+- A PR is not merged with failing checks.
+
+## How to add…
+
+**A level**: create `src/levels/w<world>-<nn>.json` (see Levels), run `pnpm validate:levels`,
+play it, and update the README level count if it changes.
+
+**A tile or item**: add its code in `tiles.ts` (and map character), its behavior in
+`physics.ts` with unit tests, its texture in `gfx/textures.ts`, its rendering in `scenes/Game.ts`,
+its legend entry in `CONTRIBUTING.md`, and a level that introduces it.
+
+**A text**: add the key to `en.ts`, `es.ts` and `pt-BR.ts`, then use `t('key')`.
+
+## Git
+
+- Main branch `main`. Branches `feat/…`, `fix/…`, `level/…`, `docs/…`, `chore/…`.
+- Conventional commits: `feat:`, `fix:`, `level:`, `test:`, `chore:`, `docs:` (also `refactor`,
+  `perf`, `style`, `ci`, `build`, `revert`). Enforced by the `commit-msg` hook.
+- Commit messages: `type: subject`, imperative mood, lowercase, no trailing period, header ≤ 72
+  chars. One logical change per commit; add a body only when the *why* is not obvious.
+- Hooks are installed by `pnpm install` (`prepare: husky`). Do not skip them with `--no-verify`.
+- Claude Code hooks live in `.claude/settings.json`: after every `Edit`/`Write`, a `PostToolUse`
+  hook formats that file with Prettier. Run `pnpm format` after editing files through Bash.
+- Every PR fills in `.github/pull_request_template.md`; write “N/A” for sections that do not apply.
+
+## Status
+
+- [x] World 1 — 10 levels, desktop/touch/gamepad controls, PWA, three languages
+- [x] Project setup — CI, hooks, browser tests, Lighthouse, docs
+- [ ] Landing page
+- [ ] World 2 and beyond
+- [ ] Public release (license, Pages deploy, CodeQL)
