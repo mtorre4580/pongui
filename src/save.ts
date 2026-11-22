@@ -1,5 +1,7 @@
-// Progreso guardado en el navegador (localStorage). Si no está disponible, el juego igual funciona.
-const KEY = 'rebotin.save.v1';
+// Progress saved in the browser (localStorage). The game still works if it is unavailable.
+const KEY = 'boinky:save';
+// Key used before the game was renamed to Boinky: migrated on first load
+const LEGACY_KEY = 'rebotin.save.v1';
 
 export interface LevelRecord {
   stars: number;
@@ -7,7 +9,7 @@ export interface LevelRecord {
 }
 
 export interface SaveData {
-  unlocked: number; // índice del último nivel desbloqueado
+  unlocked: number; // index of the last unlocked level
   levels: Record<string, LevelRecord>;
   sound: boolean;
 }
@@ -18,7 +20,7 @@ let cache: SaveData | null = null;
 export function loadSave(): SaveData {
   if (cache) return cache;
   try {
-    const raw = localStorage.getItem(KEY);
+    const raw = localStorage.getItem(KEY) ?? localStorage.getItem(LEGACY_KEY);
     cache = raw ? { ...fresh(), ...JSON.parse(raw) } : fresh();
   } catch {
     cache = fresh();
@@ -32,11 +34,17 @@ export function persist(mutate: (s: SaveData) => void) {
   try {
     localStorage.setItem(KEY, JSON.stringify(s));
   } catch {
-    /* modo privado o almacenamiento bloqueado */
+    /* private mode or blocked storage */
   }
 }
 
-export function recordWin(levelId: string, levelIndex: number, stars: number, time: number, total: number) {
+export function recordWin(
+  levelId: string,
+  levelIndex: number,
+  stars: number,
+  time: number,
+  total: number,
+) {
   persist((s) => {
     const prev = s.levels[levelId];
     s.levels[levelId] = {

@@ -1,7 +1,15 @@
 {
   "id": "w1-04",
-  "name": "Rampas",
-  "hint": "Las rampas azules te lanzan solas por encima de los pinchos. ¡Dejate llevar!",
+  "name": {
+    "en": "Ramps",
+    "es": "Rampas",
+    "pt-BR": "Rampas"
+  },
+  "hint": {
+    "en": "Blue ramps launch you over the spikes on their own. Enjoy the ride!",
+    "es": "Las rampas azules te lanzan solas por encima de los pinchos. ¡Dejate llevar!",
+    "pt-BR": "As rampas azuis te lançam sozinhas por cima dos espinhos. Aproveite o voo!"
+  },
   "par": 18,
   "map": [
     "####################",

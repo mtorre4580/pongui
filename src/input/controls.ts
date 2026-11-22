@@ -1,7 +1,8 @@
-// Entrada unificada: teclado, táctil (botones HTML) y gamepad.
-// Las escenas la consultan cada frame: `held` para acciones continuas y `consume()` para pulsaciones.
+// Unified input: keyboard, touch (HTML buttons) and gamepad.
+// Scenes poll it every frame: `held` for continuous actions and `consume()` for presses.
 
-export type Action = 'jump' | 'pause' | 'restart' | 'confirm' | 'back' | 'up' | 'down' | 'left' | 'right';
+export type Action =
+  'jump' | 'pause' | 'restart' | 'confirm' | 'back' | 'up' | 'down' | 'left' | 'right';
 
 const KEYMAP: Record<string, Action[]> = {
   ArrowLeft: ['left'],
@@ -87,7 +88,7 @@ class Controls {
       try {
         el.setPointerCapture(e.pointerId);
       } catch {
-        /* ignorar */
+        /* ignore */
       }
     };
     const up = (e: PointerEvent) => {
@@ -107,15 +108,15 @@ class Controls {
     this.refreshTouchUi();
   }
 
-  /** La escena de juego pide mostrar los botones táctiles; sólo aparecen si se está usando el tacto. */
+  /** The game scene asks for the touch buttons; they only appear while touch is in use. */
   showTouchUi(on: boolean) {
     this.wantTouchUi = on;
     this.refreshTouchUi();
   }
 
   /**
-   * Reserva (o libera) las franjas laterales de los controles. Se mantiene durante todo el
-   * nivel, incluso en pausa, para que el juego no cambie de tamaño al pausar.
+   * Reserves (or frees) the side strips for the controls. It stays on for the whole level,
+   * even while paused, so the game does not resize when pausing.
    */
   reserveTouchLayout(on: boolean) {
     this.layoutReserved = on;
@@ -132,7 +133,7 @@ class Controls {
     }
   }
 
-  /** Lee el gamepad (llamar una vez por frame). */
+  /** Reads the gamepad (call once per frame). */
   poll() {
     const pads = navigator.getGamepads?.() ?? [];
     const now = new Set<Action>();

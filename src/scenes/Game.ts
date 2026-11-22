@@ -1,11 +1,22 @@
 import Phaser from 'phaser';
 import { sfx, unlockAudio } from '../audio/sfx';
-import { BALL_R, COLS, GAME_H, GAME_W, HUD_H, ROWS, START_LIVES, STEP, TILE } from '../game/constants';
+import {
+  BALL_R,
+  COLS,
+  GAME_H,
+  GAME_W,
+  HUD_H,
+  ROWS,
+  START_LIVES,
+  STEP,
+  TILE,
+} from '../game/constants';
 import type { ParsedLevel } from '../game/level';
 import { World, type WorldEvent } from '../game/physics';
 import { isStatic, T } from '../game/tiles';
-import { C, drawBackground, drawSolids } from '../gfx/textures';
+import { bakeSolids, C, drawBackground, sparkTexture } from '../gfx/textures';
 import { setupCamera, text } from '../gfx/ui';
+import { localized, t } from '../i18n';
 import { controls } from '../input/controls';
 import { LEVELS } from '../levels';
 import { loadSave, recordWin } from '../save';
@@ -56,7 +67,8 @@ export class Game extends Phaser.Scene {
   private prevY = 0;
   private squash = 0;
 
-  private solids!: Phaser.GameObjects.Graphics;
+  private solids!: Phaser.GameObjects.Image;
+  private solidsVersion = 0;
   private tileSprites = new Map<number, Phaser.GameObjects.Image>();
   private flames = new Map<number, Phaser.GameObjects.Image>();
   private itemSprites: (Phaser.GameObjects.Image | null)[] = [];
@@ -87,6 +99,8 @@ export class Game extends Phaser.Scene {
     this.started = false;
     this.ended = false;
     this.squash = 0;
+    this.solidsVersion = 0;
+    this.solids = undefined as unknown as Phaser.GameObjects.Image;
     this.tileSprites.clear();
     this.flames.clear();
     this.bursts.clear();
@@ -105,7 +119,6 @@ export class Game extends Phaser.Scene {
     this.world = new World(this.level, this.takenLives);
 
     drawBackground(this, GAME_W, GAME_H, this.index + 11);
-    this.solids = this.add.graphics({ y: OY });
     this.redrawSolids();
     this.buildTiles();
     this.buildItems();
@@ -133,7 +146,13 @@ export class Game extends Phaser.Scene {
   // ---------- Construction ----------
 
   private redrawSolids() {
-    drawSolids(this.solids, this.world.s.tiles, COLS, ROWS, isStatic, T.ASH);
+    // A new key per version: the old texture is removed once the image no longer uses it
+    const old = this.solids?.texture.key;
+    const key = `solids-${this.index}-${++this.solidsVersion}`;
+    bakeSolids(this, key, this.world.s.tiles, COLS, ROWS, isStatic, T.ASH);
+    if (this.solids) this.solids.setTexture(key);
+    else this.solids = this.add.image(0, OY, key).setOrigin(0).setScale(0.5);
+    if (old && old !== key) this.textures.remove(old);
   }
 
   private buildTiles() {
@@ -153,7 +172,10 @@ export class Game extends Phaser.Scene {
       if (t === T.SPRING) img.setOrigin(0.5, 1).setY((r + 1) * TILE + OY);
       this.tileSprites.set(idx, img);
       if (t === T.FIRE) {
-        const fl = this.add.image(c * TILE + TILE / 2, r * TILE + OY + 6, 'flame').setOrigin(0.5, 1).setScale(0.5, 0.5);
+        const fl = this.add
+          .image(c * TILE + TILE / 2, r * TILE + OY + 6, 'flame')
+          .setOrigin(0.5, 1)
+          .setScale(0.5, 0.5);
         this.tweens.add({
           targets: fl,
           scaleY: { from: 0.42, to: 0.6 },
@@ -177,12 +199,29 @@ export class Game extends Phaser.Scene {
       const x = it.col * TILE + TILE / 2;
       const y = it.row * TILE + TILE / 2 + OY;
       const img = this.add.image(x, y, ITEM_TEX[it.kind]).setScale(0.5);
-      this.tweens.add({ targets: img, y: y - 3, duration: 700 + (i % 3) * 120, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
-      if (it.kind === 'gem') this.tweens.add({ targets: img, scaleX: 0.42, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
+      this.tweens.add({
+        targets: img,
+        y: y - 3,
+        duration: 700 + (i % 3) * 120,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.inOut',
+      });
+      if (it.kind === 'gem')
+        this.tweens.add({
+          targets: img,
+          scaleX: 0.42,
+          duration: 900,
+          yoyo: true,
+          repeat: -1,
+          ease: 'Sine.inOut',
+        });
       this.itemSprites.push(img);
     });
     const ex = this.level.exit;
-    this.exitSprite = this.add.image(ex.col * TILE + TILE / 2, ex.row * TILE + TILE / 2 + OY, 'exit-locked').setScale(0.5);
+    this.exitSprite = this.add
+      .image(ex.col * TILE + TILE / 2, ex.row * TILE + TILE / 2 + OY, 'exit-locked')
+      .setScale(0.5);
     if (this.world.exitOpen) this.openExit(false);
   }
 
@@ -190,17 +229,19 @@ export class Game extends Phaser.Scene {
     const { x, y } = this.world.s;
     this.prevX = x;
     this.prevY = y;
-    this.trail = this.add.particles(0, 0, 'spark', {
+    this.trail = this.add.particles(0, 0, sparkTexture(this, C.ball), {
       lifespan: 260,
       scale: { start: 0.5, end: 0 },
       alpha: { start: 0.45, end: 0 },
-      tint: C.ball,
       frequency: 24,
       emitting: false,
     });
     const body = this.add.image(0, 0, 'ball').setScale(0.5);
     this.eyes = this.add.image(1, -2, 'eyes').setScale(0.5);
-    this.ball = this.add.container(x, y + OY, [body, this.eyes]).setDepth(5).setScale(0);
+    this.ball = this.add
+      .container(x, y + OY, [body, this.eyes])
+      .setDepth(5)
+      .setScale(0);
     this.tweens.add({ targets: this.ball, scale: 1, duration: 260, ease: 'Back.out' });
     this.trail.startFollow(this.ball);
   }
@@ -209,30 +250,46 @@ export class Game extends Phaser.Scene {
     const g = this.add.graphics().setDepth(10);
     g.fillStyle(0x0b0e22, 0.85).fillRect(0, 0, GAME_W, HUD_H);
     g.fillStyle(C.uiLight, 0.6).fillRect(0, HUD_H - 1, GAME_W, 1);
-    text(this, 10, HUD_H / 2, `${this.index + 1}. ${this.level.name}`, 14, '#ffffff').setOrigin(0, 0.5).setDepth(11);
+    text(this, 10, HUD_H / 2, `${this.index + 1}. ${localized(this.level.name)}`, 14, '#ffffff')
+      .setOrigin(0, 0.5)
+      .setDepth(11);
 
     let x = 236;
-    const icon = (tex: string, scale: number) => this.add.image(x, HUD_H / 2, tex).setScale(scale).setDepth(11);
+    const icon = (tex: string, scale: number) =>
+      this.add
+        .image(x, HUD_H / 2, tex)
+        .setScale(scale)
+        .setDepth(11);
     icon('gem', 0.42);
-    this.hudGems = text(this, x + 12, HUD_H / 2, '', 14).setOrigin(0, 0.5).setDepth(11);
+    this.hudGems = text(this, x + 12, HUD_H / 2, '', 14)
+      .setOrigin(0, 0.5)
+      .setDepth(11);
     x += 62;
     if (this.level.items.some((i) => i.kind === 'drop')) {
       icon('drop', 0.38);
-      this.hudDrops = text(this, x + 11, HUD_H / 2, '', 14).setOrigin(0, 0.5).setDepth(11);
+      this.hudDrops = text(this, x + 11, HUD_H / 2, '', 14)
+        .setOrigin(0, 0.5)
+        .setDepth(11);
       x += 46;
     }
     if (this.level.items.some((i) => i.kind === 'hammer')) {
       icon('hammer', 0.36);
-      this.hudHammers = text(this, x + 11, HUD_H / 2, '', 14).setOrigin(0, 0.5).setDepth(11);
+      this.hudHammers = text(this, x + 11, HUD_H / 2, '', 14)
+        .setOrigin(0, 0.5)
+        .setDepth(11);
     }
 
-    this.hudTime = text(this, 500, HUD_H / 2, '0.0', 14, '#a9b8ff').setOrigin(1, 0.5).setDepth(11);
+    this.hudTime = text(this, 500, HUD_H / 2, '0.0', 14, '#a9b8ff')
+      .setOrigin(1, 0.5)
+      .setDepth(11);
     this.refreshHearts();
 
     const pause = this.add.container(GAME_W - 18, HUD_H / 2).setDepth(11);
     const pg = this.add.graphics();
     pg.fillStyle(C.uiLight, 1).fillCircle(0, 0, 11);
-    pg.fillStyle(0xffffff, 1).fillRoundedRect(-5, -5, 3.5, 10, 1).fillRoundedRect(1.5, -5, 3.5, 10, 1);
+    pg.fillStyle(0xffffff, 1)
+      .fillRoundedRect(-5, -5, 3.5, 10, 1)
+      .fillRoundedRect(1.5, -5, 3.5, 10, 1);
     pause.add(pg);
     pause.setSize(30, 30).setInteractive({ useHandCursor: true });
     pause.on('pointerup', () => this.pauseGame());
@@ -245,7 +302,12 @@ export class Game extends Phaser.Scene {
     this.hudHearts = [];
     const n = Math.min(this.lives, 6);
     for (let i = 0; i < n; i++) {
-      this.hudHearts.push(this.add.image(560 - i * 16, HUD_H / 2, 'life').setScale(0.36).setDepth(11));
+      this.hudHearts.push(
+        this.add
+          .image(560 - i * 16, HUD_H / 2, 'life')
+          .setScale(0.36)
+          .setDepth(11),
+      );
     }
   }
 
@@ -258,15 +320,33 @@ export class Game extends Phaser.Scene {
 
   private showBanner() {
     const w = 420;
-    const hasHint = !!this.level.hint;
+    const hint = this.level.hint ? localized(this.level.hint) : '';
+    const hasHint = hint !== '';
     const h = hasHint ? 86 : 56;
     const bg = this.add.graphics();
     bg.fillStyle(0x0b0e22, 0.82).fillRoundedRect(-w / 2, -h / 2, w, h, 16);
     bg.lineStyle(2, C.uiLight, 1).strokeRoundedRect(-w / 2, -h / 2, w, h, 16);
-    const title = text(this, 0, hasHint ? -20 : 0, `Nivel ${this.index + 1} · ${this.level.name}`, 22, '#ffffff', { fontStyle: '700' });
+    const title = text(
+      this,
+      0,
+      hasHint ? -20 : 0,
+      t('game.level', { n: this.index + 1, name: localized(this.level.name) }),
+      22,
+      '#ffffff',
+      { fontStyle: '700' },
+    );
     const parts: Phaser.GameObjects.GameObject[] = [bg, title];
-    if (hasHint) parts.push(text(this, 0, 16, this.level.hint, 13, '#c9cff7', { align: 'center', wordWrap: { width: w - 30 } }));
-    this.banner = this.add.container(GAME_W / 2, 150, parts).setDepth(20).setAlpha(0);
+    if (hasHint)
+      parts.push(
+        text(this, 0, 16, hint, 13, '#c9cff7', {
+          align: 'center',
+          wordWrap: { width: w - 30 },
+        }),
+      );
+    this.banner = this.add
+      .container(GAME_W / 2, 150, parts)
+      .setDepth(20)
+      .setAlpha(0);
     this.tweens.add({ targets: this.banner, alpha: 1, y: 140, duration: 250 });
     this.time.delayedCall(3200, () => this.hideBanner());
   }
@@ -275,7 +355,13 @@ export class Game extends Phaser.Scene {
     const b = this.banner;
     if (!b) return;
     this.banner = undefined;
-    this.tweens.add({ targets: b, alpha: 0, y: b.y - 12, duration: 300, onComplete: () => b.destroy() });
+    this.tweens.add({
+      targets: b,
+      alpha: 0,
+      y: b.y - 12,
+      duration: 300,
+      onComplete: () => b.destroy(),
+    });
   }
 
   // ---------- Loop ----------
@@ -294,7 +380,8 @@ export class Game extends Phaser.Scene {
         jump: controls.held('jump'),
         jumpPressed: controls.consume('jump'),
       };
-      if ((input.left || input.right || input.jumpPressed) && this.banner && s.time > 0.6) this.hideBanner();
+      if ((input.left || input.right || input.jumpPressed) && this.banner && s.time > 0.6)
+        this.hideBanner();
       if (input.jumpPressed || input.left || input.right) unlockAudio();
       this.acc += Math.min(deltaMs / 1000, 0.1);
       while (this.acc >= STEP && s.status === 'playing') {
@@ -325,7 +412,10 @@ export class Game extends Phaser.Scene {
       this.ball.setScale(sx, sy);
       this.ball.setPosition(x, y + OY + BALL_R * (1 - sy) * (this.squash > 0 ? 1 : 0));
     }
-    this.eyes.setPosition(Phaser.Math.Clamp(s.vx / 45, -3.5, 3.5) + 1, Phaser.Math.Clamp(s.vy / 260, -3, 3) - 2);
+    this.eyes.setPosition(
+      Phaser.Math.Clamp(s.vx / 45, -3.5, 3.5) + 1,
+      Phaser.Math.Clamp(s.vy / 260, -3, 3) - 2,
+    );
     this.trail.emitting = Math.abs(s.vy) > 600 || s.lockVx !== null;
   }
 
@@ -334,15 +424,16 @@ export class Game extends Phaser.Scene {
   private burst(color: number, x: number, y: number, n = 8, speed = 140) {
     let e = this.bursts.get(color);
     if (!e) {
-      e = this.add.particles(0, 0, 'spark', {
-        speed: { min: speed * 0.3, max: speed },
-        angle: { min: 0, max: 360 },
-        scale: { start: 0.55, end: 0 },
-        lifespan: { min: 280, max: 620 },
-        gravityY: 380,
-        tint: color,
-        emitting: false,
-      }).setDepth(6);
+      e = this.add
+        .particles(0, 0, sparkTexture(this, color), {
+          speed: { min: speed * 0.3, max: speed },
+          angle: { min: 0, max: 360 },
+          scale: { start: 0.55, end: 0 },
+          lifespan: { min: 280, max: 620 },
+          gravityY: 380,
+          emitting: false,
+        })
+        .setDepth(6);
       this.bursts.set(color, e);
     }
     e.explode(n, x, y);
@@ -361,8 +452,10 @@ export class Game extends Phaser.Scene {
           const t = e.idx >= 0 ? this.level.tiles[e.idx] : T.SOLID;
           this.burst(TILE_COLOR[t] ?? C.solidTop, e.x, e.y + OY, e.kind === 'low' ? 3 : 6, 90);
           const spr = this.tileSprites.get(e.idx);
-          if (spr && e.kind === 'spring') this.tweens.add({ targets: spr, scaleY: 0.32, duration: 70, yoyo: true });
-          else if (spr && e.kind === 'ramp') this.tweens.add({ targets: spr, alpha: 0.6, duration: 80, yoyo: true });
+          if (spr && e.kind === 'spring')
+            this.tweens.add({ targets: spr, scaleY: 0.32, duration: 70, yoyo: true });
+          else if (spr && e.kind === 'ramp')
+            this.tweens.add({ targets: spr, alpha: 0.6, duration: 80, yoyo: true });
           break;
         }
         case 'boost':
@@ -375,7 +468,15 @@ export class Game extends Phaser.Scene {
         case 'crack': {
           const spr = this.tileSprites.get(e.idx);
           spr?.setTexture(`fragile3-${Math.min(2, e.hits)}`);
-          if (spr) this.tweens.add({ targets: spr, angle: { from: -4, to: 4 }, duration: 50, yoyo: true, repeat: 1, onComplete: () => spr.setAngle(0) });
+          if (spr)
+            this.tweens.add({
+              targets: spr,
+              angle: { from: -4, to: 4 },
+              duration: 50,
+              yoyo: true,
+              repeat: 1,
+              onComplete: () => spr.setAngle(0),
+            });
           const p = this.cellCenter(e.idx);
           this.burst(C.fragile3Dark, p.x, p.y - 12, 5, 90);
           sfx.crack();
@@ -385,12 +486,23 @@ export class Game extends Phaser.Scene {
           const first = this.cellCenter(e.idxs[0]);
           e.idxs.forEach((idx) => {
             const p = this.cellCenter(idx);
-            const delay = e.tile === T.WALL ? Phaser.Math.Distance.Between(first.x, first.y, p.x, p.y) * 1.2 : 0;
+            const delay =
+              e.tile === T.WALL
+                ? Phaser.Math.Distance.Between(first.x, first.y, p.x, p.y) * 1.2
+                : 0;
             const spr = this.tileSprites.get(idx);
             this.tileSprites.delete(idx);
             this.time.delayedCall(delay, () => {
               this.burst(TILE_COLOR[e.tile] ?? C.white, p.x, p.y, 10, 170);
-              if (spr) this.tweens.add({ targets: spr, scale: 0.2, alpha: 0, angle: 25, duration: 160, onComplete: () => spr.destroy() });
+              if (spr)
+                this.tweens.add({
+                  targets: spr,
+                  scale: 0.2,
+                  alpha: 0,
+                  angle: 25,
+                  duration: 160,
+                  onComplete: () => spr.destroy(),
+                });
             });
           });
           sfx.break();
@@ -403,7 +515,14 @@ export class Game extends Phaser.Scene {
             this.tileSprites.get(idx)?.destroy();
             this.tileSprites.delete(idx);
             const fl = this.flames.get(idx);
-            if (fl) this.tweens.add({ targets: fl, scaleY: 0, alpha: 0, duration: 250, onComplete: () => fl.destroy() });
+            if (fl)
+              this.tweens.add({
+                targets: fl,
+                scaleY: 0,
+                alpha: 0,
+                duration: 250,
+                onComplete: () => fl.destroy(),
+              });
             this.flames.delete(idx);
             this.burst(C.dropLight, p.x, p.y - 14, 14, 120);
           }
@@ -416,7 +535,14 @@ export class Game extends Phaser.Scene {
           this.itemSprites[e.item] = null;
           if (spr) {
             this.tweens.killTweensOf(spr);
-            this.tweens.add({ targets: spr, scale: 0.9, alpha: 0, y: spr.y - 10, duration: 220, onComplete: () => spr.destroy() });
+            this.tweens.add({
+              targets: spr,
+              scale: 0.9,
+              alpha: 0,
+              y: spr.y - 10,
+              duration: 220,
+              onComplete: () => spr.destroy(),
+            });
             const color = { gem: C.gem, drop: C.drop, hammer: C.hammerHead, life: C.heart }[e.kind];
             this.burst(color, spr.x, spr.y, 12, 150);
           }
@@ -447,12 +573,30 @@ export class Game extends Phaser.Scene {
     const ex = this.exitSprite;
     ex.setTexture('exit');
     this.tweens.add({ targets: ex, angle: 360, duration: 2400, repeat: -1 });
-    this.tweens.add({ targets: ex, scale: 0.56, duration: 600, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
+    this.tweens.add({
+      targets: ex,
+      scale: 0.56,
+      duration: 600,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.inOut',
+    });
     if (!fx) return;
     sfx.exitOpen();
     this.burst(C.exit, ex.x, ex.y, 20, 200);
-    const t = text(this, GAME_W / 2, 64, '¡Salida abierta!', 20, '#80ed99', { fontStyle: '700', stroke: '#0b0e22', strokeThickness: 5 }).setDepth(20);
-    this.tweens.add({ targets: t, y: 54, alpha: 0, delay: 900, duration: 500, onComplete: () => t.destroy() });
+    const toast = text(this, GAME_W / 2, 64, t('game.exitOpen'), 20, '#80ed99', {
+      fontStyle: '700',
+      stroke: '#0b0e22',
+      strokeThickness: 5,
+    }).setDepth(20);
+    this.tweens.add({
+      targets: toast,
+      y: 54,
+      alpha: 0,
+      delay: 900,
+      duration: 500,
+      onComplete: () => toast.destroy(),
+    });
   }
 
   private onDeath() {
@@ -468,7 +612,12 @@ export class Game extends Phaser.Scene {
     this.refreshHearts();
     this.time.delayedCall(950, () => {
       if (this.lives > 0) {
-        this.scene.restart({ index: this.index, lives: this.lives, deaths: this.deaths, takenLives: [...this.takenLives] });
+        this.scene.restart({
+          index: this.index,
+          lives: this.lives,
+          deaths: this.deaths,
+          takenLives: [...this.takenLives],
+        });
       } else {
         controls.showTouchUi(false);
         this.scene.pause();
@@ -482,7 +631,15 @@ export class Game extends Phaser.Scene {
     this.ended = true;
     this.trail.emitting = false;
     const ex = this.exitSprite;
-    this.tweens.add({ targets: this.ball, x: ex.x, y: ex.y, scale: 0, angle: 540, duration: 520, ease: 'Quad.in' });
+    this.tweens.add({
+      targets: this.ball,
+      x: ex.x,
+      y: ex.y,
+      scale: 0,
+      angle: 540,
+      duration: 520,
+      ease: 'Quad.in',
+    });
     this.burst(C.accent, ex.x, ex.y, 24, 220);
     const time = this.world.s.time;
     const stars = 1 + (this.deaths === 0 ? 1 : 0) + (time <= this.level.par ? 1 : 0);
@@ -512,7 +669,11 @@ export class Game extends Phaser.Scene {
   }
 
   private restartLevel() {
-    this.scene.restart({ index: this.index, lives: this.lives, deaths: this.deaths, takenLives: [...this.takenLives] });
+    this.scene.restart({
+      index: this.index,
+      lives: this.lives,
+      deaths: this.deaths,
+      takenLives: [...this.takenLives],
+    });
   }
 }
-

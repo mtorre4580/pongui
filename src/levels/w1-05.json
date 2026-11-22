@@ -1,7 +1,15 @@
 {
   "id": "w1-05",
-  "name": "Resortes",
-  "hint": "Los resortes violetas te mandan hasta arriba de todo.",
+  "name": {
+    "en": "Springs",
+    "es": "Resortes",
+    "pt-BR": "Molas"
+  },
+  "hint": {
+    "en": "Purple springs send you all the way up.",
+    "es": "Los resortes violetas te mandan hasta arriba de todo.",
+    "pt-BR": "As molas roxas te mandam lá para cima."
+  },
   "par": 24,
   "map": [
     "####################",

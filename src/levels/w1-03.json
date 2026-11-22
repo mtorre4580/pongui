@@ -1,7 +1,15 @@
 {
   "id": "w1-03",
-  "name": "Piso frágil",
-  "hint": "Las plataformas amarillas se rompen después de un rebote. ¡No te quedes quieto!",
+  "name": {
+    "en": "Fragile floor",
+    "es": "Piso frágil",
+    "pt-BR": "Chão frágil"
+  },
+  "hint": {
+    "en": "Yellow platforms break after one bounce. Keep moving!",
+    "es": "Las plataformas amarillas se rompen después de un rebote. ¡No te quedes quieto!",
+    "pt-BR": "As plataformas amarelas quebram depois de um quique. Não fique parado!"
+  },
   "par": 15,
   "map": [
     "####################",

@@ -1,6 +1,22 @@
 import {
-  AIR_ACCEL, AIR_DECEL, BALL_R, BOUNCE_GRACE, COLS, EXIT_RADIUS, GRAVITY, H_HIGH, ITEM_RADIUS,
-  JUMP_BUFFER, MAX_FALL, MAX_VX, RAMP_VX, ROWS, TILE, V_HIGH, V_LOW, V_SPRING,
+  AIR_ACCEL,
+  AIR_DECEL,
+  BALL_R,
+  BOUNCE_GRACE,
+  COLS,
+  EXIT_RADIUS,
+  GRAVITY,
+  H_HIGH,
+  ITEM_RADIUS,
+  JUMP_BUFFER,
+  MAX_FALL,
+  MAX_VX,
+  RAMP_VX,
+  ROWS,
+  TILE,
+  V_HIGH,
+  V_LOW,
+  V_SPRING,
 } from './constants';
 import type { ItemKind, ParsedLevel } from './level';
 import { fragileMax, T } from './tiles';
@@ -8,8 +24,8 @@ import { fragileMax, T } from './tiles';
 export interface InputState {
   left: boolean;
   right: boolean;
-  jump: boolean; // botón mantenido
-  jumpPressed: boolean; // flanco: se apretó en este paso
+  jump: boolean; // button held
+  jumpPressed: boolean; // edge: pressed during this step
 }
 
 export type BounceKind = 'low' | 'high' | 'spring' | 'ramp';
@@ -42,7 +58,7 @@ export interface WorldState {
   y: number;
   vx: number;
   vy: number;
-  lockVx: number | null; // velocidad horizontal forzada (rampas)
+  lockVx: number | null; // forced horizontal speed (ramps)
   drops: number;
   hammers: number;
   gemsTaken: number;
@@ -58,12 +74,17 @@ export interface WorldState {
 interface Cell {
   c: number;
   r: number;
-  idx: number; // -1 = fuera del mapa
+  idx: number; // -1 = outside the map
   t: number;
 }
 
 export function cloneState(s: WorldState): WorldState {
-  return { ...s, tiles: s.tiles.slice(), hits: s.hits.slice(), items: s.items.map((i) => ({ ...i })) };
+  return {
+    ...s,
+    tiles: s.tiles.slice(),
+    hits: s.hits.slice(),
+    items: s.items.map((i) => ({ ...i })),
+  };
 }
 
 export class World {
@@ -128,7 +149,7 @@ export class World {
     ev.push({ type: 'die', cause });
   }
 
-  /** Rompe en cadena todos los muros conectados a las celdas dadas. */
+  /** Breaks every wall tile connected to the given cells. */
   private floodWalls(seeds: Cell[]): number[] {
     const s = this.s;
     const stack = seeds.filter((c) => c.idx >= 0).map((c) => c.idx);
@@ -149,9 +170,9 @@ export class World {
   }
 
   /**
-   * Aplica peligros y poderes al tocar celdas. Devuelve las celdas que siguen bloqueando,
-   * o null si la pelota murió. Al pisar o chocar el techo, los peligros sólo cuentan
-   * si están debajo/encima del centro de la pelota (o si son lo único que toca).
+   * Applies hazards and power-ups for touched cells. Returns the cells that still block, or
+   * null if the ball died. When landing or hitting a ceiling, hazards only count if they are
+   * under/over the ball's center (or if they are the only thing it touches).
    */
   private resolveContacts(cells: Cell[], usePrimary: boolean, ev: WorldEvent[]): Cell[] | null {
     const s = this.s;
@@ -211,11 +232,20 @@ export class World {
 
     const wantHigh = input.jump || s.jumpBuffer > 0;
     const isRamp = (c: Cell) => c.t === T.RAMP_L || c.t === T.RAMP_R;
-    // Las rampas "atrapan" la pelota apenas la tocan (aunque sea con el borde), así no se
-    // pueden saltear por accidente, y la lanzan siempre igual desde el centro de la rampa:
-    // un salto alto y predecible, sin tener que apretar nada.
-    const ramp = prim.t === T.SPRING ? undefined : isRamp(prim) ? prim : cells.filter(isRamp).sort((a, b) =>
-      Math.abs(a.c * TILE + TILE / 2 - s.x) - Math.abs(b.c * TILE + TILE / 2 - s.x))[0];
+    // Ramps "catch" the ball as soon as it touches them (even with its edge), so they cannot
+    // be skipped by accident, and always launch it the same way from the ramp's center:
+    // a high, predictable jump without pressing anything.
+    const ramp =
+      prim.t === T.SPRING
+        ? undefined
+        : isRamp(prim)
+          ? prim
+          : cells
+              .filter(isRamp)
+              .sort(
+                (a, b) =>
+                  Math.abs(a.c * TILE + TILE / 2 - s.x) - Math.abs(b.c * TILE + TILE / 2 - s.x),
+              )[0];
     let kind: BounceKind;
     if (prim.t === T.SPRING) {
       kind = 'spring';
@@ -248,7 +278,7 @@ export class World {
     if (s.status !== 'playing') return ev;
     s.time += dt;
 
-    // Saltar: buffer antes de tocar el piso, o "mejora" a rebote alto justo después
+    // Jump: buffered before landing, or "upgraded" to a high bounce right after it
     if (input.jumpPressed) {
       if (s.grace > 0 && s.vy < 0) {
         const h0 = s.surfaceY - (s.y + BALL_R);
@@ -265,7 +295,7 @@ export class World {
     s.jumpBuffer = Math.max(0, s.jumpBuffer - dt);
     s.grace = Math.max(0, s.grace - dt);
 
-    // Control horizontal (sólo en el aire, que es siempre)
+    // Horizontal control (air control only, which is always)
     if (s.lockVx !== null) {
       s.vx = s.lockVx;
     } else {
@@ -281,7 +311,7 @@ export class World {
     }
     s.vy = Math.min(s.vy + GRAVITY * dt, MAX_FALL);
 
-    // Eje X
+    // X axis
     if (s.vx !== 0) {
       s.x += s.vx * dt;
       const cells = this.overlaps();
@@ -297,14 +327,14 @@ export class World {
       }
     }
 
-    // Eje Y
+    // Y axis
     s.y += s.vy * dt;
     const cells = this.overlaps();
     if (cells.length) {
       if (s.vy > 0) {
         const row = Math.min(...cells.map((c) => c.r));
         let contacts = cells.filter((c) => c.r === row);
-        // Si la pelota toca una rampa al caer, la rampa la atrapa aunque el centro esté sobre un peligro
+        // If the ball touches a ramp while landing, the ramp catches it even over a hazard
         if (contacts.some((c) => c.t === T.RAMP_L || c.t === T.RAMP_R)) {
           contacts = contacts.filter((c) => c.t !== T.SPIKE && c.t !== T.FIRE);
         }
@@ -333,7 +363,7 @@ export class World {
       return ev;
     }
 
-    // Ítems
+    // Items
     for (let i = 0; i < s.items.length; i++) {
       const it = s.items[i];
       if (it.taken) continue;
@@ -348,7 +378,7 @@ export class World {
       if (it.kind === 'gem' && s.gemsTaken === s.gemsTotal) ev.push({ type: 'exitOpen' });
     }
 
-    // Salida
+    // Exit
     if (this.exitOpen) {
       const ex = this.level.exit.col * TILE + TILE / 2;
       const ey = this.level.exit.row * TILE + TILE / 2;

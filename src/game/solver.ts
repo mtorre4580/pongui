@@ -1,28 +1,29 @@
-// Buscador automático de soluciones (BFS entre rebotes).
-// Sirve para verificar que cada nivel se puede ganar con la física real del juego.
+// Automatic solution finder (search between bounces).
+// Proves every level can be beaten with the real game physics.
 import { STEP } from './constants';
 import type { ParsedLevel } from './level';
 import { cloneState, World, type InputState, type WorldState } from './physics';
 
 export interface Decision {
   dir: -1 | 0 | 1;
-  dur: number; // segundos que se mantiene la dirección
-  jump: boolean; // saltar mantenido hasta el próximo rebote
+  dur: number; // seconds the direction is held
+  jump: boolean; // jump held until the next bounce
 }
 
 export interface SolveResult {
   solved: boolean;
   nodes: number;
   plan: Decision[];
-  time: number; // segundos de juego de la solución
-  /** Para diagnosticar niveles sin solución: el estado que más ítems juntó. */
+  time: number; // game seconds the solution takes
+  /** For diagnosing unsolvable levels: the state that collected the most items. */
   best: { items: string[]; x: number; y: number; tilesChanged: number };
 }
 
 const DECISIONS: Decision[] = [];
 for (const jump of [false, true]) {
   DECISIONS.push({ dir: 0, dur: 0, jump });
-  for (const dir of [-1, 1] as const) for (const dur of [0.04, 0.1, 0.2, 99]) DECISIONS.push({ dir, dur, jump });
+  for (const dir of [-1, 1] as const)
+    for (const dur of [0.04, 0.1, 0.2, 99]) DECISIONS.push({ dir, dur, jump });
 }
 
 const MAX_FLIGHT_STEPS = 480;
@@ -62,7 +63,7 @@ export function solve(level: ParsedLevel, maxNodes = 400000): SolveResult {
   const world = new World(level);
   const seen = new Set<string>();
   type Node = { s: WorldState; parent: Node | null; d: Decision | null };
-  // Búsqueda "primero lo más prometedor": se expanden antes los estados con más ítems juntados.
+  // Best-first search: states with more collected items are expanded first.
   const buckets: Node[][] = [];
   const heads: number[] = [];
   const taken = (s: WorldState) => s.items.reduce((n, i) => n + (i.taken ? 1 : 0), 0);
@@ -96,11 +97,18 @@ export function solve(level: ParsedLevel, maxNodes = 400000): SolveResult {
   let best = world.s;
   for (let node = pop(); node && nodes < maxNodes; node = pop()) {
     for (const d of DECISIONS) {
-      if (node.s.lockVx !== null && d.dir !== 0) continue; // en rampa la dirección no importa
+      if (node.s.lockVx !== null && d.dir !== 0) continue; // direction does not matter on a ramp
       world.s = cloneState(node.s);
       const out = fly(world, d);
       nodes++;
-      if (out === 'win') return { solved: true, nodes, plan: planOf(node, d), time: world.s.time, best: summary(world.s) };
+      if (out === 'win')
+        return {
+          solved: true,
+          nodes,
+          plan: planOf(node, d),
+          time: world.s.time,
+          best: summary(world.s),
+        };
       if (out !== 'bounce') continue;
       const k = key(world.s);
       if (seen.has(k)) continue;

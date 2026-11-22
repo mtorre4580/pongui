@@ -1,7 +1,15 @@
 {
   "id": "w1-02",
-  "name": "Salto alto",
-  "hint": "Mantené SALTAR cuando tocás el piso para rebotar mucho más alto.",
+  "name": {
+    "en": "High bounce",
+    "es": "Salto alto",
+    "pt-BR": "Quique alto"
+  },
+  "hint": {
+    "en": "Hold JUMP as you touch the ground to bounce much higher.",
+    "es": "Mantené SALTAR cuando tocás el piso para rebotar mucho más alto.",
+    "pt-BR": "Segure PULAR ao tocar o chão para quicar bem mais alto."
+  },
   "par": 18,
   "map": [
     "####################",

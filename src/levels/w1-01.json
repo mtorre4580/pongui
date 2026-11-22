@@ -1,7 +1,15 @@
 {
   "id": "w1-01",
-  "name": "Primer rebote",
-  "hint": "Movete con ◀ ▶. Juntá todas las gemas para abrir la salida.",
+  "name": {
+    "en": "First bounce",
+    "es": "Primer rebote",
+    "pt-BR": "Primeiro quique"
+  },
+  "hint": {
+    "en": "Move with ◀ ▶. Collect every gem to open the exit.",
+    "es": "Movete con ◀ ▶. Juntá todas las gemas para abrir la salida.",
+    "pt-BR": "Mova-se com ◀ ▶. Pegue todas as gemas para abrir a saída."
+  },
   "par": 15,
   "map": [
     "####################",

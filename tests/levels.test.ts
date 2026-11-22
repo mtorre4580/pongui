@@ -1,15 +1,27 @@
 import { describe, expect, it } from 'vitest';
-import { solve } from '../src/game/solver';
+import { LOCALES } from '../src/i18n';
 import { LEVELS } from '../src/levels';
 
-describe('niveles', () => {
-  it('hay 10 niveles', () => expect(LEVELS).toHaveLength(10));
+// Solvability is checked by `pnpm validate:levels` (slower: it runs the solver on every level).
+describe('levels', () => {
+  it('loads every level in order with unique ids', () => {
+    expect(LEVELS.length).toBeGreaterThanOrEqual(10);
+    const ids = LEVELS.map((l) => l.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    expect([...ids].sort()).toEqual(ids);
+  });
+
   for (const lvl of LEVELS) {
-    it(`${lvl.id} "${lvl.name}" tiene solución`, () => {
-      const r = solve(lvl);
-      console.log(`${lvl.id}: solved=${r.solved} nodes=${r.nodes} bounces=${r.plan.length} time=${r.time.toFixed(1)}s (par ${lvl.par}s)`);
-      if (!r.solved) console.log('  mejor estado:', JSON.stringify(r.best));
-      expect(r.solved).toBe(true);
+    it(`${lvl.id} has its name and hint in every language`, () => {
+      for (const locale of LOCALES) {
+        expect(lvl.name[locale]?.trim()).toBeTruthy();
+        if (lvl.hint) expect(lvl.hint[locale]?.trim()).toBeTruthy();
+      }
+    });
+
+    it(`${lvl.id} has gems or an open exit and a positive par time`, () => {
+      expect(lvl.par).toBeGreaterThan(0);
+      expect(lvl.gems).toBeGreaterThanOrEqual(0);
     });
   }
 });

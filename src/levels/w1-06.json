@@ -1,7 +1,15 @@
 {
   "id": "w1-06",
-  "name": "Fuego y agua",
-  "hint": "El fuego quema. Agarrá una gota de agua y apagá el fuego al pisarlo.",
+  "name": {
+    "en": "Fire and water",
+    "es": "Fuego y agua",
+    "pt-BR": "Fogo e água"
+  },
+  "hint": {
+    "en": "Fire burns. Grab a water drop and put the fire out by landing on it.",
+    "es": "El fuego quema. Agarrá una gota de agua y apagá el fuego al pisarlo.",
+    "pt-BR": "O fogo queima. Pegue uma gota de água e apague o fogo pisando nele."
+  },
   "par": 20,
   "map": [
     "####################",

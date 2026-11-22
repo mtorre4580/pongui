@@ -1,4 +1,4 @@
-// Todas las texturas se dibujan con vectores a resolución 2× (se usan a escala 0.5).
+// Every texture is drawn with vectors at 2× resolution (used at scale 0.5).
 import Phaser from 'phaser';
 import { BALL_R, TILE } from '../game/constants';
 
@@ -90,11 +90,18 @@ function star(g: G, cx: number, cy: number, outer: number, inner: number) {
 }
 
 export function createTextures(scene: Phaser.Scene) {
-  // --- Tiles especiales ---
+  // --- Special tiles ---
   make(scene, 'fragile', S, S, (g) => {
     block(g, C.fragile, 0xfff0a8, C.fragileDark);
     g.fillStyle(C.fragileDark, 0.6);
-    for (const [x, y] of [[12, 24], [30, 38], [48, 26], [20, 48], [44, 50]]) g.fillCircle(x, y, 3);
+    for (const [x, y] of [
+      [12, 24],
+      [30, 38],
+      [48, 26],
+      [20, 48],
+      [44, 50],
+    ])
+      g.fillCircle(x, y, 3);
   });
   for (let st = 0; st < 3; st++) {
     make(scene, `fragile3-${st}`, S, S, (g) => {
@@ -108,7 +115,13 @@ export function createTextures(scene: Phaser.Scene) {
     g.fillStyle(C.fireBase, 1).fillRoundedRect(0, 0, S, S, 10);
     g.fillStyle(C.fireGlow, 1).fillRoundedRect(0, 0, S, 18, { tl: 10, tr: 10, bl: 0, br: 0 });
     g.fillStyle(0xff8c1a, 0.7);
-    for (const [x, y] of [[14, 32], [34, 44], [50, 30], [22, 52]]) g.fillCircle(x, y, 4);
+    for (const [x, y] of [
+      [14, 32],
+      [34, 44],
+      [50, 30],
+      [22, 52],
+    ])
+      g.fillCircle(x, y, 4);
   });
   make(scene, 'flame', S, S, (g) => {
     const tongue = (x: number, h: number, w: number, color: number) => {
@@ -151,7 +164,8 @@ export function createTextures(scene: Phaser.Scene) {
     for (let row = 0; row < 4; row++) {
       const y = row * (bh + 2) + 1;
       const off = row % 2 === 0 ? 0 : -16;
-      for (let x = off; x < S; x += 32) g.fillRoundedRect(Math.max(0, x + 1), y, Math.min(30, S - x - 1), bh, 3);
+      for (let x = off; x < S; x += 32)
+        g.fillRoundedRect(Math.max(0, x + 1), y, Math.min(30, S - x - 1), bh, 3);
     }
     g.fillStyle(C.brickDark, 0.5).fillRect(0, S - 6, S, 6);
   });
@@ -163,7 +177,7 @@ export function createTextures(scene: Phaser.Scene) {
     for (let i = 0; i < 4; i++) g.fillTriangle(i * 16 + 8, 40, i * 16 + 16, 40, i * 16 + 8, 6);
   });
 
-  // --- Pelota ---
+  // --- Ball ---
   const BR = BALL_R * TEX + 2;
   make(scene, 'ball', BR * 2, BR * 2, (g) => {
     g.fillStyle(C.ballDark, 1).fillCircle(BR, BR, BR);
@@ -176,11 +190,34 @@ export function createTextures(scene: Phaser.Scene) {
     g.fillStyle(C.white, 1).fillCircle(10, 7.5, 1.2).fillCircle(24, 7.5, 1.2);
   });
 
-  // --- Ítems ---
+  // --- Items ---
   make(scene, 'gem', 36, 36, (g) => {
-    g.fillStyle(C.gem, 1).fillPoints([new Phaser.Math.Vector2(18, 2), new Phaser.Math.Vector2(34, 14), new Phaser.Math.Vector2(18, 34), new Phaser.Math.Vector2(2, 14)], true);
-    g.fillStyle(C.gemLight, 1).fillPoints([new Phaser.Math.Vector2(18, 2), new Phaser.Math.Vector2(26, 14), new Phaser.Math.Vector2(18, 14), new Phaser.Math.Vector2(10, 14)], true);
-    g.fillStyle(0x2b9fc4, 1).fillPoints([new Phaser.Math.Vector2(2, 14), new Phaser.Math.Vector2(18, 14), new Phaser.Math.Vector2(18, 34)], true);
+    g.fillStyle(C.gem, 1).fillPoints(
+      [
+        new Phaser.Math.Vector2(18, 2),
+        new Phaser.Math.Vector2(34, 14),
+        new Phaser.Math.Vector2(18, 34),
+        new Phaser.Math.Vector2(2, 14),
+      ],
+      true,
+    );
+    g.fillStyle(C.gemLight, 1).fillPoints(
+      [
+        new Phaser.Math.Vector2(18, 2),
+        new Phaser.Math.Vector2(26, 14),
+        new Phaser.Math.Vector2(18, 14),
+        new Phaser.Math.Vector2(10, 14),
+      ],
+      true,
+    );
+    g.fillStyle(0x2b9fc4, 1).fillPoints(
+      [
+        new Phaser.Math.Vector2(2, 14),
+        new Phaser.Math.Vector2(18, 14),
+        new Phaser.Math.Vector2(18, 34),
+      ],
+      true,
+    );
   });
   make(scene, 'drop', 32, 40, (g) => {
     g.fillStyle(C.drop, 1);
@@ -200,25 +237,31 @@ export function createTextures(scene: Phaser.Scene) {
     g.fillStyle(0xffb3c1, 1).fillCircle(9, 9, 3);
   });
 
-  // --- Salida ---
+  // --- Exit ---
   make(scene, 'exit', 60, 60, (g) => {
     g.fillStyle(C.exit, 0.25).fillCircle(30, 30, 29);
     g.lineStyle(5, C.exit, 1).strokeCircle(30, 30, 24);
     g.lineStyle(4, 0xd8f3dc, 1);
-    g.beginPath().arc(30, 30, 15, 0, Math.PI * 1.3).strokePath();
-    g.beginPath().arc(30, 30, 8, Math.PI, Math.PI * 2.2).strokePath();
+    g.beginPath()
+      .arc(30, 30, 15, 0, Math.PI * 1.3)
+      .strokePath();
+    g.beginPath()
+      .arc(30, 30, 8, Math.PI, Math.PI * 2.2)
+      .strokePath();
   });
   make(scene, 'exit-locked', 60, 60, (g) => {
     g.lineStyle(4, C.locked, 0.8);
     for (let i = 0; i < 12; i++) {
       const a = (i / 12) * Math.PI * 2;
-      g.beginPath().arc(30, 30, 24, a, a + 0.3).strokePath();
+      g.beginPath()
+        .arc(30, 30, 24, a, a + 0.3)
+        .strokePath();
     }
     g.fillStyle(C.locked, 0.9).fillRoundedRect(22, 28, 16, 12, 3);
     g.lineStyle(3, C.locked, 0.9).beginPath().arc(30, 28, 5, Math.PI, 0).strokePath();
   });
 
-  // --- Partículas e interfaz ---
+  // --- Particles and UI ---
   make(scene, 'spark', 12, 12, (g) => g.fillStyle(C.white, 1).fillCircle(6, 6, 6));
   make(scene, 'star', 48, 48, (g) => {
     g.fillStyle(C.accent, 1);
@@ -235,51 +278,105 @@ export function createTextures(scene: Phaser.Scene) {
   });
 }
 
-/** Capa estática: bloques sólidos dibujados como una sola pieza, con borde claro donde dan al aire. */
-export function drawSolids(g: G, tiles: Uint8Array, cols: number, rows: number, isSolid: (t: number) => boolean, ash: number) {
-  g.clear();
-  const at = (c: number, r: number) => (c < 0 || c >= cols || r < 0 || r >= rows ? -1 : tiles[r * cols + c]);
+/** Static layer: solid blocks drawn as one piece, with a light edge where they face open air. */
+function drawSolids(
+  g: G,
+  tiles: Uint8Array,
+  cols: number,
+  rows: number,
+  isSolid: (t: number) => boolean,
+  ash: number,
+) {
+  const at = (c: number, r: number) =>
+    c < 0 || c >= cols || r < 0 || r >= rows ? -1 : tiles[r * cols + c];
+  const k = TEX;
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
       const t = at(c, r);
       if (!isSolid(t)) continue;
-      const x = c * TILE;
-      const y = r * TILE;
+      const x = c * TILE * k;
+      const y = r * TILE * k;
+      const T2 = TILE * k;
       const isAsh = t === ash;
-      const openTop = !isSolid(at(c, r - 1));
       const body = isAsh ? C.ash : C.solid;
       const dark = isAsh ? 0x34364a : C.solidDark;
       const top = isAsh ? C.ashTop : C.solidTop;
-      g.fillStyle(body, 1).fillRect(x, y, TILE, TILE);
-      if (!isSolid(at(c, r + 1))) g.fillStyle(dark, 1).fillRect(x, y + TILE - 3, TILE, 3);
-      if (!isSolid(at(c - 1, r))) g.fillStyle(dark, 0.5).fillRect(x, y, 2, TILE);
-      if (!isSolid(at(c + 1, r))) g.fillStyle(dark, 0.5).fillRect(x + TILE - 2, y, 2, TILE);
-      if (openTop) {
-        g.fillStyle(top, 1).fillRect(x, y, TILE, 6);
-        g.fillStyle(0xffffff, 0.18).fillRect(x, y, TILE, 2);
+      g.fillStyle(body, 1).fillRect(x, y, T2, T2);
+      if (!isSolid(at(c, r + 1))) g.fillStyle(dark, 1).fillRect(x, y + T2 - 3 * k, T2, 3 * k);
+      if (!isSolid(at(c - 1, r))) g.fillStyle(dark, 0.5).fillRect(x, y, 2 * k, T2);
+      if (!isSolid(at(c + 1, r))) g.fillStyle(dark, 0.5).fillRect(x + T2 - 2 * k, y, 2 * k, T2);
+      if (!isSolid(at(c, r - 1))) {
+        g.fillStyle(top, 1).fillRect(x, y, T2, 6 * k);
+        g.fillStyle(0xffffff, 0.18).fillRect(x, y, T2, 2 * k);
       }
-      // textura sutil
+      // subtle texture
       g.fillStyle(dark, 0.35);
       const seed = (c * 7 + r * 13) % 5;
-      g.fillCircle(x + 8 + seed * 3, y + 18 + (seed % 3) * 3, 1.6);
-      g.fillCircle(x + 22 - seed, y + 24 - (seed % 2) * 4, 1.2);
+      g.fillCircle(x + (8 + seed * 3) * k, y + (18 + (seed % 3) * 3) * k, 1.6 * k);
+      g.fillCircle(x + (22 - seed) * k, y + (24 - (seed % 2) * 4) * k, 1.2 * k);
     }
   }
 }
 
-/** Fondo con degradé, burbujas suaves y puntitos. */
+/**
+ * Bakes the solid blocks into a texture. The Canvas renderer replays Graphics commands every
+ * frame, so static layers are drawn once and shown as a single image.
+ */
+export function bakeSolids(
+  scene: Phaser.Scene,
+  key: string,
+  tiles: Uint8Array,
+  cols: number,
+  rows: number,
+  isSolid: (t: number) => boolean,
+  ash: number,
+) {
+  if (scene.textures.exists(key)) scene.textures.remove(key);
+  const g = scene.make.graphics({ x: 0, y: 0 }, false);
+  drawSolids(g, tiles, cols, rows, isSolid, ash);
+  g.generateTexture(key, cols * TILE * TEX, rows * TILE * TEX);
+  g.destroy();
+}
+
+/** Particle texture of a given color (Canvas does not tint images). */
+export function sparkTexture(scene: Phaser.Scene, color: number) {
+  const key = `spark-${color.toString(16)}`;
+  make(scene, key, 12, 12, (g) => g.fillStyle(color, 1).fillCircle(6, 6, 6));
+  return key;
+}
+
+/** Background with a gradient, soft bubbles and dots, baked once per seed. */
 export function drawBackground(scene: Phaser.Scene, w: number, h: number, seed = 1) {
-  const g = scene.add.graphics();
-  g.fillGradientStyle(C.bgTop, C.bgTop, C.bgBottom, C.bgBottom, 1);
-  g.fillRect(0, 0, w, h);
-  let s = seed * 9301 + 49297;
-  const rnd = () => ((s = (s * 9301 + 49297) % 233280) / 233280);
-  for (let i = 0; i < 14; i++) {
-    g.fillStyle(i % 3 === 0 ? 0x4cc9f0 : i % 3 === 1 ? 0xc77dff : 0xff6b6b, 0.05 + rnd() * 0.05);
-    g.fillCircle(rnd() * w, rnd() * h, 20 + rnd() * 60);
+  const key = `bg-${seed}-${w}x${h}`;
+  if (!scene.textures.exists(key)) {
+    const tex = scene.textures.createCanvas(key, w * TEX, h * TEX)!;
+    const ctx = tex.getContext();
+    const css = (c: number, a = 1) =>
+      `rgba(${(c >> 16) & 255}, ${(c >> 8) & 255}, ${c & 255}, ${a})`;
+    const grad = ctx.createLinearGradient(0, 0, 0, h * TEX);
+    grad.addColorStop(0, css(C.bgTop));
+    grad.addColorStop(1, css(C.bgBottom));
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, w * TEX, h * TEX);
+    let s = seed * 9301 + 49297;
+    const rnd = () => (s = (s * 9301 + 49297) % 233280) / 233280;
+    const circle = (x: number, y: number, r: number) => {
+      ctx.beginPath();
+      ctx.arc(x * TEX, y * TEX, r * TEX, 0, Math.PI * 2);
+      ctx.fill();
+    };
+    for (let i = 0; i < 14; i++) {
+      const color = i % 3 === 0 ? 0x4cc9f0 : i % 3 === 1 ? 0xc77dff : 0xff6b6b;
+      ctx.fillStyle = css(color, 0.05 + rnd() * 0.05);
+      circle(rnd() * w, rnd() * h, 20 + rnd() * 60);
+    }
+    ctx.fillStyle = css(0xffffff, 0.05);
+    for (let y = 16; y < h; y += 32) for (let x = 16; x < w; x += 32) circle(x, y, 1);
+    tex.refresh();
   }
-  g.fillStyle(0xffffff, 0.05);
-  for (let y = 16; y < h; y += 32) for (let x = 16; x < w; x += 32) g.fillCircle(x, y, 1);
-  g.setDepth(-10);
-  return g;
+  return scene.add
+    .image(0, 0, key)
+    .setOrigin(0)
+    .setScale(1 / TEX)
+    .setDepth(-10);
 }

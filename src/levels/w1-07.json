@@ -1,7 +1,15 @@
 {
   "id": "w1-07",
-  "name": "Muros y martillo",
-  "hint": "Con el martillo rompés un muro de ladrillos entero. Cada martillo sirve una vez.",
+  "name": {
+    "en": "Walls and hammer",
+    "es": "Muros y martillo",
+    "pt-BR": "Muros e martelo"
+  },
+  "hint": {
+    "en": "A hammer knocks down a whole brick wall. Each hammer works once.",
+    "es": "Con el martillo rompés un muro de ladrillos entero. Cada martillo sirve una vez.",
+    "pt-BR": "O martelo derruba um muro de tijolos inteiro. Cada martelo funciona uma vez."
+  },
   "par": 30,
   "map": [
     "####################",
