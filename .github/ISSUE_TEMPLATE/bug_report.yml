@@ -1,0 +1,21 @@
+name: Bug report
+description: Something in the game does not work as expected
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you did, what you expected and what you got instead.
+    validations:
+      required: true
+  - type: input
+    id: level
+    attributes:
+      label: Level
+      placeholder: 4 · Ramps
+  - type: input
+    id: env
+    attributes:
+      label: Device, browser and language
+      placeholder: iPhone 15, Safari, installed as an app, Spanish
