@@ -89,6 +89,8 @@ come from `assets/` (`pnpm icons` then `pnpm native:assets`).
   every gem, and remixes everything for the finale.
 - **Solvable by construction**: an automatic solver plays every level with the real physics in CI,
   so no level ships without a proven solution.
+- **Ten balls to choose from**, opened with the stars you earn: a reason to go back for the ones
+  you missed. They change the look, not the game.
 - **Level editor** (on a computer): paint levels with every tile of the ten worlds, test them, and
   share them once both the solver and you have beaten them. A shared level travels inside its
   link (no server): copy it, send it by WhatsApp or scan its QR code with a phone to play it there.

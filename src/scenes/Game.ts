@@ -18,7 +18,7 @@ import { FIELD, type ParsedLevel } from '../game/level';
 import { World, type WorldEvent } from '../game/physics';
 import { PlanPlayer } from '../game/replay';
 import { isPortal, isStatic, isToggle, T } from '../game/tiles';
-import { bakeSolids, C, drawBackground, sparkTexture, TEX } from '../gfx/textures';
+import { bakeSolids, ballTexture, C, drawBackground, sparkTexture, TEX } from '../gfx/textures';
 import { ITEM_TEX, TILE_TEX } from '../gfx/tileTextures';
 import { themeOf, type Theme } from '../gfx/themes';
 import { setupCamera, text } from '../gfx/ui';
@@ -27,6 +27,7 @@ import { controls } from '../input/controls';
 import { haptic } from '../native';
 import { levelLabel, LEVELS, worldOf } from '../levels';
 import { loadSave, recordWin } from '../save';
+import { currentSkin, shade } from '../skins';
 import { planFor } from '../custom/bot';
 import { parseCustom, type CustomRun } from '../custom/run';
 import { bestTime, getLevel, isVerified, recordCustomWin } from '../custom/store';
@@ -89,6 +90,8 @@ export class Game extends Phaser.Scene {
   private lives = START_LIVES;
   private deaths = 0;
   private takenLives = new Set<number>();
+  /** Main color of the chosen ball: its trail and bursts match it. */
+  private ballColor: number = C.ball;
   private bot = false;
   /** The bot's solution being played back (null while it is still searching). */
   private botPlayer: PlanPlayer | null = null;
@@ -456,14 +459,16 @@ export class Game extends Phaser.Scene {
     const { x, y } = this.world.s;
     this.prevX = x;
     this.prevY = y;
-    this.trail = this.add.particles(0, 0, sparkTexture(this, C.ball), {
+    const skin = currentSkin();
+    this.ballColor = skin.color;
+    this.trail = this.add.particles(0, 0, sparkTexture(this, skin.color), {
       lifespan: 260,
       scale: { start: 0.5, end: 0 },
       alpha: { start: 0.45, end: 0 },
       frequency: 24,
       emitting: false,
     });
-    const body = this.add.image(0, 0, 'ball').setScale(0.5);
+    const body = this.add.image(0, 0, ballTexture(this, skin)).setScale(0.5);
     this.eyes = this.add.image(1, -2, 'eyes').setScale(0.5);
     this.ball = this.add
       .container(x, y + OY, [body, this.eyes])
@@ -746,7 +751,13 @@ export class Game extends Phaser.Scene {
         }
         case 'boost':
           sfx.boost();
-          this.burst(C.ballLight, this.world.s.x, this.world.s.y + OY + BALL_R, 5, 80);
+          this.burst(
+            shade(this.ballColor, 0.5),
+            this.world.s.x,
+            this.world.s.y + OY + BALL_R,
+            5,
+            80,
+          );
           break;
         case 'bonk':
           // A ball held against a ceiling (by an updraft) bonks every step: play it once
@@ -978,7 +989,7 @@ export class Game extends Phaser.Scene {
     this.trail.emitting = false;
     this.ball.setVisible(false);
     const s = this.world.s;
-    this.burst(C.ball, s.x, Math.min(s.y, ROWS * TILE) + OY, 22, 220);
+    this.burst(this.ballColor, s.x, Math.min(s.y, ROWS * TILE) + OY, 22, 220);
     this.cameras.main.shake(220, 0.008);
     this.lives--;
     this.deaths++;

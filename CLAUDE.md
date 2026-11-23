@@ -90,7 +90,7 @@ src/
     custom.ts          # player levels: draft checks, auto par, link codes (encode/decode)
   custom/              # player levels in the browser: store.ts (`pongui:custom`), bot.ts +
                        # bot.worker.ts (solver in a Web Worker), dialogs.ts (HTML dialogs), run.ts
-  scenes/              # Boot, Menu, LevelSelect, MyLevels, Game, Overlay (pause / complete /
+  scenes/              # Boot, Menu, LevelSelect, Skins, MyLevels, Game, Overlay (pause / complete /
                        # game over), Editor (lazy chunk)
   gfx/                 # textures.ts (vector textures, baked layers), themes.ts (world colors), ui.ts
   input/controls.ts    # keyboard + touch (HTML buttons) + gamepad, one API
@@ -98,6 +98,7 @@ src/
   i18n/                # t(), localized(), locale detection, messages/{en,es,pt-BR}.ts
   levels/              # w<world>-<nn>.json (numeric order), index.ts (LEVELS, WORLDS), worlds.ts
   save.ts              # progress in localStorage (`pongui:save`)
+  skins.ts             # balls to choose from, opened with stars (look only)
   pwa.ts               # install prompt, iOS detection, fullscreen
   analytics.ts         # anonymous usage statistics (Umami), off without VITE_UMAMI_ID
 tests/                 # Vitest: physics, levels, i18n
@@ -170,6 +171,10 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
   it with `PlanPlayer` (`game/replay.ts`), one input per physics step, like the solver did.
   Nothing is recorded: no win, no stars, no level events. `tests/replay.test.ts` replays every
   world's finale.
+- Balls: `skins.ts` lists the balls a player can choose, each opened by a number of stars (the
+  last one needs all of them; a test checks it). They change the look only: `ballTexture` draws
+  each one on demand, and the trail and bursts take its color. Never tie a gameplay effect to a
+  ball. The choice lives in the save (`skin`) and falls back to the default when not open.
 - Progress: a level is open when the previous one has a record, so a new world opens for players
   who already finished the last one. The level select shows one world per page (◀ ▶, or
   left/right at the edge of a row) and `?level=` accepts `12` or `2-3`.

@@ -14,6 +14,8 @@ export interface SaveData {
   unlocked: number; // index of the last unlocked level
   levels: Record<string, LevelRecord>;
   sound: boolean;
+  /** Id of the chosen ball (see skins.ts); the default one when missing. */
+  skin?: string;
 }
 
 const fresh = (): SaveData => ({ unlocked: 0, levels: {}, sound: true });

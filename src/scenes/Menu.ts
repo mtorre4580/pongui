@@ -1,10 +1,11 @@
 import Phaser from 'phaser';
 import { setSound, soundEnabled } from '../audio/sfx';
 import { GAME_H, GAME_W } from '../game/constants';
-import { C, drawBackground } from '../gfx/textures';
+import { ballTexture, C, drawBackground } from '../gfx/textures';
 import { button, ButtonGroup, goTo, setupCamera, text, type Button } from '../gfx/ui';
 import { nextLocale, setLocale, t } from '../i18n';
 import { controls } from '../input/controls';
+import { currentSkin } from '../skins';
 import {
   canFullscreen,
   canInstall,
@@ -47,7 +48,7 @@ export class Menu extends Phaser.Scene {
     text(this, GAME_W / 2, 140, t('app.tagline'), 16, '#a9b8ff');
 
     const ball = this.add.container(GAME_W / 2 + 118, 40, [
-      this.add.image(0, 0, 'ball').setScale(0.5),
+      this.add.image(0, 0, ballTexture(this, currentSkin())).setScale(0.5),
       this.add.image(2, -2, 'eyes').setScale(0.5),
     ]);
     this.tweens.add({
@@ -73,10 +74,15 @@ export class Menu extends Phaser.Scene {
       }),
     );
     y += 48;
-    // Player-made levels: the editor (computers) and levels shared by link
+    // Player-made levels (the editor on computers, levels shared by link) and the balls to
+    // choose from share a row
     buttons.push(
-      button(this, GAME_W / 2, y, t('menu.myLevels'), () => goTo(this, 'MyLevels'), {
-        w: 200,
+      button(this, GAME_W / 2 - 96, y, t('menu.myLevels'), () => goTo(this, 'MyLevels'), {
+        w: 180,
+        color: 0x2a9d8f,
+      }),
+      button(this, GAME_W / 2 + 96, y, t('menu.skins'), () => goTo(this, 'Skins'), {
+        w: 180,
         color: 0x2a9d8f,
       }),
     );
