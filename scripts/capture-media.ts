@@ -1,7 +1,8 @@
 /**
  * Regenerates every recorded asset:
  *   docs/media/        README screenshots, gameplay GIF and video
- *   public/landing/    landing page hero video, one clip per mechanic, device screenshots
+ *   public/landing/    landing page hero video, one clip per world, the editor clip and device
+ *                      screenshots
  *   public/og-image.jpg  social sharing image
  * It starts its own Vite dev server: videos use the dev-only `demo()` helper, which plays the
  * solver's solution in real time inside the real game. Needs ffmpeg on the PATH.
@@ -19,28 +20,27 @@ const TMP = join(DOCS, '.video');
 const PORT = 5199;
 const GAME = `http://localhost:${PORT}/play/`;
 
-// Every level unlocked with a few stars, so the level select looks like a game in progress
+// The first worlds finished with a few stars, so the level select looks like a game in progress
+const STARS = [3, 3, 2, 3, 2, 3, 1, 2, 3, 2, 3, 3, 1, 2, 3, 2, 3, 3, 2, 1, 3, 2, 3];
 const SAVE = {
-  unlocked: 9,
+  unlocked: STARS.length,
   sound: false,
   levels: Object.fromEntries(
-    [3, 3, 2, 3, 2, 3, 1, 2].map((stars, i) => [
-      `w1-${String(i + 1).padStart(2, '0')}`,
+    STARS.map((stars, i) => [
+      `w${Math.floor(i / 10) + 1}-${String((i % 10) + 1).padStart(2, '0')}`,
       { stars, bestTime: 10 },
     ]),
   ),
 };
 
-// One clip per mechanic, recorded from the level that introduces it (0-based level index)
-const CLIPS: { name: string; level: number }[] = [
-  { name: 'high-bounce', level: 1 },
-  { name: 'fragile', level: 2 },
-  { name: 'ramps', level: 3 },
-  { name: 'springs', level: 4 },
-  { name: 'fire', level: 5 },
-  { name: 'hammer', level: 6 },
-  { name: 'spikes', level: 7 },
-];
+const WORLDS = 10;
+/** 0-based index of a world's last level: it mixes that world's mechanics. */
+const finale = (world: number) => world * 10 - 1;
+// One clip per world for the landing page
+const CLIPS = Array.from({ length: WORLDS }, (_, i) => ({
+  name: `world-${i + 1}`,
+  level: finale(i + 1),
+}));
 
 const waitScene = (page: Page, scene: string) =>
   page.waitForFunction((s) => document.body.dataset.scene === s, scene, { timeout: 20_000 });
@@ -100,6 +100,91 @@ async function record(
   return { raw, parts };
 }
 
+/** Presses are edge-triggered per frame: leave a few frames between them. */
+async function press(page: Page, keys: string[], gap = 140) {
+  for (const key of keys) {
+    await page.keyboard.press(key);
+    await page.waitForTimeout(gap);
+  }
+}
+
+const times = (key: string, n: number) => Array.from({ length: n }, () => key);
+
+/**
+ * Records the editor being used with the keyboard: paint a ledge and three gems, let the bot
+ * check the level, beat it with "Test" and open the share dialog. Returns the raw file and the
+ * seconds where the editor appears and where the dialog has been on screen for a moment.
+ */
+async function recordEditor(browser: Browser): Promise<{ raw: string; from: number; to: number }> {
+  rmSync(TMP, { recursive: true, force: true });
+  const context = await browser.newContext({
+    viewport: { width: 960, height: 624 },
+    recordVideo: { dir: TMP, size: { width: 960, height: 624 } },
+  });
+  const page = await context.newPage();
+  const t0 = Date.now();
+  const now = () => (Date.now() - t0) / 1000;
+  await prepare(page);
+  await page.goto(`${GAME}?editor=1`);
+  await waitScene(page, 'Menu');
+  // Menu: Play, My levels. My levels: "New level" is the first button
+  await press(page, ['Enter', 'ArrowDown', 'Enter']);
+  await waitScene(page, 'MyLevels');
+  await press(page, ['Enter', 'Enter']);
+  await waitScene(page, 'Editor');
+  await page.waitForTimeout(600);
+  const from = now();
+  // The cursor starts at the top left cell. A ledge of solid blocks, painted as one stroke
+  await press(page, [...times('ArrowRight', 7), ...times('ArrowDown', 5)], 70);
+  await page.keyboard.down('Space');
+  await press(page, times('ArrowRight', 4), 110);
+  await page.keyboard.up('Space');
+  // The gem is the fourth tool: three gems two rows above the floor, on the way to the exit
+  await press(page, times('KeyE', 3), 160);
+  await press(page, [...times('ArrowLeft', 6), ...times('ArrowDown', 3), 'Space'], 70);
+  await press(page, [...times('ArrowRight', 4), 'Space'], 70);
+  await press(page, [...times('ArrowRight', 4), 'Space'], 70);
+  // The bot runs in a worker after each change
+  await page.waitForFunction(
+    () => {
+      const raw = localStorage.getItem('pongui:custom');
+      return (
+        raw !== null &&
+        (JSON.parse(raw) as { levels: { bot?: { solved: boolean } }[] }).levels[0]?.bot?.solved ===
+          true
+      );
+    },
+    undefined,
+    { timeout: 20_000 },
+  );
+  await page.waitForTimeout(900);
+  // Test: holding right takes the three gems and reaches the exit
+  await page.keyboard.press('KeyT');
+  await waitScene(page, 'Game');
+  await page.keyboard.down('ArrowRight');
+  await waitScene(page, 'Overlay');
+  await page.keyboard.up('ArrowRight');
+  await page.waitForTimeout(1200);
+  // Result panel: the first button goes back to the editor
+  await press(page, ['Enter', 'Enter']);
+  await waitScene(page, 'Editor');
+  await page.waitForTimeout(900);
+  // The dialog warns that a localhost link cannot be opened by a phone: true here, never on the
+  // public site this clip is for
+  await page.addStyleTag({ content: '.ui-note { display: none }' });
+  // "Share" has no key: click it where it sits in this 960×624 viewport
+  await page.mouse.move(864, 354, { steps: 8 });
+  await page.mouse.click(864, 354);
+  await page.getByRole('dialog').waitFor({ state: 'visible' });
+  await page.waitForTimeout(2600);
+  await context.close();
+  const raw = join(
+    TMP,
+    readdirSync(TMP).find((f) => f.endsWith('.webm'))!,
+  );
+  return { raw, from, to: now() - 0.3 };
+}
+
 /** Encodes a section of a raw recording as a small, web-friendly MP4 plus a JPEG poster. */
 function clip(raw: string, from: number, to: number, out: string, width: number) {
   const len = (to - from).toFixed(2);
@@ -119,6 +204,9 @@ function clip(raw: string, from: number, to: number, out: string, width: number)
   );
 }
 
+// `pnpm media editor` records only the editor clip (handy while changing it)
+const only = process.argv[2];
+
 const server = await createServer({ server: { port: PORT, strictPort: true }, logLevel: 'error' });
 await server.listen();
 mkdirSync(DOCS, { recursive: true });
@@ -127,6 +215,11 @@ mkdirSync(TMP, { recursive: true });
 const browser = await chromium.launch();
 
 try {
+  if (only === 'editor') {
+    const editor = await recordEditor(browser);
+    clip(editor.raw, editor.from, editor.to, join(LANDING, 'editor'), 960);
+    process.exit(0);
+  }
   // --- README screenshots (the game canvas is 1280×832) ---
   const desktop = await browser.newContext({ viewport: { width: 1280, height: 832 } });
   const page = await desktop.newPage();
@@ -206,8 +299,8 @@ try {
     ]),
   );
 
-  // --- Landing: hero (grand finale) and one clip per mechanic, without banners ---
-  const hero = await record(browser, [9], { banner: false, pause: 300 });
+  // --- Landing: hero (the last level of the game) and one clip per world, without banners ---
+  const hero = await record(browser, [finale(WORLDS)], { banner: false, pause: 300 });
   clip(hero.raw, hero.parts[0].start + 0.7, hero.parts[0].won - 0.1, join(LANDING, 'hero'), 960);
   const clips = await record(
     browser,
@@ -218,6 +311,10 @@ try {
     const part = clips.parts[i];
     clip(clips.raw, part.start + 0.7, part.won - 0.1, join(LANDING, c.name), 640);
   });
+
+  // --- Landing: the level editor, from an empty level to the share dialog ---
+  const editor = await recordEditor(browser);
+  clip(editor.raw, editor.from, editor.to, join(LANDING, 'editor'), 960);
 
   rmSync(TMP, { recursive: true, force: true });
   console.log(`Media written to ${DOCS}/, ${LANDING}/ and public/og-image.jpg`);

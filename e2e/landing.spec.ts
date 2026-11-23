@@ -12,7 +12,7 @@ test('the landing page loads without errors and links to the game', async ({ pag
   await expect(page.getByRole('heading', { level: 1 })).toContainText('never stops bouncing');
   const play = page.getByRole('link', { name: /Play now/ });
   await expect(play).toHaveAttribute('href', './play/');
-  await expect(page.locator('#level-list li')).toHaveCount(WORLD_COUNT);
+  await expect(page.locator('#worlds .card')).toHaveCount(WORLD_COUNT);
   expect(errors).toEqual([]);
 });
 
@@ -30,7 +30,7 @@ test('the language selector translates the page and is remembered', async ({ pag
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
     'A bola nunca para de quicar. Você decide onde ela cai.',
   );
-  await expect(page.locator('#level-list li').first()).toContainText('Vale Saltitante');
+  await expect(page.locator('#worlds .card').first()).toContainText('Vale Saltitante');
   await page.reload();
   await expect(page.locator('html')).toHaveAttribute('lang', 'pt-BR');
 });
@@ -42,9 +42,9 @@ test('videos load only when they scroll into view and can be paused', async ({ p
   await page.waitForTimeout(500);
   // Only the hero clip is on screen at first
   expect(requested.every((u) => u.includes('hero'))).toBe(true);
-  const card = page.locator('#mechanics .screen').first();
+  const card = page.locator('#worlds .screen').first();
   await card.scrollIntoViewIfNeeded();
-  await expect.poll(() => requested.some((u) => u.includes('high-bounce'))).toBe(true);
+  await expect.poll(() => requested.some((u) => u.includes('world-1.'))).toBe(true);
   const toggle = card.getByRole('button', { name: 'Pause video' });
   await toggle.click();
   await expect(card.getByRole('button', { name: 'Play video' })).toBeVisible();

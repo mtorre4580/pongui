@@ -622,29 +622,6 @@ kbd {
   margin: 0;
 }
 
-.levels {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 12px;
-  margin: 32px 0 20px;
-  padding: 0;
-  list-style: none;
-}
-.levels a {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  border-radius: 14px;
-  background: var(--surface);
-  box-shadow: inset 0 0 0 1px var(--line);
-  text-decoration: none;
-  font-weight: 500;
-  transition: background 120ms ease;
-}
-.levels a:hover {
-  background: var(--surface-2);
-}
 .level-num {
   display: grid;
   place-items: center;
@@ -656,9 +633,66 @@ kbd {
   color: var(--gold);
   font-weight: 700;
 }
-.soon {
-  color: var(--violet);
-  font-weight: 600;
+.card h3 a {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+.card h3 a:hover {
+  color: var(--gold);
+}
+.card .level-num {
+  width: 30px;
+  height: 30px;
+  font-size: 0.95rem;
+}
+
+.create-grid {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: 56px;
+  align-items: center;
+}
+.create-steps {
+  margin: 24px 0 20px;
+  padding: 0;
+  list-style: none;
+  counter-reset: create;
+}
+.create-steps li {
+  position: relative;
+  padding: 4px 0 14px 50px;
+  counter-increment: create;
+}
+.create-steps li::before {
+  content: counter(create);
+  position: absolute;
+  left: 0;
+  top: 4px;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--gold);
+  font-weight: 700;
+}
+.create-steps h3 {
+  margin: 0 0 2px;
+}
+.create-steps p {
+  color: var(--muted);
+  margin: 0;
+}
+.notice {
+  margin: 24px 0 0;
+  padding: 14px 18px;
+  border-radius: 14px;
+  border-left: 4px solid var(--gold);
+  background: var(--surface);
+  color: var(--text);
 }
 
 .faq-wrap {
@@ -727,6 +761,7 @@ details p {
     padding: 48px 0 72px;
   }
   .hero-grid,
+  .create-grid,
   .devices-grid {
     grid-template-columns: 1fr;
     gap: 48px;

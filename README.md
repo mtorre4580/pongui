@@ -44,8 +44,8 @@ double tap (or rest a second finger) to bounce higher.
 ## Landing page
 
 The site root is a landing page that presents the game: a hero video, how to play, a clip for
-every mechanic (recorded from the game with the solver at the controls), the devices it runs on,
-install instructions, the level list and an FAQ, in the same three languages. The game lives at
+every world (recorded from the game with the solver at the controls), the level editor, the devices it runs on,
+install instructions and an FAQ, in the same three languages. The game lives at
 `/play/`, which is also where the installed app opens. The landing page is plain HTML, CSS and a
 small script (~15 KB gzip on first load); videos load only when they scroll into view and can
 always be paused.
