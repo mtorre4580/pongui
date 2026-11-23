@@ -2,6 +2,7 @@
 import Phaser from 'phaser';
 import { BALL_R, TILE } from '../game/constants';
 import { THEMES, type Theme } from './themes';
+import { shade, type Skin } from '../skins';
 
 export const TEX = 2; // texture resolution factor
 const S = TILE * TEX; // 64 px per tile
@@ -687,6 +688,44 @@ export function bakeSolids(
 }
 
 /** Particle texture of a given color (Canvas does not tint images). */
+/**
+ * The ball in one of its looks (see skins.ts), made the first time it is needed. The eyes are a
+ * separate texture drawn over it.
+ */
+export function ballTexture(scene: Phaser.Scene, skin: Skin): string {
+  const key = `ball-${skin.id}`;
+  const BR = BALL_R * TEX + 2;
+  make(scene, key, BR * 2, BR * 2, (g) => {
+    const dark = shade(skin.color, -0.22);
+    g.fillStyle(dark, 1).fillCircle(BR, BR, BR);
+    g.fillStyle(skin.color, 1).fillCircle(BR - 1, BR - 2, BR - 3);
+    if (skin.mark === 'rings') {
+      // A rainbow from the rim to the middle
+      C.rainbow.forEach((color, i) =>
+        g.fillStyle(color, 1).fillCircle(BR - 1, BR - 2, BR - 3 - i * 3),
+      );
+    } else if (skin.mark === 'band') {
+      g.fillStyle(dark, 0.6).fillRect(4, BR + 5, BR * 2 - 10, 6);
+    } else if (skin.mark === 'spots') {
+      g.fillStyle(dark, 0.7)
+        .fillCircle(9, BR + 4, 4)
+        .fillCircle(BR + 8, BR + 9, 5);
+      g.fillCircle(BR - 2, BR + 13, 3);
+    } else if (skin.mark === 'stars') {
+      g.fillStyle(C.white, 0.9)
+        .fillCircle(8, BR + 2, 1.6)
+        .fillCircle(BR + 10, BR + 8, 2);
+      g.fillCircle(BR - 3, BR + 12, 1.4).fillCircle(BR + 13, BR - 8, 1.4);
+    } else if (skin.mark === 'sparkle') {
+      g.fillStyle(C.white, 0.95)
+        .fillRect(BR + 9, BR + 3, 2, 12)
+        .fillRect(BR + 4, BR + 8, 12, 2);
+    }
+    g.fillStyle(shade(skin.color, 0.5), 0.9).fillEllipse(BR - 7, BR - 9, 12, 8);
+  });
+  return key;
+}
+
 export function sparkTexture(scene: Phaser.Scene, color: number) {
   const key = `spark-${color.toString(16)}`;
   make(scene, key, 12, 12, (g) => g.fillStyle(color, 1).fillCircle(6, 6, 6));

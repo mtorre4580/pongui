@@ -131,3 +131,30 @@ test('out of lives, the bot shows how the level is done and nothing is recorded'
   expect(save === null || !('w1-08' in JSON.parse(save).levels)).toBe(true);
   expect(errors).toEqual([]);
 });
+
+test('the balls screen opens from the menu and a locked ball stays locked', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, 'keyboard flow');
+  const errors = trackErrors(page);
+  await asReturningPlayer(page);
+  await page.goto('./play/');
+  await expectScene(page, 'Menu');
+  // Play, My levels, Balls
+  for (const key of ['Enter', 'ArrowDown', 'ArrowDown', 'Enter']) {
+    await page.keyboard.press(key);
+    await page.waitForTimeout(150);
+  }
+  await expectScene(page, 'Skins');
+  // The second ball needs stars this player does not have: choosing it changes nothing
+  for (const key of ['Enter', 'ArrowRight', 'Enter']) {
+    await page.keyboard.press(key);
+    await page.waitForTimeout(150);
+  }
+  const save = await page.evaluate(() => JSON.parse(localStorage.getItem('pongui:save')!));
+  expect(save.skin).toBeUndefined();
+  await page.keyboard.press('Escape');
+  await expectScene(page, 'Menu');
+  expect(errors).toEqual([]);
+});
