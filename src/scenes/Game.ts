@@ -15,19 +15,24 @@ import {
   VENT_CYCLE,
 } from '../game/constants';
 import { FIELD, type ParsedLevel } from '../game/level';
+import { BossFight, type BossEvent } from '../game/boss';
 import { World, type WorldEvent } from '../game/physics';
 import { PlanPlayer } from '../game/replay';
 import { isPortal, isStatic, isToggle, T } from '../game/tiles';
 import { bakeSolids, ballTexture, C, drawBackground, sparkTexture, TEX } from '../gfx/textures';
 import { ITEM_TEX, TILE_TEX } from '../gfx/tileTextures';
 import { themeOf, type Theme } from '../gfx/themes';
+import { BossView } from '../gfx/bossView';
 import { setupCamera, text } from '../gfx/ui';
-import { localized, t } from '../i18n';
+import { localized, t, type MessageKey } from '../i18n';
 import { controls } from '../input/controls';
 import { haptic } from '../native';
 import { levelLabel, LEVELS, worldOf } from '../levels';
-import { isUnlocked, loadSave, recordWin } from '../save';
+import { LEVELS_PER_WORLD } from '../levels/worlds';
+import { isUnlocked, loadSave, recordBossWin, recordWin } from '../save';
 import { currentSkin, shade } from '../skins';
+import { pauseBossMusic, setBossMusicPhase, startBossMusic, stopBossMusic } from '../audio/music';
+import { BOSSES } from '../bosses';
 import { planFor } from '../custom/bot';
 import { recordDailyWin } from '../daily';
 import { parseCustom, type CustomRun } from '../custom/run';
@@ -44,6 +49,10 @@ export interface GameData {
   bot?: boolean;
   /** Played as the level of the day (see daily.ts). */
   daily?: boolean;
+  /** A boss fight: the world whose boss it is (`index` is that world's last level). */
+  boss?: number;
+  /** Hits the boss has left, kept between the lives of one attempt. */
+  bossHp?: number;
 }
 
 // The level starts at the top of the world: the HUD sits over its first row, which is always a
@@ -99,6 +108,11 @@ export class Game extends Phaser.Scene {
   private ballColor: number = C.ball;
   private bot = false;
   private daily = false;
+  /** World of the boss being fought, or undefined in a normal level. */
+  private bossN: number | undefined;
+  private bossHp: number | undefined;
+  private fight: BossFight | null = null;
+  private bossView: BossView | null = null;
   /** The bot's solution being played back (null while it is still searching). */
   private botPlayer: PlanPlayer | null = null;
 
@@ -153,10 +167,20 @@ export class Game extends Phaser.Scene {
       this.level = LEVELS[this.index];
       this.theme = themeOf(worldOf(this.index).n);
     }
+    const boss = data.custom ? undefined : BOSSES[data.boss ?? 0];
+    this.bossN = boss?.world;
+    this.bossHp = data.bossHp;
+    this.fight = null;
+    this.bossView = null;
+    if (boss) {
+      this.index = boss.world * LEVELS_PER_WORLD - 1;
+      this.level = boss.arena;
+      this.theme = themeOf(boss.world);
+    }
     this.lives = data.lives ?? START_LIVES;
     this.deaths = data.deaths ?? 0;
-    this.bot = !!data.bot;
-    this.daily = !!data.daily && !data.custom;
+    this.bot = !!data.bot && !boss;
+    this.daily = !!data.daily && !data.custom && !boss;
     this.botPlayer = null;
     // The bot solves the level as it is at the start, with every item in place
     this.takenLives = new Set(this.bot ? [] : (data.takenLives ?? []));
@@ -186,6 +210,8 @@ export class Game extends Phaser.Scene {
     controls.enableGestures(true);
     if (!this.custom && !this.bot) trackLevelStart(this.level.id);
     this.world = new World(this.level, this.takenLives);
+    const boss = BOSSES[this.bossN ?? 0];
+    if (boss) this.fight = new BossFight(this.world, boss.def, this.bossHp);
 
     drawBackground(this, GAME_W, GAME_H, this.index + 11, this.theme);
     this.redrawSolids();
@@ -196,6 +222,7 @@ export class Game extends Phaser.Scene {
     this.buildHud();
     this.showBanner();
     if (this.bot) this.askBot();
+    if (boss && this.fight) this.startBoss(boss.world, boss.note);
 
     this.time.delayedCall(450, () => (this.started = true));
 
@@ -211,6 +238,7 @@ export class Game extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       document.removeEventListener('visibilitychange', onHide);
       this.events.off(Phaser.Scenes.Events.RESUME);
+      this.events.off(Phaser.Scenes.Events.PAUSE);
     });
   }
 
@@ -496,7 +524,9 @@ export class Game extends Phaser.Scene {
       HUD_H / 2,
       this.custom
         ? localized(this.level.name)
-        : `${levelLabel(this.index)} · ${localized(this.level.name)}`,
+        : this.bossN
+          ? t('game.boss', { name: t(`boss.${this.bossN}` as MessageKey) })
+          : `${levelLabel(this.index)} · ${localized(this.level.name)}`,
       14,
       '#ffffff',
     )
@@ -509,10 +539,15 @@ export class Game extends Phaser.Scene {
         .image(x, HUD_H / 2, tex)
         .setScale(scale)
         .setDepth(11);
-    icon('gem', 0.42);
+    const gem = icon('gem', 0.42);
     this.hudGems = text(this, x + 12, HUD_H / 2, '', 14)
       .setOrigin(0, 0.5)
       .setDepth(11);
+    // Nothing to collect in a boss fight: its hit bar says what is left to do
+    if (this.bossN) {
+      gem.setVisible(false);
+      this.hudGems.setVisible(false);
+    }
     x += 62;
     if (this.level.items.some((i) => i.kind === 'drop')) {
       icon('drop', 0.38);
@@ -575,6 +610,61 @@ export class Game extends Phaser.Scene {
     this.hudKeys?.setText(String(s.keys));
   }
 
+  /** The boss on screen, its hit bar and its music; the arena's exit is sealed away, so hidden. */
+  private startBoss(world: number, note: number) {
+    this.exitSprite.setVisible(false);
+    this.bossView = new BossView(this, this.fight!, world, OY);
+    startBossMusic(note);
+    setBossMusicPhase(this.fight!.phase);
+    this.events.on(Phaser.Scenes.Events.PAUSE, () => pauseBossMusic(true));
+    this.events.on(Phaser.Scenes.Events.RESUME, () => pauseBossMusic(false));
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => stopBossMusic());
+  }
+
+  private handleBoss(events: BossEvent[]) {
+    for (const e of events) {
+      if (e.type === 'boss-hit') {
+        sfx.bossHit();
+        haptic('heavy');
+        this.cameras.main.shake(160, 0.006);
+        this.squash = 1;
+        setBossMusicPhase(this.fight!.phase);
+      } else if (e.type === 'boss-bonk') {
+        sfx.bonk();
+        this.squash = 1;
+      } else if (e.type === 'boss-land') {
+        sfx.bossLand();
+        this.cameras.main.shake(90, 0.003);
+      } else if (e.type === 'boss-down') this.onBossDown();
+    }
+  }
+
+  /** The boss is beaten: the next world opens. Nothing else is recorded (no stars, no time). */
+  private onBossDown() {
+    const world = this.bossN!;
+    this.ended = true;
+    this.trail.emitting = false;
+    sfx.bossDown();
+    haptic('success');
+    stopBossMusic();
+    this.bossView?.defeat();
+    this.cameras.main.shake(400, 0.01);
+    const [left, top, right] = this.fight!.box;
+    this.burst(C.accent, (left + right) / 2, top + OY + 20, 30, 260);
+    recordBossWin(world, LEVELS.length);
+    track('level_complete', { level: this.level.id, stars: 0 });
+    this.time.delayedCall(1100, () => {
+      controls.enableGestures(false);
+      this.scene.pause();
+      this.scene.launch('Overlay', {
+        mode: 'complete',
+        index: this.index,
+        boss: world,
+        time: this.world.s.time,
+      });
+    });
+  }
+
   /**
    * Asks the solver (in a worker) for its solution; the level stays still until it arrives. With
    * no solution the level simply starts for the player.
@@ -589,14 +679,26 @@ export class Game extends Phaser.Scene {
     void plan.then((decisions) => {
       if (!open) return;
       if (decisions) this.botPlayer = new PlanPlayer(decisions, STEP);
-      else this.scene.restart({ index: this.index, custom: this.custom, daily: this.daily });
+      else
+        this.scene.restart({
+          index: this.index,
+          custom: this.custom,
+          daily: this.daily,
+          boss: this.bossN,
+        });
     });
   }
 
   private showBanner() {
     const w = 420;
     const source = (controls.touchMode && this.level.hintTouch) || this.level.hint;
-    const hint = this.bot ? t('game.botPlaying') : source ? localized(source) : '';
+    const hint = this.bossN
+      ? t('game.bossHint')
+      : this.bot
+        ? t('game.botPlaying')
+        : source
+          ? localized(source)
+          : '';
     const hasHint = hint !== '';
     const h = hasHint ? 86 : 56;
     const bg = this.add.graphics();
@@ -608,9 +710,11 @@ export class Game extends Phaser.Scene {
       hasHint ? -20 : 0,
       this.custom
         ? localized(this.level.name)
-        : this.daily
-          ? t('game.daily', { name: localized(this.level.name) })
-          : t('game.level', { n: levelLabel(this.index), name: localized(this.level.name) }),
+        : this.bossN
+          ? t('game.boss', { name: t(`boss.${this.bossN}` as MessageKey) })
+          : this.daily
+            ? t('game.daily', { name: localized(this.level.name) })
+            : t('game.level', { n: levelLabel(this.index), name: localized(this.level.name) }),
       22,
       '#ffffff',
       { fontStyle: '700' },
@@ -667,11 +771,14 @@ export class Game extends Phaser.Scene {
         if (input.jumpPressed || input.left || input.right) unlockAudio();
       }
       this.acc += Math.min(deltaMs / 1000, 0.1);
-      while (this.acc >= STEP && s.status === 'playing') {
+      while (this.acc >= STEP && s.status === 'playing' && !this.fight?.won) {
         this.prevX = s.x;
         this.prevY = s.y;
         // The bot decides again at every step: its plan changes between two frames
-        const ev = this.world.step(STEP, player ? player.input() : input);
+        const stepInput = player ? player.input() : input;
+        const fought = this.fight?.step(STEP, stepInput);
+        const ev = fought ? fought.events : this.world.step(STEP, stepInput);
+        if (fought?.boss.length) this.handleBoss(fought.boss);
         player?.advance(ev);
         input.jumpPressed = false;
         if (ev.length) this.handle(ev);
@@ -681,6 +788,7 @@ export class Game extends Phaser.Scene {
       if (this.vents.length) this.syncVents();
       this.hudTime.setText(s.time.toFixed(1));
     }
+    this.bossView?.update();
     this.renderBall(deltaMs / 1000);
   }
 
@@ -1011,6 +1119,8 @@ export class Game extends Phaser.Scene {
           index: this.index,
           custom: this.custom,
           daily: this.daily,
+          boss: this.bossN,
+          bossHp: this.fight?.boss.hp,
           lives: this.lives,
           deaths: this.deaths,
           takenLives: [...this.takenLives],
@@ -1023,6 +1133,7 @@ export class Game extends Phaser.Scene {
           index: this.index,
           custom: this.custom,
           daily: this.daily,
+          boss: this.bossN,
         });
       }
     });
@@ -1037,6 +1148,7 @@ export class Game extends Phaser.Scene {
       index: this.index,
       custom: this.custom,
       daily: this.daily,
+      boss: this.bossN,
     });
   }
 
@@ -1093,6 +1205,7 @@ export class Game extends Phaser.Scene {
         index: this.index,
         custom: this.custom,
         daily: this.daily,
+        boss: this.bossN,
         verified,
         streak,
         stars,
@@ -1113,6 +1226,7 @@ export class Game extends Phaser.Scene {
       index: this.index,
       custom: this.custom,
       daily: this.daily,
+      boss: this.bossN,
     });
   }
 
@@ -1121,6 +1235,8 @@ export class Game extends Phaser.Scene {
       index: this.index,
       custom: this.custom,
       daily: this.daily,
+      boss: this.bossN,
+      bossHp: this.fight?.boss.hp,
       lives: this.lives,
       deaths: this.deaths,
       takenLives: [...this.takenLives],

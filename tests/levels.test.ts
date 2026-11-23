@@ -78,19 +78,20 @@ describe('unlocking', () => {
   const ids = LEVELS.map((l) => l.id);
 
   it('opens the next world for a save that finished the previous one', () => {
-    // A save from when World 1 was the whole game: `unlocked` stopped at its last level
+    // A save from when a world was the last one: `unlocked` stopped at its last level. World 2
+    // has no boss, so its records alone open world 3 (worlds behind a boss: unlock.test.ts)
     persist((s) => {
-      s.unlocked = 9;
-      s.levels = { 'w1-10': { stars: 3, bestTime: 20 } };
+      s.unlocked = 19;
+      s.levels = { 'w2-10': { stars: 3, bestTime: 20 } };
     });
-    expect(isUnlocked(9, ids)).toBe(true);
-    expect(isUnlocked(10, ids)).toBe(true);
-    expect(isUnlocked(11, ids)).toBe(false);
+    expect(isUnlocked(19, ids)).toBe(true);
+    expect(isUnlocked(20, ids)).toBe(true);
+    expect(isUnlocked(21, ids)).toBe(false);
   });
 
   it('opens each level after beating the one before', () => {
-    recordWin(ids[10], 10, 2, 30, ids.length);
-    expect(isUnlocked(11, ids)).toBe(true);
-    expect(isUnlocked(12, ids)).toBe(false);
+    recordWin(ids[20], 20, 2, 30, ids.length);
+    expect(isUnlocked(21, ids)).toBe(true);
+    expect(isUnlocked(22, ids)).toBe(false);
   });
 });

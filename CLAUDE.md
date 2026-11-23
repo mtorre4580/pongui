@@ -87,6 +87,7 @@ src/
     level.ts           # level JSON → ParsedLevel
     physics.ts         # World: step(dt, input) → events
     solver.ts          # best-first search between bounces (level validation, demos)
+    boss.ts            # BossFight: a boss on top of a World (stomp it, never touch its sides)
     custom.ts          # player levels: draft checks, auto par, link codes (encode/decode)
   custom/              # player levels in the browser: store.ts (`pongui:custom`), bot.ts +
                        # bot.worker.ts (solver in a Web Worker), dialogs.ts (HTML dialogs), run.ts
@@ -100,6 +101,8 @@ src/
   save.ts              # progress in localStorage (`pongui:save`)
   skins.ts             # balls to choose from, opened with stars (look only)
   daily.ts             # level of the day (picked by the date) and the streak of days
+  bosses/              # the boss of each world: its numbers and its arena
+  audio/music.ts       # boss music, synthesized (no audio files)
   pwa.ts               # install prompt, iOS detection, fullscreen
   analytics.ts         # anonymous usage statistics (Umami), off without VITE_UMAMI_ID
 tests/                 # Vitest: physics, levels, i18n
@@ -245,6 +248,30 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
   under a low ceiling.
 - Switches flip on every bounce: a switch you must cross mid-route should sit between solid
   tiles so people can stop on them, and the lamp shows which color is solid.
+
+## Bosses
+
+- A world can end with a boss (`BOSS_WORLDS` in `levels/worlds.ts`): a special fight, apart from
+  the ten levels, that opens once they are all beaten. **The next world opens when the boss is
+  beaten**, not when level 10 is (`bossGate`, `isUnlocked` and `recordWin` in `save.ts`).
+  Whoever had a world open before its boss existed keeps it (`unlocked` in the save). Worlds
+  without a boss open the next one the old way.
+- Bosses are made by hand and are not levels: they are not in `src/levels`, the solver never
+  plays them, there is no "watch the bot", no stars, no sharing, and they are not in the editor.
+  What keeps one winnable is `tests/boss.test.ts`, which plays it with a simple scripted
+  player: keep that test passing when changing a boss.
+- `BossFight` (`game/boss.ts`, pure) steps the `World` and then the boss. Landing on its head
+  from above is a hit and a high bounce; touching it anywhere else kills. After a hit it is
+  dazed (harmless, cannot be hurt) for `stun` seconds *and* until the ball has bounced on the
+  ground again, so hits cannot be chained from head to head. Each hit starts the next phase
+  (faster, and hopping in the last). Hits survive the lives of one attempt (`bossHp`).
+- A boss must be taller than a low bounce climbs (51 px), or standing still would beat it.
+- `bosses/index.ts` holds each boss: its numbers and its arena, a level map whose exit cell is
+  turned into rock (the fight ends when the boss does). `Game` runs it with `boss: <world>`;
+  `gfx/bossView.ts` draws the body and the hit bar; `audio/music.ts` plays its music, which
+  speeds up with each phase and follows the sound setting.
+- To add one: its `BossDef` and arena in `bosses/index.ts`, its world in `BOSS_WORLDS`, a
+  `boss.N` name in the three languages, and a winning script in `tests/boss.test.ts`.
 
 ## Player levels (editor and sharing)
 
@@ -492,6 +519,8 @@ characters must stay unique across the game.
 - [x] World 10 — Rainbow Summit: rainbow bridges and a remix of every mechanic
 - [x] Native apps — Capacitor iOS and Android projects (iOS verified in the simulator)
 - [x] Level editor (computers) and sharing by link, WhatsApp and QR code, with "My levels"
+- [x] Balls opened with stars, level of the day, "watch the bot"
+- [ ] Bosses — world 1 has one (pilot); worlds 2 to 10 to come
 - [ ] Publishing player levels to a shared catalog (accounts, database, moderation)
 - [ ] Store release (developer accounts, signing, store listings, privacy policy)
 - [x] Public launch — pongui.com on Cloudflare Pages, Search Console, Instagram, YouTube, itch.io

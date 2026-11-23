@@ -184,3 +184,43 @@ test('the level of the day starts from the menu and its pause panel leads back t
   await expectScene(page, 'Menu');
   expect(errors).toEqual([]);
 });
+
+test('the boss of world 1 opens after its ten levels and guards world 2', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, 'keyboard flow');
+  test.setTimeout(90_000);
+  const errors = trackErrors(page);
+  // The ten levels of world 1 beaten, the boss not yet
+  await page.addInitScript(() => {
+    const levels = Object.fromEntries(
+      Array.from({ length: 10 }, (_, i) => [
+        `w1-${String(i + 1).padStart(2, '0')}`,
+        { stars: 1, bestTime: 9 },
+      ]),
+    );
+    localStorage.setItem('pongui:save', JSON.stringify({ unlocked: 9, levels, sound: false }));
+  });
+  await page.goto('./play/');
+  await expectScene(page, 'Menu');
+  for (const key of ['Enter', 'Enter']) {
+    await page.keyboard.press(key);
+    await page.waitForTimeout(150);
+  }
+  await expectScene(page, 'LevelSelect');
+  // From the first card: down a row, down to "back", right to the boss
+  for (const key of ['Enter', 'ArrowDown', 'ArrowDown', 'ArrowRight', 'Enter']) {
+    await page.keyboard.press(key);
+    await page.waitForTimeout(150);
+  }
+  await expectScene(page, 'Game');
+  // Walking off the ledge and into the boss, three times: out of lives
+  await page.keyboard.down('ArrowRight');
+  await expect(page.locator('body')).toHaveAttribute('data-scene', 'Overlay', { timeout: 60_000 });
+  await page.keyboard.up('ArrowRight');
+  const save = await page.evaluate(() => JSON.parse(localStorage.getItem('pongui:save')!));
+  expect(save.bosses).toBeUndefined();
+  expect(save.unlocked).toBe(9);
+  expect(errors).toEqual([]);
+});
