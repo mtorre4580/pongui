@@ -199,4 +199,15 @@ export const sfx = {
   },
   /** A boss landing after a hop. */
   bossLand: () => noise(0.12, 0.35, 160, 0.8),
+  /** A boss's own effect, by name (a warning, a shot, a grab…); unknown names are silent. */
+  bossFx: (name: string) => BOSS_FX[name]?.(),
+};
+
+/** The sounds of the bosses' attacks: `warn-<kind>`, `shot-<kind>`, `end-<kind>` and others. */
+const BOSS_FX: Record<string, (() => void) | undefined> = {
+  grab: () => {
+    tone(300, 120, 0.25, 'sawtooth', 0.14);
+    noise(0.15, 0.2, 500, 2);
+  },
+  release: () => tone(240, 720, 0.14, 'triangle', 0.16),
 };
