@@ -117,6 +117,13 @@ export const sfx = {
     [660, 880, 1175].forEach((f, i) => tone(f, f, 0.14, 'triangle', 0.15, 0.06 + i * 0.06));
   },
   wind: () => noise(0.4, 0.16, 650, 0.6),
+  /** A springy pinball "boing". */
+  bump: () => {
+    tone(700, 260, 0.16, 'square', 0.08);
+    tone(1400, 520, 0.12, 'sine', 0.12);
+  },
+  /** Floating into low gravity: a soft rising hum. */
+  zone: () => tone(220, 440, 0.35, 'sine', 0.08),
   /** Rock giving way. */
   crumble: () => {
     noise(0.35, 0.3, 300, 0.8, 0, 'lowpass');

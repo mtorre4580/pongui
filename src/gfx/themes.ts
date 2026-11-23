@@ -11,7 +11,7 @@ export interface Theme {
   /** Small marks drawn on solid blocks (pebbles, crystals…). */
   speck: number;
   /** What the marks look like: round pebbles by default. */
-  pattern?: 'crystals' | 'rivets' | 'coral' | 'snow' | 'embers';
+  pattern?: 'crystals' | 'rivets' | 'coral' | 'snow' | 'embers' | 'panels';
 }
 
 export const THEMES: Record<number, Theme> = {
@@ -89,6 +89,17 @@ export const THEMES: Record<number, Theme> = {
     solidDark: 0x261e1f,
     speck: 0xff8c1a,
     pattern: 'embers',
+  },
+  // 8 · Star Station: steel panels floating in deep space
+  8: {
+    bgTop: 0x161a3d,
+    bgBottom: 0x03040c,
+    bubbles: [0x9d4edd, 0x4cc9f0, 0xffffff],
+    solidTop: 0xc5ccd8,
+    solid: 0x5b6478,
+    solidDark: 0x363c4c,
+    speck: 0x2a2f3c,
+    pattern: 'panels',
   },
 };
 

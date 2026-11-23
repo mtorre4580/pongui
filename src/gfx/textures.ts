@@ -75,6 +75,11 @@ export const C = {
   ventGrate: 0x1c1b22,
   lava: 0xff6d00,
   lavaLight: 0xffd166,
+  zone: 0x9d4edd,
+  zoneLight: 0xe0aaff,
+  bumper: 0xff006e,
+  bumperLight: 0xff8fc0,
+  bumperDark: 0xa1004a,
   water: 0x3fa7d6,
   waterLight: 0xb8f2ff,
   hammerHandle: 0x9c6644,
@@ -392,6 +397,18 @@ export function createTextures(scene: Phaser.Scene) {
     });
   }
 
+  // --- Star Station: bumpers (zones are a baked layer, see scenes/Game.ts) ---
+  make(scene, 'bumper', S, S, (g) => {
+    // A round pinball bumper on a steel base: rings and a star
+    g.fillStyle(0x353b48, 1).fillRoundedRect(0, 0, S, S, 10);
+    g.fillStyle(C.bumperDark, 1).fillCircle(32, 32, 30);
+    g.fillStyle(C.bumper, 1).fillCircle(32, 31, 27);
+    g.fillStyle(C.bumperLight, 1).fillCircle(32, 31, 18);
+    g.fillStyle(C.bumper, 1).fillCircle(32, 31, 13);
+    g.fillStyle(C.white, 1);
+    star(g, 32, 32, 10, 4.5);
+  });
+
   // --- Ball ---
   const BR = BALL_R * TEX + 2;
   make(scene, 'ball', BR * 2, BR * 2, (g) => {
@@ -546,6 +563,12 @@ function drawSolids(
           y + (25 - (seed % 2) * 4) * k,
           1.2 * k,
         );
+      } else if (theme.pattern === 'panels' && !isAsh) {
+        // Metal panels: a seam and two screws
+        g.fillStyle(theme.speck, 0.5);
+        g.fillRect(x, y + 20 * k, T2, 1 * k);
+        g.fillCircle(x + 6 * k, y + 14 * k, 1.3 * k);
+        g.fillCircle(x + 26 * k, y + 26 * k, 1.3 * k);
       } else if (theme.pattern === 'embers' && !isAsh) {
         // Glowing cracks in dark basalt
         g.lineStyle(1.2 * k, theme.speck, 0.7);
