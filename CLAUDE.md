@@ -134,6 +134,10 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
   sideways before falling, so platforms reached from a column must touch it and sit at least a
   tile below its top. Plan steps also end when the ball enters or leaves an updraft
   (`endsStep` in `solver.ts`), so replays must split steps the same way.
+- A gem on a falling path must sit on the line people actually take: sweep simple inputs (hold
+  the direction from different moments, for different times) and count how often they get the
+  gem *and* survive. The bot finds odd lines (3-7 first had a pit gem no sweep could combine
+  with reaching the updraft).
 
 ## Landing page
 
