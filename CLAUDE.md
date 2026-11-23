@@ -46,6 +46,7 @@ pnpm test:run           # Vitest once (CI)
 pnpm lint
 pnpm typecheck          # tsc --noEmit
 pnpm validate:levels    # parse every level, check its texts, prove it is solvable
+pnpm check:fairness     # find spots people cannot do reliably (see Levels)
 pnpm check:bundle       # gzip budget per chunk (after pnpm build)
 pnpm test:e2e           # Playwright + axe on desktop and phone (after pnpm build)
 pnpm lhci               # Lighthouse CI on the built game
@@ -248,14 +249,53 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
 **A level**: create `src/levels/w<world>-<nn>.json` (see Levels), run `pnpm validate:levels`,
 play it, and update the README level count if it changes.
 
-**A world**: ten levels `w<N>-01…10`, `WORLD_COUNT` in `src/levels/worlds.ts`, `world.N` in the
-three message files, its colors in `gfx/themes.ts`, and the README, landing and Status counts.
+**A world** (follow the World plan below; one branch and one PR per world, `feat/world-N`):
+
+1. Mechanics first, as pure logic: tile codes and map characters in `tiles.ts` (items in
+   `level.ts`), behavior in `physics.ts`, unit tests in `tests/physics.test.ts`. Any new state
+   that changes what can happen next goes into the solver's `key()` in `solver.ts`; time-based
+   mechanics must include their phase in it. If a mechanic needs a decision mid-air, emit an
+   event and add it to `endsStep`.
+2. Look: textures in `gfx/textures.ts` (Canvas rules in Design), rendering and events in
+   `scenes/Game.ts`, a sound in `audio/sfx.ts`, the world's colors in `gfx/themes.ts`. Special
+   tiles keep fixed colors; only background and solid blocks change per world.
+3. Ten levels `w<N>-01…10` in en/es/pt-BR (Rioplatense Spanish, Brazilian Portuguese), `world.N`
+   in the three message files, `WORLD_COUNT` in `src/levels/worlds.ts`. Levels 1–2 introduce
+   one mechanic each in their hint; 3–9 combine them with earlier ones; 10 is the world's finale.
+   Keep names short (the HUD shows "N-10 · Name").
+4. `pnpm validate:levels`, then set each par to round(2.5 × bot time + 5).
+5. Fairness: `pnpm check:fairness tolerance wN` must show no `FIX`; then check every key jump
+   with `jump`, every updraft exit with `hover`, and every item on a falling path with `sweep`
+   (or a small custom simulation). Redesign until a person can do each step reliably.
+6. `pnpm lint`, `pnpm typecheck`, `pnpm test:run`, `pnpm build`, `pnpm check:bundle`, and when
+   the environment has browsers `pnpm test:e2e` and `pnpm lhci` (CI runs them on every PR).
+7. Docs: map legend in `CONTRIBUTING.md`, README level count, Status here, and any new design
+   lesson in Levels. Run the `check-deprecations` skill. Commit in logical steps (mechanics,
+   solver, look, levels, docs) and open the PR with the template.
 
 **A tile or item**: add its code in `tiles.ts` (and map character), its behavior in
 `physics.ts` with unit tests, its texture in `gfx/textures.ts`, its rendering in `scenes/Game.ts`,
 its legend entry in `CONTRIBUTING.md`, and a level that introduces it.
 
 **A text**: add the key to `en.ts`, `es.ts` and `pt-BR.ts`, then use `t('key')`.
+
+## World plan
+
+Ten worlds of ten levels (100 levels). Each brings its own colors and two mechanics; map
+characters must stay unique across the game.
+
+| # | World | Mechanics |
+|---|---|---|
+| 1 | Bouncy Valley | fragile, ramps, springs, fire and drop, wall and hammer, spikes |
+| 2 | Crystal Caves | key `k` + lock blocks `L`, moss `m` (always a low bounce) |
+| 3 | Cloud Peaks | one-way clouds `-`, updrafts `\|` |
+| 4 | Gear Works (bronze factory) | switch `o` flips blocks `A` (solid while on) and `B` (solid while off) when bounced on or bonked; a block turning solid over the ball waits until the ball leaves. Pushers `(` `)`: a low bounce that launches sideways at a fixed speed |
+| 5 | Coral Lagoon (underwater) | portals `1` `2` `3`: each digit appears twice, entering one exits the other keeping the velocity (with a cooldown until the ball leaves it). Water `~`: lower gravity and a slower fall inside |
+| 6 | Frost Peaks (ice) | ice `i`: the bounce keeps the horizontal speed and you cannot steer until the next bounce. Thin ice `j`: breaks under a high bounce, holds low ones |
+| 7 | Ember Core (volcano) | crumbling block `c`: starts crumbling on first touch, gone 0.6 s later. Vent `!`: 1.5 s lit (deadly) / 1.5 s off (solid) on a fixed, visible rhythm |
+| 8 | Star Station (space) | low gravity zone `z` (45% gravity). Bumper `b`: a side hit throws the ball away at a fixed speed; from above it is a normal bounce |
+| 9 | Shadow Keep (dark castle) | dark levels (`"dark": true`): only a circle of light around the ball, gems always glow. Phase blocks `%` / `&`: solid and ghost by turns every 1.2 s, always opposite |
+| 10 | Rainbow Summit (finale) | rainbow bridge `=`: off until every gem is taken, then solid. The rest remixes every mechanic at the highest difficulty |
 
 ## Git
 
