@@ -1,0 +1,29 @@
+{
+  "id": "w9-09",
+  "name": {
+    "en": "Dark steps",
+    "es": "Escalones oscuros",
+    "pt-BR": "Degraus escuros"
+  },
+  "hint": {
+    "en": "In the dark, the violet and cyan steps still take turns.",
+    "es": "En la oscuridad, los escalones violetas y celestes también se turnan.",
+    "pt-BR": "No escuro, os degraus roxos e azuis também se revezam."
+  },
+  "dark": true,
+  "par": 17,
+  "map": [
+    "####################",
+    "#...g..............#",
+    "#..E...............#",
+    "#.####.............#",
+    "#......&&&.........#",
+    "#..................#",
+    "#..........##......#",
+    "#..................#",
+    "#............%%%...#",
+    "#...............g..#",
+    "#................P.#",
+    "#**************#####"
+  ]
+}

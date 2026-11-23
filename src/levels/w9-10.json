@@ -1,0 +1,29 @@
+{
+  "id": "w9-10",
+  "name": {
+    "en": "Shadow Keep",
+    "es": "Fortaleza Sombría",
+    "pt-BR": "Fortaleza Sombria"
+  },
+  "hint": {
+    "en": "Darkness, phase blocks, a spring and a key: escape the keep!",
+    "es": "Oscuridad, bloques de fase, un resorte y una llave: ¡escapá de la fortaleza!",
+    "pt-BR": "Escuridão, blocos de fase, uma mola e uma chave: fuja da fortaleza!"
+  },
+  "dark": true,
+  "par": 22,
+  "map": [
+    "####################",
+    "#.E.L.......k......#",
+    "#...L..............#",
+    "###########%%%.....#",
+    "#######............#",
+    "#######............#",
+    "#.......&&&........#",
+    "#..................#",
+    "#..g...........s...#",
+    "#..............#...#",
+    "#.P................#",
+    "######***###########"
+  ]
+}

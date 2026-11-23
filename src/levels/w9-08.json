@@ -1,0 +1,28 @@
+{
+  "id": "w9-08",
+  "name": {
+    "en": "Phase gates",
+    "es": "Compuertas de fase",
+    "pt-BR": "Comportas de fase"
+  },
+  "hint": {
+    "en": "The gates open in turns: wait between them for the next one.",
+    "es": "Las compuertas se abren por turnos: esperá entre una y otra.",
+    "pt-BR": "As comportas abrem por turnos: espere entre uma e outra."
+  },
+  "par": 18,
+  "map": [
+    "####################",
+    "####################",
+    "####################",
+    "####################",
+    "####################",
+    "####################",
+    "#....%...&...%.....#",
+    "#....%...&...%.....#",
+    "#.P..%.g.&.g.%.....#",
+    "#....%...&...%...E.#",
+    "#....%...&...%.....#",
+    "####################"
+  ]
+}
