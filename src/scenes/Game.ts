@@ -26,9 +26,10 @@ import { localized, t } from '../i18n';
 import { controls } from '../input/controls';
 import { haptic } from '../native';
 import { levelLabel, LEVELS, worldOf } from '../levels';
-import { loadSave, recordWin } from '../save';
+import { isUnlocked, loadSave, recordWin } from '../save';
 import { currentSkin, shade } from '../skins';
 import { planFor } from '../custom/bot';
+import { recordDailyWin } from '../daily';
 import { parseCustom, type CustomRun } from '../custom/run';
 import { bestTime, getLevel, isVerified, recordCustomWin } from '../custom/store';
 
@@ -41,11 +42,15 @@ export interface GameData {
   custom?: CustomRun;
   /** "Watch the bot": the solver plays the level; nothing is recorded. */
   bot?: boolean;
+  /** Played as the level of the day (see daily.ts). */
+  daily?: boolean;
 }
 
 // The level starts at the top of the world: the HUD sits over its first row, which is always a
 // solid wall (parseLevel enforces it), so it costs no screen space
 const OY = 0;
+
+const LEVEL_IDS = LEVELS.map((l) => l.id);
 
 // The whole level must stay visible: there are no on-screen buttons to leave room for (touch
 // play uses gestures over the level), so it takes all the free space, centered
@@ -93,6 +98,7 @@ export class Game extends Phaser.Scene {
   /** Main color of the chosen ball: its trail and bursts match it. */
   private ballColor: number = C.ball;
   private bot = false;
+  private daily = false;
   /** The bot's solution being played back (null while it is still searching). */
   private botPlayer: PlanPlayer | null = null;
 
@@ -150,6 +156,7 @@ export class Game extends Phaser.Scene {
     this.lives = data.lives ?? START_LIVES;
     this.deaths = data.deaths ?? 0;
     this.bot = !!data.bot;
+    this.daily = !!data.daily && !data.custom;
     this.botPlayer = null;
     // The bot solves the level as it is at the start, with every item in place
     this.takenLives = new Set(this.bot ? [] : (data.takenLives ?? []));
@@ -582,7 +589,7 @@ export class Game extends Phaser.Scene {
     void plan.then((decisions) => {
       if (!open) return;
       if (decisions) this.botPlayer = new PlanPlayer(decisions, STEP);
-      else this.scene.restart({ index: this.index, custom: this.custom });
+      else this.scene.restart({ index: this.index, custom: this.custom, daily: this.daily });
     });
   }
 
@@ -601,7 +608,9 @@ export class Game extends Phaser.Scene {
       hasHint ? -20 : 0,
       this.custom
         ? localized(this.level.name)
-        : t('game.level', { n: levelLabel(this.index), name: localized(this.level.name) }),
+        : this.daily
+          ? t('game.daily', { name: localized(this.level.name) })
+          : t('game.level', { n: levelLabel(this.index), name: localized(this.level.name) }),
       22,
       '#ffffff',
       { fontStyle: '700' },
@@ -1001,6 +1010,7 @@ export class Game extends Phaser.Scene {
         this.scene.restart({
           index: this.index,
           custom: this.custom,
+          daily: this.daily,
           lives: this.lives,
           deaths: this.deaths,
           takenLives: [...this.takenLives],
@@ -1008,7 +1018,12 @@ export class Game extends Phaser.Scene {
       } else {
         controls.enableGestures(false);
         this.scene.pause();
-        this.scene.launch('Overlay', { mode: 'gameover', index: this.index, custom: this.custom });
+        this.scene.launch('Overlay', {
+          mode: 'gameover',
+          index: this.index,
+          custom: this.custom,
+          daily: this.daily,
+        });
       }
     });
   }
@@ -1017,7 +1032,12 @@ export class Game extends Phaser.Scene {
   private endBotRun() {
     controls.enableGestures(false);
     this.scene.pause();
-    this.scene.launch('Overlay', { mode: 'watched', index: this.index, custom: this.custom });
+    this.scene.launch('Overlay', {
+      mode: 'watched',
+      index: this.index,
+      custom: this.custom,
+      daily: this.daily,
+    });
   }
 
   private onWin() {
@@ -1047,6 +1067,7 @@ export class Game extends Phaser.Scene {
     const stars = 1 + (this.deaths === 0 ? 1 : 0) + (time <= this.level.par ? 1 : 0);
     let prevBest: number | undefined;
     let verified = false;
+    let streak: number | undefined;
     if (this.custom) {
       const own = getLevel(this.custom.id);
       prevBest = (own && bestTime(own)) ?? undefined;
@@ -1056,8 +1077,12 @@ export class Game extends Phaser.Scene {
       verified = !wasVerified && !!now && isVerified(now);
     } else {
       prevBest = loadSave().levels[this.level.id]?.bestTime;
-      recordWin(this.level.id, this.index, stars, time, LEVELS.length);
-      track('level_complete', { level: this.level.id, stars });
+      // The level of the day may be one the player has not reached: it counts for the streak,
+      // but it does not open the levels after it
+      if (!this.daily || isUnlocked(this.index, LEVEL_IDS))
+        recordWin(this.level.id, this.index, stars, time, LEVELS.length);
+      if (this.daily) streak = recordDailyWin();
+      track('level_complete', { level: this.level.id, stars, ...(this.daily && { daily: true }) });
     }
     this.time.delayedCall(750, () => {
       this.ball.setVisible(false);
@@ -1067,7 +1092,9 @@ export class Game extends Phaser.Scene {
         mode: 'complete',
         index: this.index,
         custom: this.custom,
+        daily: this.daily,
         verified,
+        streak,
         stars,
         time,
         par: this.level.par,
@@ -1081,13 +1108,19 @@ export class Game extends Phaser.Scene {
     if (this.ended || !this.scene.isActive()) return;
     controls.enableGestures(false);
     this.scene.pause();
-    this.scene.launch('Overlay', { mode: 'pause', index: this.index, custom: this.custom });
+    this.scene.launch('Overlay', {
+      mode: 'pause',
+      index: this.index,
+      custom: this.custom,
+      daily: this.daily,
+    });
   }
 
   private restartLevel() {
     this.scene.restart({
       index: this.index,
       custom: this.custom,
+      daily: this.daily,
       lives: this.lives,
       deaths: this.deaths,
       takenLives: [...this.takenLives],

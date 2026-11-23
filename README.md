@@ -89,6 +89,7 @@ come from `assets/` (`pnpm icons` then `pnpm native:assets`).
   every gem, and remixes everything for the finale.
 - **Solvable by construction**: an automatic solver plays every level with the real physics in CI,
   so no level ships without a proven solution.
+- **A level of the day**, the same for everyone, with a streak of consecutive days.
 - **Ten balls to choose from**, opened with the stars you earn: a reason to go back for the ones
   you missed. They change the look, not the game.
 - **Level editor** (on a computer): paint levels with every tile of the ten worlds, test them, and

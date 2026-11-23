@@ -99,6 +99,7 @@ src/
   levels/              # w<world>-<nn>.json (numeric order), index.ts (LEVELS, WORLDS), worlds.ts
   save.ts              # progress in localStorage (`pongui:save`)
   skins.ts             # balls to choose from, opened with stars (look only)
+  daily.ts             # level of the day (picked by the date) and the streak of days
   pwa.ts               # install prompt, iOS detection, fullscreen
   analytics.ts         # anonymous usage statistics (Umami), off without VITE_UMAMI_ID
 tests/                 # Vitest: physics, levels, i18n
@@ -175,6 +176,11 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
   last one needs all of them; a test checks it). They change the look only: `ballTexture` draws
   each one on demand, and the trail and bursts take its color. Never tie a gameplay effect to a
   ball. The choice lives in the save (`skin`) and falls back to the default when not open.
+- Level of the day (`daily.ts`): the player's calendar date picks one of the game's levels
+  (never the first two), shuffled so none repeats within a cycle; no server. It is played with
+  `daily: true`: a win counts for the streak (`daily` in the save) but only records the level,
+  and so opens the next one, if the player had already reached it. The menu is a two-column
+  button grid with Play and the level of the day on the first row.
 - Progress: a level is open when the previous one has a record, so a new world opens for players
   who already finished the last one. The level select shows one world per page (◀ ▶, or
   left/right at the edge of a row) and `?level=` accepts `12` or `2-3`.
