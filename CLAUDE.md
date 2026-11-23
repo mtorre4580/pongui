@@ -268,6 +268,12 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
   and the generated `robots.txt` and `sitemap.xml` (`siteFiles` in `vite.config.ts`).
 - The service worker is registered from `src/pwa.ts` with a URL resolved from the bundle, so both
   pages register `/sw.js` with the root scope. Landing media is excluded from the precache.
+- Updates wait: a new worker takes over the next time the game is opened (no `skipWaiting`, so a
+  running game never loses its lazy chunks). Cloudflare takes some seconds to serve every file
+  of a release, and a worker installed in that window can precache the previous HTML under the
+  new revision: `healStalePrecache` (`src/pwa.ts`) compares the served page with the network a
+  few seconds after loading and, if they differ with no update pending, drops the precache and
+  reloads once.
 
 ## Analytics and privacy
 
