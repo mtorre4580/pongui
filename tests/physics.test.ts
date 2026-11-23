@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BALL_R, H_HIGH, H_LOW, H_SPRING, STEP, TILE } from '../src/game/constants';
+import { BALL_R, H_HIGH, H_LOW, H_SPRING, PUSH_VX, STEP, TILE } from '../src/game/constants';
 import { parseLevel } from '../src/game/level';
 import { World, type InputState } from '../src/game/physics';
 import { T } from '../src/game/tiles';
@@ -173,5 +173,102 @@ describe('bounce physics', () => {
     expect(w.s.y).toBeLessThan(5 * TILE);
     expect(events[0]).toBe(true);
     expect(events).toContain(false);
+  });
+
+  it('bouncing on a switch flips the A and B blocks', () => {
+    const w = new World(
+      level({ 5: '#.....AAA..BBB.....#', 10: '#.P................#', 11: '##o#################' }),
+    );
+    const flips: boolean[] = [];
+    for (let i = 0; i < 200; i++)
+      for (const e of w.step(STEP, idle)) if (e.type === 'switch') flips.push(e.on);
+    expect(flips[0]).toBe(true);
+    expect(w.s.switchOn).toBe(flips.length % 2 === 1);
+    // Every bounce on the switch flips again
+    expect(flips.length).toBeGreaterThan(1);
+    expect(flips).toEqual(flips.map((_, i) => i % 2 === 0));
+  });
+
+  it('A blocks are open while off and solid while on; B blocks the other way round', () => {
+    const w = new World(level({ 8: '#.AAAA.............#', 10: '#.P................#' }));
+    // Off: the ball bounces high through the A row
+    let top = Infinity;
+    for (let i = 0; i < 300; i++) {
+      w.step(STEP, { ...idle, jump: true });
+      top = Math.min(top, w.s.y);
+    }
+    expect(top).toBeLessThan(8 * TILE);
+    // On: the A row is a ceiling
+    const on = new World(level({ 8: '#.AAAA.............#', 10: '#.P................#' }));
+    on.s.switchOn = true;
+    top = Infinity;
+    for (let i = 0; i < 300; i++) {
+      on.step(STEP, { ...idle, jump: true });
+      top = Math.min(top, on.s.y);
+    }
+    expect(top).toBeGreaterThanOrEqual(9 * TILE + BALL_R);
+    const b = new World(level({ 8: '#.BBBB.............#', 10: '#.P................#' }));
+    top = Infinity;
+    for (let i = 0; i < 300; i++) {
+      b.step(STEP, { ...idle, jump: true });
+      top = Math.min(top, b.s.y);
+    }
+    expect(top).toBeGreaterThanOrEqual(9 * TILE + BALL_R);
+  });
+
+  it('bonking a switch from below flips the blocks', () => {
+    const w = new World(level({ 8: '#.o................#', 10: '#.P................#' }));
+    w.s.x = 2 * TILE + TILE / 2;
+    let flipped = false;
+    for (let i = 0; i < 200 && !flipped; i++)
+      flipped = w.step(STEP, { ...idle, jump: true }).some((e) => e.type === 'switch');
+    expect(flipped).toBe(true);
+    expect(w.s.switchOn).toBe(true);
+  });
+
+  it('a block that turns solid around the ball waits until the ball leaves it', () => {
+    // The ball falls through an open A block onto the switch right under it
+    const w = new World(
+      level({ 9: '#.P................#', 10: '#.A................#', 11: '##o#################' }),
+    );
+    let flipped = false;
+    for (let i = 0; i < 200 && !flipped; i++)
+      flipped = w.step(STEP, idle).some((e) => e.type === 'switch');
+    expect(flipped).toBe(true);
+    expect(w.s.pending).toBe(1);
+    // It rises out of the block instead of being stuck inside it…
+    let top = Infinity;
+    for (let i = 0; i < 40; i++) {
+      w.step(STEP, idle);
+      top = Math.min(top, w.s.y);
+    }
+    expect(top).toBeLessThan(10 * TILE - BALL_R);
+    expect(w.s.pending).toBe(0);
+    // …and then lands on it: the block closed once the ball was out
+    let lowest = 0;
+    for (let i = 0; i < 300; i++) {
+      w.step(STEP, idle);
+      lowest = Math.max(lowest, w.s.y);
+    }
+    expect(lowest).toBeLessThanOrEqual(10 * TILE - BALL_R);
+    expect(w.s.status).toBe('playing');
+  });
+
+  it('a pusher gives a low bounce at a fixed sideways speed, whatever is held', () => {
+    const w = new World(level({ 10: '#.P................#', 11: '##)#################' }));
+    let launched = false;
+    let top = Infinity;
+    for (let i = 0; i < 200; i++) {
+      const ev = w.step(STEP, { left: true, right: false, jump: true, jumpPressed: i === 0 });
+      if (ev.some((e) => e.type === 'bounce' && e.kind === 'push')) launched = true;
+      if (launched) {
+        expect(w.s.vx).toBe(PUSH_VX);
+        top = Math.min(top, w.s.y);
+      }
+      if (launched && w.s.vy > 0) break;
+    }
+    expect(launched).toBe(true);
+    const h = 11 * TILE - BALL_R - top;
+    expect(h).toBeLessThan(H_LOW + 3);
   });
 });

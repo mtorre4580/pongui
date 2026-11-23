@@ -11,6 +11,7 @@ import {
   JUMP_BUFFER,
   MAX_FALL,
   MAX_VX,
+  PUSH_VX,
   RAMP_VX,
   ROWS,
   TILE,
@@ -21,7 +22,7 @@ import {
   V_SPRING,
 } from './constants';
 import type { ItemKind, ParsedLevel } from './level';
-import { fragileMax, T } from './tiles';
+import { fragileMax, isToggle, T } from './tiles';
 
 export interface InputState {
   left: boolean;
@@ -30,7 +31,7 @@ export interface InputState {
   jumpPressed: boolean; // edge: pressed during this step
 }
 
-export type BounceKind = 'low' | 'high' | 'spring' | 'ramp';
+export type BounceKind = 'low' | 'high' | 'spring' | 'ramp' | 'push';
 export type DeathCause = 'fall' | 'spike' | 'fire';
 
 export type WorldEvent =
@@ -43,6 +44,7 @@ export type WorldEvent =
   | { type: 'collect'; item: number; kind: ItemKind }
   | { type: 'exitOpen' }
   | { type: 'wind'; inside: boolean }
+  | { type: 'switch'; on: boolean }
   | { type: 'die'; cause: DeathCause }
   | { type: 'win' };
 
@@ -75,6 +77,10 @@ export interface WorldState {
   surfaceY: number;
   /** The ball's center is inside an updraft. */
   wind: boolean;
+  /** Switches flipped an odd number of times: A blocks are solid, B blocks open. */
+  switchOn: boolean;
+  /** Toggle blocks held open until the ball leaves them (their `hits` is 1). */
+  pending: number;
 }
 
 interface Cell {
@@ -121,6 +127,8 @@ export class World {
       grace: 0,
       surfaceY: 0,
       wind: false,
+      switchOn: false,
+      pending: 0,
     };
   }
 
@@ -134,7 +142,22 @@ export class World {
     return this.s.tiles[r * COLS + c];
   }
 
-  private overlaps(): Cell[] {
+  /** Whether the ball passes through tile `t` at `idx` right now (air, wind, open blocks). */
+  isOpen(t: number, idx: number): boolean {
+    if (t === T.EMPTY || t === T.UPDRAFT) return true;
+    if (isToggle(t)) return idx < 0 || this.s.hits[idx] > 0 || !this.toggleSolid(t);
+    return false;
+  }
+
+  /** Whether a toggle block is solid by the current state (ignoring the ball inside it). */
+  private toggleSolid(t: number): boolean {
+    if (t === T.BLOCK_A) return this.s.switchOn;
+    if (t === T.BLOCK_B) return !this.s.switchOn;
+    return true;
+  }
+
+  /** Every map cell the ball's box covers. */
+  private box(): Cell[] {
     const { x, y } = this.s;
     const c0 = Math.floor((x - BALL_R) / TILE);
     const c1 = Math.ceil((x + BALL_R) / TILE) - 1;
@@ -143,13 +166,56 @@ export class World {
     const out: Cell[] = [];
     for (let r = r0; r <= r1; r++) {
       for (let c = c0; c <= c1; c++) {
-        const t = this.tileAt(c, r);
-        if (t === T.EMPTY || t === T.UPDRAFT) continue;
         const inside = c >= 0 && c < COLS && r >= 0 && r < ROWS;
-        out.push({ c, r, idx: inside ? r * COLS + c : -1, t });
+        out.push({ c, r, idx: inside ? r * COLS + c : -1, t: this.tileAt(c, r) });
       }
     }
     return out;
+  }
+
+  private overlaps(): Cell[] {
+    return this.box().filter((c) => !this.isOpen(c.t, c.idx));
+  }
+
+  /** A toggle block that turns solid around the ball stays open until the ball leaves it. */
+  private holdOpen() {
+    const s = this.s;
+    for (const c of this.box()) {
+      if (c.idx < 0 || !isToggle(c.t) || s.hits[c.idx] > 0 || !this.toggleSolid(c.t)) continue;
+      s.hits[c.idx] = 1;
+      s.pending++;
+    }
+  }
+
+  /** Closes the held-open blocks the ball has left (or that are open by state anyway). */
+  private settle() {
+    const s = this.s;
+    if (s.pending === 0) return;
+    const inBox = new Set(this.box().map((c) => c.idx));
+    for (let idx = 0; idx < s.tiles.length; idx++) {
+      if (s.hits[idx] === 0 || !isToggle(s.tiles[idx])) continue;
+      if (inBox.has(idx) && this.toggleSolid(s.tiles[idx])) continue;
+      s.hits[idx] = 0;
+      s.pending--;
+    }
+  }
+
+  private flipSwitches(ev: WorldEvent[]) {
+    this.s.switchOn = !this.s.switchOn;
+    this.holdOpen();
+    ev.push({ type: 'switch', on: this.s.switchOn });
+  }
+
+  /** The cell under (or over) the ball's center, else the nearest one. */
+  private primary(cells: Cell[]): Cell {
+    const x = this.s.x;
+    const pc = Math.floor(x / TILE);
+    return (
+      cells.find((c) => c.c === pc) ??
+      cells.reduce((a, b) =>
+        Math.abs(a.c * TILE + TILE / 2 - x) <= Math.abs(b.c * TILE + TILE / 2 - x) ? a : b,
+      )
+    );
   }
 
   private die(cause: DeathCause, ev: WorldEvent[]) {
@@ -224,13 +290,7 @@ export class World {
 
   private bounce(cells: Cell[], top: number, input: InputState, ev: WorldEvent[]) {
     const s = this.s;
-    const pc = Math.floor(s.x / TILE);
-    let prim = cells.find((c) => c.c === pc);
-    if (!prim) {
-      prim = cells.reduce((a, b) =>
-        Math.abs(a.c * TILE + TILE / 2 - s.x) <= Math.abs(b.c * TILE + TILE / 2 - s.x) ? a : b,
-      );
-    }
+    let prim = this.primary(cells);
 
     for (const c of cells) {
       const max = fragileMax(c.t);
@@ -248,20 +308,23 @@ export class World {
     const soft = prim.t === T.MOSS;
     const wantHigh = !soft && (input.jump || s.jumpBuffer > 0);
     const isRamp = (c: Cell) => c.t === T.RAMP_L || c.t === T.RAMP_R;
+    const isPusher = (c: Cell) => c.t === T.PUSH_L || c.t === T.PUSH_R;
+    const nearest = (pred: (c: Cell) => boolean) =>
+      pred(prim)
+        ? prim
+        : cells
+            .filter(pred)
+            .sort(
+              (a, b) =>
+                Math.abs(a.c * TILE + TILE / 2 - s.x) - Math.abs(b.c * TILE + TILE / 2 - s.x),
+            )[0];
     // Ramps "catch" the ball as soon as it touches them (even with its edge), so they cannot
     // be skipped by accident, and always launch it the same way from the ramp's center:
-    // a high, predictable jump without pressing anything.
-    const ramp =
-      prim.t === T.SPRING
-        ? undefined
-        : isRamp(prim)
-          ? prim
-          : cells
-              .filter(isRamp)
-              .sort(
-                (a, b) =>
-                  Math.abs(a.c * TILE + TILE / 2 - s.x) - Math.abs(b.c * TILE + TILE / 2 - s.x),
-              )[0];
+    // a high, predictable jump without pressing anything. Pushers catch the same way but give
+    // a low, fast throw.
+    const ramp = prim.t === T.SPRING ? undefined : nearest(isRamp);
+    const pusher = prim.t === T.SPRING || ramp ? undefined : nearest(isPusher);
+    if (prim.t === T.SWITCH) this.flipSwitches(ev);
     let kind: BounceKind;
     if (prim.t === T.SPRING) {
       kind = 'spring';
@@ -275,6 +338,13 @@ export class World {
         s.x = ramp.c * TILE + TILE / 2;
         s.vy = -V_HIGH;
         s.lockVx = ramp.t === T.RAMP_L ? -RAMP_VX : RAMP_VX;
+        s.vx = s.lockVx;
+      } else if (pusher) {
+        kind = 'push';
+        prim = pusher;
+        s.x = pusher.c * TILE + TILE / 2;
+        s.vy = -V_LOW;
+        s.lockVx = pusher.t === T.PUSH_L ? -PUSH_VX : PUSH_VX;
         s.vx = s.lockVx;
       } else {
         kind = wantHigh ? 'high' : 'low';
@@ -382,6 +452,7 @@ export class World {
           s.vy = 0;
           s.grace = 0;
           ev.push({ type: 'bonk', x: s.x, y: s.y - BALL_R });
+          if (this.primary(blocking).t === T.SWITCH) this.flipSwitches(ev);
         }
       }
     }
@@ -390,6 +461,7 @@ export class World {
       this.die('fall', ev);
       return ev;
     }
+    this.settle();
 
     // Items
     for (let i = 0; i < s.items.length; i++) {

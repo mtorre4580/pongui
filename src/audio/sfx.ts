@@ -82,11 +82,15 @@ function noise(
 }
 
 export const sfx = {
-  bounce: (kind: 'low' | 'high' | 'spring' | 'ramp') => {
+  bounce: (kind: 'low' | 'high' | 'spring' | 'ramp' | 'push') => {
     if (kind === 'low') tone(260, 140, 0.09, 'sine', 0.22);
     else if (kind === 'high') tone(320, 520, 0.14, 'triangle', 0.22);
     else if (kind === 'ramp') tone(300, 700, 0.16, 'triangle', 0.2);
-    else {
+    else if (kind === 'push') {
+      // A pneumatic puff and a quick rising whistle
+      noise(0.12, 0.3, 1400, 1.2);
+      tone(420, 980, 0.12, 'square', 0.07);
+    } else {
       tone(200, 900, 0.28, 'square', 0.1);
       tone(400, 1400, 0.22, 'sine', 0.15, 0.02);
     }
@@ -113,6 +117,11 @@ export const sfx = {
     [660, 880, 1175].forEach((f, i) => tone(f, f, 0.14, 'triangle', 0.15, 0.06 + i * 0.06));
   },
   wind: () => noise(0.4, 0.16, 650, 0.6),
+  /** A mechanical clack, higher when the switches turn on. */
+  switch: (on: boolean) => {
+    noise(0.05, 0.3, 2600, 3);
+    tone(on ? 600 : 400, on ? 900 : 300, 0.09, 'square', 0.09, 0.02);
+  },
   extinguish: () => noise(0.5, 0.35, 3500, 0.6, 0, 'highpass'),
   exitOpen: () => {
     [523, 659, 784].forEach((f) => tone(f, f, 0.5, 'sine', 0.12));

@@ -17,6 +17,7 @@ export const ptBR: Messages = {
   'world.1': 'Vale Saltitante',
   'world.2': 'Cavernas de Cristal',
   'world.3': 'Picos Nublados',
+  'world.4': 'Oficina de Engrenagens',
   'game.level': 'Fase {n} · {name}',
   'game.exitOpen': 'Saída aberta!',
   'overlay.paused': 'Pausa',

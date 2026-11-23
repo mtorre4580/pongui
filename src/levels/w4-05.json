@@ -1,0 +1,28 @@
+{
+  "id": "w4-05",
+  "name": {
+    "en": "Both ways",
+    "es": "Ida y vuelta",
+    "pt-BR": "Ida e volta"
+  },
+  "hint": {
+    "en": "Each gem waits behind a different color.",
+    "es": "Cada gema espera detrás de un color distinto.",
+    "pt-BR": "Cada gema espera atrás de uma cor diferente."
+  },
+  "par": 22,
+  "map": [
+    "####################",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#AAAA..........BBBB#",
+    "#...A....E.....B...#",
+    "#.g.A..........B.g.#",
+    "#...A..........B...#",
+    "#...A....P.....B...#",
+    "##########o#########"
+  ]
+}

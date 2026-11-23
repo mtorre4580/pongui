@@ -10,8 +10,8 @@ export interface Theme {
   solidDark: number;
   /** Small marks drawn on solid blocks (pebbles, crystals…). */
   speck: number;
-  /** Crystal shards instead of round pebbles. */
-  crystals?: boolean;
+  /** What the marks look like: round pebbles by default. */
+  pattern?: 'crystals' | 'rivets';
 }
 
 export const THEMES: Record<number, Theme> = {
@@ -34,7 +34,7 @@ export const THEMES: Record<number, Theme> = {
     solid: 0x6f5aa8,
     solidDark: 0x4a3c78,
     speck: 0xe7dcff,
-    crystals: true,
+    pattern: 'crystals',
   },
   // 3 · Cloud Peaks: grassy rock under a blue sky
   3: {
@@ -45,6 +45,17 @@ export const THEMES: Record<number, Theme> = {
     solid: 0x6b705c,
     solidDark: 0x484b3d,
     speck: 0x3f4236,
+  },
+  // 4 · Gear Works: riveted bronze plates in a dim, warm factory
+  4: {
+    bgTop: 0x3d2c25,
+    bgBottom: 0x120c0a,
+    bubbles: [0xe9a23b, 0xd4a373, 0xff6b35],
+    solidTop: 0xf0c27b,
+    solid: 0xa8693a,
+    solidDark: 0x6b3f22,
+    speck: 0x4a2a16,
+    pattern: 'rivets',
   },
 };
 

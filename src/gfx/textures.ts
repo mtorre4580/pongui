@@ -50,6 +50,18 @@ export const C = {
   cloud: 0xffffff,
   cloudShade: 0xc9dcff,
   wind: 0xd7ecff,
+  gearBody: 0x5c677d,
+  gearTop: 0x9aa6bf,
+  gearDark: 0x3a4152,
+  blockA: 0xff9f1c,
+  blockALight: 0xffd08a,
+  blockADark: 0xc46f00,
+  blockB: 0x2ec4b6,
+  blockBLight: 0x9ff0e7,
+  blockBDark: 0x168a80,
+  pusher: 0xe63946,
+  pusherLight: 0xff8fa3,
+  pusherDark: 0x9d1c28,
   hammerHandle: 0x9c6644,
   heart: 0xff4d6d,
   exit: 0x80ed99,
@@ -240,6 +252,64 @@ export function createTextures(scene: Phaser.Scene) {
     }
   });
 
+  // --- Gear Works: switches, A/B blocks, pushers ---
+  // A switch is a steel block with a lamp showing which blocks are solid (amber A or teal B)
+  for (const on of [false, true]) {
+    make(scene, on ? 'switch-on' : 'switch-off', S, S, (g) => {
+      block(g, C.gearBody, C.gearTop, C.gearDark);
+      const lamp = on ? C.blockA : C.blockB;
+      const lampLight = on ? C.blockALight : C.blockBLight;
+      g.fillStyle(C.gearDark, 1).fillRoundedRect(14, 4, 36, 12, 6);
+      g.fillStyle(lamp, 1).fillRoundedRect(17, 2, 30, 10, 5);
+      g.fillStyle(lampLight, 1).fillRoundedRect(21, 3, 12, 3, 1.5);
+      // Two arrows that point at each other: "flip"
+      g.fillStyle(C.ink, 0.55);
+      g.fillTriangle(12, 34, 24, 27, 24, 41);
+      g.fillTriangle(52, 42, 40, 35, 40, 49);
+      g.fillRect(24, 32, 10, 4).fillRect(30, 40, 10, 4);
+    });
+  }
+  // Solid A/B blocks, and the dashed outline they leave while open
+  const toggle = (key: string, body: number, light: number, dark: number, mark: 'A' | 'B') => {
+    make(scene, key, S, S, (g) => {
+      block(g, body, light, dark);
+      g.fillStyle(dark, 0.9);
+      if (mark === 'A') {
+        g.fillTriangle(22, 48, 32, 22, 42, 48);
+        g.fillStyle(body, 1).fillTriangle(28, 48, 32, 36, 36, 48);
+      } else {
+        // B blocks carry a ring, A blocks a triangle: they differ in shape, not only color
+        g.fillCircle(32, 36, 12);
+        g.fillStyle(body, 1).fillCircle(32, 36, 6);
+      }
+    });
+    make(scene, `${key}-open`, S, S, (g) => {
+      g.fillStyle(body, 0.12).fillRoundedRect(4, 4, S - 8, S - 8, 8);
+      g.fillStyle(body, 0.75);
+      for (let i = 8; i < S - 8; i += 12) {
+        g.fillRect(i, 3, 6, 3).fillRect(i, S - 6, 6, 3);
+        g.fillRect(3, i, 3, 6).fillRect(S - 6, i, 3, 6);
+      }
+    });
+  };
+  toggle('blockA', C.blockA, C.blockALight, C.blockADark, 'A');
+  toggle('blockB', C.blockB, C.blockBLight, C.blockBDark, 'B');
+  for (const dir of ['L', 'R'] as const) {
+    make(scene, `push${dir}`, S, S, (g) => {
+      block(g, C.pusher, C.pusherLight, C.pusherDark);
+      // A piston plate on top and a low, flat arrow
+      g.fillStyle(C.gearTop, 1).fillRoundedRect(6, 2, S - 12, 8, 4);
+      g.fillStyle(C.white, 0.9);
+      if (dir === 'R') {
+        g.fillRect(12, 32, 24, 8);
+        g.fillTriangle(34, 24, 52, 36, 34, 48);
+      } else {
+        g.fillRect(28, 32, 24, 8);
+        g.fillTriangle(30, 24, 12, 36, 30, 48);
+      }
+    });
+  }
+
   // --- Ball ---
   const BR = BALL_R * TEX + 2;
   make(scene, 'ball', BR * 2, BR * 2, (g) => {
@@ -383,7 +453,7 @@ function drawSolids(
       }
       // subtle texture: pebbles, or crystal shards in some worlds
       const seed = (c * 7 + r * 13) % 5;
-      if (theme.crystals && !isAsh) {
+      if (theme.pattern === 'crystals' && !isAsh) {
         const cx = x + (9 + seed * 3) * k;
         const cy = y + (20 + (seed % 3) * 2) * k;
         g.fillStyle(theme.speck, 0.55);
@@ -394,6 +464,17 @@ function drawSolids(
           y + (25 - (seed % 2) * 4) * k,
           1.2 * k,
         );
+      } else if (theme.pattern === 'rivets' && !isAsh) {
+        // Bolted metal plates
+        g.fillStyle(theme.speck, 0.6);
+        for (const [px, py] of [
+          [5, 11],
+          [27, 11],
+          [5, 26],
+          [27, 26],
+        ])
+          g.fillCircle(x + px * k, y + py * k, 1.5 * k);
+        g.fillStyle(theme.solidTop, 0.25).fillRect(x + 4 * k, y + 18 * k, 24 * k, 1 * k);
       } else {
         g.fillStyle(isAsh ? dark : theme.speck, 0.35);
         g.fillCircle(x + (8 + seed * 3) * k, y + (18 + (seed % 3) * 3) * k, 1.6 * k);

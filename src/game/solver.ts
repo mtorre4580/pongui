@@ -40,7 +40,7 @@ function hashTiles(s: WorldState): number {
 function key(s: WorldState): string {
   let mask = 0;
   for (let i = 0; i < s.items.length; i++) if (s.items[i].taken) mask |= 1 << i;
-  return `${Math.round(s.x / 2)}|${Math.round(s.y / 2)}|${Math.round(s.vx / 10)}|${Math.round(s.vy / 20)}|${s.lockVx ?? 'n'}|${s.drops}|${s.hammers}|${s.keys}|${mask}|${hashTiles(s)}`;
+  return `${Math.round(s.x / 2)}|${Math.round(s.y / 2)}|${Math.round(s.vx / 10)}|${Math.round(s.vy / 20)}|${s.lockVx ?? 'n'}|${s.drops}|${s.hammers}|${s.keys}|${mask}|${hashTiles(s)}|${s.switchOn ? 1 : 0}`;
 }
 
 /**

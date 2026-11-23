@@ -1,0 +1,28 @@
+{
+  "id": "w4-04",
+  "name": {
+    "en": "Conveyor",
+    "es": "Cinta",
+    "pt-BR": "Esteira"
+  },
+  "hint": {
+    "en": "Pushers can pass you along from one to the next.",
+    "es": "Los empujadores pueden pasarte de uno a otro.",
+    "pt-BR": "Os empurradores podem passar você de um para o outro."
+  },
+  "par": 10,
+  "map": [
+    "####################",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#.....g...g...g....#",
+    "#.P...............E#",
+    "###))**))**))**#####"
+  ]
+}

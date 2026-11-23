@@ -1,0 +1,28 @@
+{
+  "id": "w4-08",
+  "name": {
+    "en": "Wind gate",
+    "es": "Puerta al viento",
+    "pt-BR": "Portão do vento"
+  },
+  "hint": {
+    "en": "Open the gate to the wind, then ride it up.",
+    "es": "Abrí la puerta al viento y dejate llevar hacia arriba.",
+    "pt-BR": "Abra o portão para o vento e deixe-se levar para cima."
+  },
+  "par": 25,
+  "map": [
+    "####################",
+    "#..................#",
+    "#..................#",
+    "#..........||......#",
+    "#.E....g...||..g...#",
+    "###########||#######",
+    "#.........B||#.....#",
+    "#.........B||#.....#",
+    "#.........B||#.....#",
+    "#.........B||#.....#",
+    "#.P...o...B||#.....#",
+    "####################"
+  ]
+}

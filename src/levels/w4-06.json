@@ -1,0 +1,28 @@
+{
+  "id": "w4-06",
+  "name": {
+    "en": "Piston key",
+    "es": "Llave a presión",
+    "pt-BR": "Chave a pressão"
+  },
+  "hint": {
+    "en": "Ride the pushers to the key, then open the way out.",
+    "es": "Subite a los empujadores hasta la llave y abrí la salida.",
+    "pt-BR": "Pegue carona nos empurradores até a chave e abra a saída."
+  },
+  "par": 18,
+  "map": [
+    "####################",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#.....############.#",
+    "#..................#",
+    "#..................#",
+    "#..........g.....k.#",
+    "#...######))..######",
+    "#..............LLLL#",
+    "#.P............L.E.#",
+    "####################"
+  ]
+}

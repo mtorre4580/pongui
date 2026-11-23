@@ -102,6 +102,11 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
   launch it with a fixed high arc (about 5 tiles). They must never be skippable by accident.
 - A water drop puts out every fire tile of one contact (fire becomes solid ash). A hammer breaks
   the whole connected brick wall and the ball keeps going.
+- Switches flip every A/B block when bounced on or bonked from below (the tile under or over
+  the ball's center counts, like hazards). A toggle block that turns solid around the ball stays
+  open until the ball leaves it (its `hits` is 1 meanwhile), so the ball is never trapped.
+- Pushers catch the ball like ramps (any contact, snapped to the pusher's center) but give a
+  low bounce at a fixed 280 px/s sideways: about 4 tiles on flat ground, under a 3-row ceiling.
 - `World.step` returns events (`bounce`, `break`, `collect`, `die`, `win`…); scenes only render
   them. Never put gameplay rules in scenes.
 
@@ -139,6 +144,13 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
   the direction from different moments, for different times) and count how often they get the
   gem *and* survive. The bot finds odd lines (3-7 first had a pit gem no sweep could combine
   with reaching the updraft).
+- Pushers are one-way trips: make them at least 2 tiles wide (like ramps), remember that the
+  landing spot depends on which pusher caught the ball (one tile apart), and put any item before
+  a pusher on its arc or after it (4-10 first had a start gem a quick tap could carry you past
+  with no way back). A single floor tile between pushers is a trap: a bounce off it flies over
+  the next pushers.
+- Switches flip on every bounce: a switch you must cross mid-route should sit between solid
+  tiles so people can stop on them, and the lamp shows which color is solid.
 
 ## Landing page
 
@@ -316,8 +328,9 @@ characters must stay unique across the game.
 - [x] Landing page
 - [x] World 2 — Crystal Caves: keys and lock blocks, moss
 - [x] World 3 — Cloud Peaks: one-way clouds, updrafts
-- [ ] Worlds 4–10 (planned: switches and pushers, portals and water, ice, crumbling blocks and
-      vents, low gravity and bumpers, dark rooms and phase blocks, rainbow bridges)
+- [x] World 4 — Gear Works: switches with A/B blocks, pushers
+- [ ] Worlds 5–10 (planned: portals and water, ice, crumbling blocks and vents, low gravity and
+      bumpers, dark rooms and phase blocks, rainbow bridges)
 - [x] Native apps — Capacitor iOS and Android projects (iOS verified in the simulator)
 - [ ] Store release (developer accounts, signing, store listings, privacy policy)
 - [ ] Public release (license, Pages deploy, CodeQL)
