@@ -26,6 +26,8 @@ for (const file of files) {
       if (!level.name[locale]?.trim()) errors.push(`${file}: missing name in ${locale}`);
       if (level.hint && !level.hint[locale]?.trim())
         errors.push(`${file}: missing hint in ${locale}`);
+      if (level.hintTouch && !level.hintTouch[locale]?.trim())
+        errors.push(`${file}: missing touch hint in ${locale}`);
     }
     const started = performance.now();
     const result = solve(level);

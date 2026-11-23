@@ -31,7 +31,7 @@ export const en = {
   'how.3.title': 'Find the exit',
   'how.3.text': 'Collect every gem to open the exit, and earn up to three stars per level.',
   'how.controls':
-    'Arrows or A D to move, Space to bounce higher. Touch buttons on phones and tablets, and any gamepad.',
+    'Arrows or A D to move, Space to bounce higher. On a touch screen, slide anywhere to move and double tap to bounce higher. Any gamepad works too.',
   'mech.title': 'Every level teaches a new trick',
   'mech.text': 'Each mechanic gets its own level before they all meet in the grand finale.',
   'mech.highBounce.title': 'High bounce',
@@ -52,11 +52,11 @@ export const en = {
   'devices.text':
     'Play on a computer, a tablet or a phone. Install it like an app, with no store: it opens full screen and keeps working without a connection.',
   'devices.desktop': 'Boinky on a computer',
-  'devices.tablet': 'Boinky on a tablet, with touch controls',
-  'devices.phone': 'Boinky on a phone in landscape, with touch controls beside the level',
+  'devices.tablet': 'Boinky on a tablet',
+  'devices.phone': 'Boinky on a phone in landscape, filling the screen',
   'feat.offline': 'Works offline after your first visit',
   'feat.install': 'Installs from the browser, no app store',
-  'feat.controls': 'Keyboard, touch and gamepad',
+  'feat.controls': 'Keyboard, touch gestures and gamepad',
   'feat.languages': 'English, Spanish and Portuguese',
   'feat.privacy': 'No account: your progress stays on your device',
   'install.title': 'Install it in a few taps',

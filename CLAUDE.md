@@ -109,6 +109,8 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
 - JSON in `src/levels/`: `id`, `name` and `hint` as `{ en, es, pt-BR }`, `par` (seconds for the
   time star) and `map` (12 strings of 20 characters). The legend is in `CONTRIBUTING.md`.
 - Every level teaches or tests one idea, introduced in its hint the first time it appears.
+- Row 0 must be plain walls (`#`): the HUD is drawn over it and `parseLevel` rejects anything
+  else. The floor row (11) is free and may hold hazards.
 - `pnpm validate:levels` must pass: the map parses, every text exists in all languages, the solver
   beats it and the par time is above the solver's time (rule of thumb: 2.5× + 5 s).
 - Fairness rules learnt the hard way: ramps at least 2 tiles wide with a low ceiling before them,
@@ -162,17 +164,24 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
   purple spring, blue ramp, brick wall, steel spikes). Font: Fredoka (Latin subset, bundled).
 - Full bleed: the canvas always covers the whole screen (`Phaser.Scale.EXPAND`, 1280×832
   minimum game area). `gfx/layout.ts` zooms the 640×416 world (about 2×) and centers it in the
-  free area: the screen minus safe areas (notch, Dynamic Island) and the touch-control strips,
-  read from the invisible `#layout-probe` element whose padding CSS sets. Backgrounds, the HUD
+  free area: the screen minus the safe areas (notch, Dynamic Island), read from the invisible
+  `#layout-probe` element whose padding CSS sets (no bottom inset: the floor may run under the
+  home indicator). Each scene says which world rectangle must stay visible and centers it; the
+  game fits the whole 20×12 level. The HUD has no band of its own: it is a
+  translucent bar over the level's top wall row. Backgrounds, the HUD
   bar and overlay dimming extend far past the world so the screen never shows empty bars.
   Textures are drawn at 2× and shown at 0.5.
 - **Canvas renderer rules**: no `tint` (use `sparkTexture(color)`), no `fillGradientStyle` (bake
   gradients with a 2D canvas), and bake static layers (background, solid blocks) into textures
   instead of redrawing Graphics every frame.
-- Touch controls are HTML buttons over the canvas. While a level is open, `body.touch-ui` keeps
-  room for them in `#layout-probe` so they never cover the level: side strips on wide screens
-  (phones), a bottom strip on screens narrower than 3:2 (tablets). The room stays during pause
-  so the level does not jump.
+- Touch play has no on-screen buttons: gestures over the whole screen (`input/gestures.ts`, pure
+  and unit tested; wired in `input/controls.ts`). The first finger is an invisible joystick
+  anchored where it lands (14px dead zone; the anchor trails the finger by at most 56px so
+  reversing is instant); a second finger held down is the jump button; a double tap queues one
+  high bounce for the next landing (`controls.disarmJump()` on bounce). `#stick` draws a faint
+  ring and knob under the steering finger. Gestures are only on while a level is played
+  (`controls.enableGestures`); menus use normal taps. Levels can carry a `hintTouch` that
+  replaces the hint when playing by touch (levels 1 and 2 explain the gestures).
 - Portrait on touch screens shows a "rotate your device" notice.
 
 ## Performance
@@ -183,11 +192,10 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
 
 ## Accessibility (mandatory)
 
-- Playable with keyboard, touch and gamepad; menus navigate with arrows/D-pad and confirm with
+- Playable with keyboard, touch gestures and gamepad; menus navigate with arrows/D-pad and confirm with
   Enter/Space/A. Escape pauses and goes back.
 - The HTML shell passes axe (WCAG 2.2 AA) on desktop and phone: `lang` follows the locale, the
-  canvas container has an accessible name, touch buttons have translated `aria-label`s, and zoom
-  is not disabled in the viewport meta.
+  canvas container has an accessible name, and zoom is not disabled in the viewport meta.
 - The visible scene is exposed as `body[data-scene]` for tests.
 
 ## Conventions
@@ -209,8 +217,9 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
 - Pure logic (physics, level parsing, i18n dictionaries, bundle budget): Vitest unit tests.
 - Levels: `pnpm validate:levels` (also in CI) runs the solver on every level.
 - Browser: Playwright against the production build, on desktop Chrome and a landscape phone:
-  boot without errors, keyboard flow menu → level → pause, `?level=N`, touch controls only on
-  phones, locale, installable manifest, offline reload, axe.
+  boot without errors, keyboard flow menu → level → pause, `?level=N`, touch gestures (no
+  buttons, steering indicator), full-screen canvas, locale, installable manifest, offline
+  reload, axe.
 - A PR is not merged with failing checks.
 
 ## How to add…

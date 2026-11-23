@@ -1,15 +1,6 @@
 :root {
   --bg: #0d1024;
   --ink: #ffffff;
-  --btn: rgba(255, 255, 255, 0.14);
-  --btn-on: rgba(255, 209, 102, 0.45);
-  --edge: rgba(255, 255, 255, 0.28);
-  /* touch control sizes and the side strips reserved for them */
-  --b: clamp(54px, 16vmin, 110px);
-  --j: clamp(66px, 20vmin, 140px);
-  --gap: clamp(8px, 2.5vmin, 18px);
-  --lz: calc(env(safe-area-inset-left) + var(--b) * 2 + var(--gap) * 3);
-  --rz: calc(env(safe-area-inset-right) + var(--j) + var(--gap) * 2);
 }
 * {
   box-sizing: border-box;
@@ -35,7 +26,7 @@ body {
 }
 /*
  * The canvas always fills the screen. This invisible element's padding is the space the level
- * must keep clear: safe areas (notch, Dynamic Island) plus the touch-control strips. The game
+ * must keep clear: the safe areas (notch, Dynamic Island). The game
  * reads it to place the level (gfx/layout.ts); the background still reaches every edge.
  */
 #layout-probe {
@@ -43,12 +34,8 @@ body {
   inset: 0;
   visibility: hidden;
   pointer-events: none;
-  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
-    env(safe-area-inset-left);
-}
-body.touch-ui #layout-probe {
-  padding-left: var(--lz);
-  padding-right: var(--rz);
+  /* No bottom inset: the level's floor may run under the home indicator */
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left);
 }
 #game canvas {
   display: block;
@@ -68,64 +55,31 @@ body.touch-ui #layout-probe {
   display: none;
 }
 
-/* Touch controls */
-#touch[hidden] {
-  display: none;
-}
-#touch {
+/* Touch steering indicator (see input/gestures.ts): a faint ring where the steering finger
+   landed and a knob that follows it. It never blocks touches. */
+#stick {
   position: fixed;
-  inset: 0;
+  left: -48px;
+  top: -48px;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.05);
   pointer-events: none;
   z-index: 10;
 }
-.tc-btn {
-  pointer-events: auto;
+#stick[hidden] {
+  display: none;
+}
+#stick-knob {
   position: absolute;
-  width: var(--b);
-  height: calc(var(--b) * 1.25);
-  border-radius: calc(var(--b) * 0.5);
-  border: 2px solid var(--edge);
-  background: var(--btn);
-  display: grid;
-  place-items: center;
-  padding: 0;
-  touch-action: none;
-  transition:
-    transform 60ms,
-    background 60ms;
-}
-.tc-btn.on {
-  background: var(--btn-on);
-  transform: scale(0.93);
-}
-.tc-btn svg {
-  width: 50%;
-  height: 50%;
-  fill: none;
-  stroke: #fff;
-  stroke-width: 3;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-.tc-pad {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-}
-#tc-l {
-  left: calc(env(safe-area-inset-left) + var(--gap));
-  bottom: calc(env(safe-area-inset-bottom) + var(--gap) * 1.5);
-}
-#tc-r {
-  left: calc(env(safe-area-inset-left) + var(--gap) * 2 + var(--b));
-  bottom: calc(env(safe-area-inset-bottom) + var(--gap) * 1.5);
-}
-.tc-jump {
-  right: calc(env(safe-area-inset-right) + var(--gap));
-  bottom: calc(env(safe-area-inset-bottom) + var(--gap) * 2);
-  width: var(--j);
-  height: var(--j);
+  left: 26px;
+  top: 26px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
+  background: rgba(255, 255, 255, 0.28);
 }
 
 /* Orientation notice (touch screens in portrait only) */
@@ -165,26 +119,5 @@ body.touch-ui #layout-probe {
 @media (orientation: portrait) and (pointer: coarse) {
   #rotate {
     display: flex;
-  }
-}
-
-/*
- * Screens narrower than the game (tablets, ~4:3) have spare height, not spare width: there the
- * controls get a strip at the bottom instead of the sides, so the level stays large.
- */
-@media (max-aspect-ratio: 3/2) {
-  :root {
-    --j: calc(var(--b) * 1.25);
-    --bz: calc(env(safe-area-inset-bottom) + var(--b) * 1.25 + var(--gap) * 2);
-  }
-  body.touch-ui #layout-probe {
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
-    padding-bottom: var(--bz);
-  }
-  #tc-l,
-  #tc-r,
-  .tc-jump {
-    bottom: calc(env(safe-area-inset-bottom) + var(--gap));
   }
 }

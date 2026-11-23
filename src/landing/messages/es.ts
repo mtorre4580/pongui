@@ -31,7 +31,7 @@ export const es: LandingMessages = {
   'how.3.title': 'Encontrá la salida',
   'how.3.text': 'Juntá todas las gemas para abrir la salida y ganá hasta tres estrellas por nivel.',
   'how.controls':
-    'Flechas o A D para moverte, Espacio para rebotar más alto. Botones táctiles en celulares y tablets, y cualquier gamepad.',
+    'Flechas o A D para moverte, Espacio para rebotar más alto. En pantallas táctiles, deslizá en cualquier parte para moverte y tocá dos veces para rebotar más alto. También anda con cualquier gamepad.',
   'mech.title': 'Cada nivel te enseña un truco nuevo',
   'mech.text': 'Cada mecánica tiene su propio nivel antes de juntarse todas en el gran final.',
   'mech.highBounce.title': 'Salto alto',
@@ -53,12 +53,11 @@ export const es: LandingMessages = {
   'devices.text':
     'Jugá en la compu, la tablet o el celular. Instalalo como una app, sin tiendas: se abre en pantalla completa y sigue andando sin conexión.',
   'devices.desktop': 'Boinky en una computadora',
-  'devices.tablet': 'Boinky en una tablet, con controles táctiles',
-  'devices.phone':
-    'Boinky en un celular horizontal, con los controles táctiles al costado del nivel',
+  'devices.tablet': 'Boinky en una tablet',
+  'devices.phone': 'Boinky en un celular horizontal, ocupando toda la pantalla',
   'feat.offline': 'Funciona sin conexión después de la primera visita',
   'feat.install': 'Se instala desde el navegador, sin tienda de apps',
-  'feat.controls': 'Teclado, pantalla táctil y gamepad',
+  'feat.controls': 'Teclado, gestos táctiles y gamepad',
   'feat.languages': 'Inglés, español y portugués',
   'feat.privacy': 'Sin cuentas: tu progreso queda en tu dispositivo',
   'install.title': 'Instalalo en un par de toques',

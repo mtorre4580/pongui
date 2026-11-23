@@ -36,16 +36,34 @@ test('a level can be opened from the URL', async ({ page }) => {
   await expectScene(page, 'Game');
 });
 
-test('touch controls appear in a level on phones only', async ({ page, isMobile }) => {
+test('touch play uses gestures, with no on-screen buttons', async ({ page, isMobile }) => {
+  test.skip(!isMobile, 'touch gestures');
   await page.goto('./play/?level=1');
   await expectScene(page, 'Game');
-  const pad = page.locator('#touch');
-  if (isMobile) {
-    await expect(pad).toBeVisible();
-    await expect(page.getByRole('button', { name: 'High bounce' })).toBeVisible();
-  } else {
-    await expect(pad).toBeHidden();
-  }
+  await expect(page.locator('#game button')).toHaveCount(0);
+  const stick = page.locator('#stick');
+  await expect(stick).toBeHidden();
+  // A finger dragged over the level shows the steering indicator until it lifts
+  const touch = (type: string, x: number) =>
+    page.evaluate(
+      ([type, x]) => {
+        const init = {
+          pointerId: 7,
+          pointerType: 'touch',
+          clientX: x,
+          clientY: 200,
+          bubbles: true,
+        };
+        const target = type === 'pointerdown' ? document.getElementById('game')! : window;
+        target.dispatchEvent(new PointerEvent(type, init));
+      },
+      [type, x] as const,
+    );
+  await touch('pointerdown', 300);
+  await touch('pointermove', 360);
+  await expect(stick).toBeVisible();
+  await touch('pointerup', 360);
+  await expect(stick).toBeHidden();
 });
 
 test('the language follows the browser and can be saved', async ({ page }) => {

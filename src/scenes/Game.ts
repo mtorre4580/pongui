@@ -29,7 +29,12 @@ export interface GameData {
   takenLives?: number[];
 }
 
-const OY = HUD_H;
+// The level starts at the top of the world: the HUD sits over its first row, which is always a
+// solid wall (parseLevel enforces it), so it costs no screen space
+const OY = 0;
+
+// The whole level must stay visible: there are no on-screen buttons to leave room for (touch
+// play uses gestures over the level), so it takes all the free space, centered
 const ITEM_TEX = { gem: 'gem', drop: 'drop', hammer: 'hammer', life: 'life' } as const;
 const TILE_TEX: Record<number, string> = {
   [T.FRAGILE]: 'fragile',
@@ -112,11 +117,10 @@ export class Game extends Phaser.Scene {
   }
 
   create() {
-    setupCamera(this);
+    setupCamera(this, { fit: { x: 0, y: 0, w: COLS * TILE, h: ROWS * TILE } });
     this.cameras.main.fadeIn(180, 13, 16, 36);
     controls.clearEdges();
-    controls.reserveTouchLayout(true);
-    controls.showTouchUi(true);
+    controls.enableGestures(true);
     this.world = new World(this.level, this.takenLives);
 
     drawBackground(this, GAME_W, GAME_H, this.index + 11);
@@ -135,7 +139,7 @@ export class Game extends Phaser.Scene {
     document.addEventListener('visibilitychange', onHide);
     this.events.on(Phaser.Scenes.Events.RESUME, () => {
       controls.clearEdges();
-      controls.showTouchUi(true);
+      controls.enableGestures(true);
       this.acc = 0;
     });
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
@@ -249,11 +253,17 @@ export class Game extends Phaser.Scene {
 
   private buildHud() {
     const g = this.add.graphics().setDepth(10);
-    // The bar spans the whole screen width and reaches the top edge, past the world's edges
-    // (see gfx/layout.ts), so no strip of background shows above it
-    g.fillStyle(0x0b0e22, 0.85).fillRect(-GAME_W, -GAME_H, GAME_W * 3, GAME_H + HUD_H);
+    // A translucent band over the top wall row, as wide as the screen (see gfx/layout.ts)
+    g.fillStyle(0x0b0e22, 0.82).fillRect(-GAME_W, 0, GAME_W * 3, HUD_H);
     g.fillStyle(C.uiLight, 0.6).fillRect(-GAME_W, HUD_H - 1, GAME_W * 3, 1);
-    text(this, 10, HUD_H / 2, `${this.index + 1}. ${localized(this.level.name)}`, 14, '#ffffff')
+    text(
+      this,
+      TILE + 6,
+      HUD_H / 2,
+      `${this.index + 1}. ${localized(this.level.name)}`,
+      14,
+      '#ffffff',
+    )
       .setOrigin(0, 0.5)
       .setDepth(11);
 
@@ -282,12 +292,12 @@ export class Game extends Phaser.Scene {
         .setDepth(11);
     }
 
-    this.hudTime = text(this, 500, HUD_H / 2, '0.0', 14, '#a9b8ff')
+    this.hudTime = text(this, GAME_W - TILE - 100, HUD_H / 2, '0.0', 14, '#a9b8ff')
       .setOrigin(1, 0.5)
       .setDepth(11);
     this.refreshHearts();
 
-    const pause = this.add.container(GAME_W - 18, HUD_H / 2).setDepth(11);
+    const pause = this.add.container(GAME_W - TILE - 14, HUD_H / 2).setDepth(11);
     const pg = this.add.graphics();
     pg.fillStyle(C.uiLight, 1).fillCircle(0, 0, 11);
     pg.fillStyle(0xffffff, 1)
@@ -307,7 +317,7 @@ export class Game extends Phaser.Scene {
     for (let i = 0; i < n; i++) {
       this.hudHearts.push(
         this.add
-          .image(560 - i * 16, HUD_H / 2, 'life')
+          .image(GAME_W - TILE - 42 - i * 16, HUD_H / 2, 'life')
           .setScale(0.36)
           .setDepth(11),
       );
@@ -323,7 +333,8 @@ export class Game extends Phaser.Scene {
 
   private showBanner() {
     const w = 420;
-    const hint = this.level.hint ? localized(this.level.hint) : '';
+    const source = (controls.touchMode && this.level.hintTouch) || this.level.hint;
+    const hint = source ? localized(source) : '';
     const hasHint = hint !== '';
     const h = hasHint ? 86 : 56;
     const bg = this.add.graphics();
@@ -452,6 +463,8 @@ export class Game extends Phaser.Scene {
         case 'bounce': {
           this.squash = 1;
           sfx.bounce(e.kind);
+          // A double tap's queued high bounce is spent on this landing
+          controls.disarmJump();
           // Low bounces happen constantly: only the bigger ones vibrate on phones
           if (e.kind === 'spring' || e.kind === 'ramp') haptic('medium');
           else if (e.kind === 'high') haptic('light');
@@ -630,7 +643,7 @@ export class Game extends Phaser.Scene {
           takenLives: [...this.takenLives],
         });
       } else {
-        controls.showTouchUi(false);
+        controls.enableGestures(false);
         this.scene.pause();
         this.scene.launch('Overlay', { mode: 'gameover', index: this.index });
       }
@@ -658,7 +671,7 @@ export class Game extends Phaser.Scene {
     recordWin(this.level.id, this.index, stars, time, LEVELS.length);
     this.time.delayedCall(750, () => {
       this.ball.setVisible(false);
-      controls.showTouchUi(false);
+      controls.enableGestures(false);
       this.scene.pause();
       this.scene.launch('Overlay', {
         mode: 'complete',
@@ -674,7 +687,7 @@ export class Game extends Phaser.Scene {
 
   private pauseGame() {
     if (this.ended || !this.scene.isActive()) return;
-    controls.showTouchUi(false);
+    controls.enableGestures(false);
     this.scene.pause();
     this.scene.launch('Overlay', { mode: 'pause', index: this.index });
   }

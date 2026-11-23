@@ -69,7 +69,4 @@ export function applyDomTexts() {
   };
   set('loading', 'dom.loading');
   set('rotate-text', 'dom.rotate');
-  set('tc-l', 'dom.left', 'aria-label');
-  set('tc-r', 'dom.right', 'aria-label');
-  set('tc-j', 'dom.jump', 'aria-label');
 }

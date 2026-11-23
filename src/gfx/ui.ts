@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { sfx, unlockAudio } from '../audio/sfx';
 import { ZOOM } from '../game/constants';
 import { controls } from '../input/controls';
-import { keepCameraPlaced } from './layout';
+import { keepCameraPlaced, type Placement } from './layout';
 import { C } from './textures';
 
 export const FONT = 'Fredoka, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
@@ -11,8 +11,8 @@ export const FONT = 'Fredoka, system-ui, -apple-system, "Segoe UI", Roboto, sans
  * The world is 640×416; the camera zooms it (about 2× on a 1280×832 canvas, so it stays sharp)
  * and fits it in the free area of a full-screen canvas (see layout.ts).
  */
-export function setupCamera(scene: Phaser.Scene) {
-  keepCameraPlaced(scene);
+export function setupCamera(scene: Phaser.Scene, placement: Placement = {}) {
+  keepCameraPlaced(scene, placement);
   // The game is a single canvas: expose the visible screen for browser tests and debugging
   document.body.dataset.scene = scene.scene.key;
 }

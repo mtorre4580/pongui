@@ -11,7 +11,7 @@ export const es: Messages = {
   'menu.language': 'Idioma: Español',
   'menu.helpKeys':
     'Moverte: ◀ ▶ / A D   ·   Saltar alto: Espacio   ·   Pausa: Esc   ·   Reiniciar: R',
-  'menu.helpTouch': '◀ ▶ para moverte · botón grande para saltar más alto',
+  'menu.helpTouch': 'Deslizá para moverte · doble toque o un segundo dedo para saltar más alto',
   'select.world': 'Mundo {n} · {name}',
   'select.back': '← Menú',
   'world.1': 'Valle Saltarín',
@@ -35,7 +35,4 @@ export const es: Messages = {
   'overlay.replay': 'Repetir',
   'dom.loading': 'Cargando…',
   'dom.rotate': 'Girá el dispositivo para jugar',
-  'dom.left': 'Izquierda',
-  'dom.right': 'Derecha',
-  'dom.jump': 'Saltar alto',
 };

@@ -10,6 +10,8 @@ export interface LevelData {
   id: string;
   name: Localized<string>;
   hint?: Localized<string>;
+  /** Replaces `hint` when playing with touch gestures (for hints that name keys or buttons). */
+  hintTouch?: Localized<string>;
   par: number; // seconds to earn the time star
   map: string[];
 }
@@ -18,6 +20,7 @@ export interface ParsedLevel {
   id: string;
   name: Localized<string>;
   hint: Localized<string> | null;
+  hintTouch: Localized<string> | null;
   par: number;
   tiles: Uint8Array;
   items: { kind: ItemKind; col: number; row: number }[];
@@ -64,10 +67,16 @@ export function parseLevel(data: LevelData): ParsedLevel {
   if (tiles[s.row * COLS + s.col] !== T.EMPTY)
     throw new Error(`${data.id}: the start is inside a block`);
 
+  // The top row must be plain walls: the HUD is drawn over it (see scenes/Game.ts)
+  for (let c = 0; c < COLS; c++) {
+    if (tiles[c] !== T.SOLID) throw new Error(`${data.id}: row 0 must be solid walls (#)`);
+  }
+
   return {
     id: data.id,
     name: data.name,
     hint: data.hint ?? null,
+    hintTouch: data.hintTouch ?? null,
     par: data.par,
     tiles,
     items,

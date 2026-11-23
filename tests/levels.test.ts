@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { LOCALES } from '../src/i18n';
+import { parseLevel } from '../src/game/level';
 import { LEVELS } from '../src/levels';
 
 // Solvability is checked by `pnpm validate:levels` (slower: it runs the solver on every level).
@@ -16,6 +17,7 @@ describe('levels', () => {
       for (const locale of LOCALES) {
         expect(lvl.name[locale]?.trim()).toBeTruthy();
         if (lvl.hint) expect(lvl.hint[locale]?.trim()).toBeTruthy();
+        if (lvl.hintTouch) expect(lvl.hintTouch[locale]?.trim()).toBeTruthy();
       }
     });
 
@@ -24,4 +26,27 @@ describe('levels', () => {
       expect(lvl.gems).toBeGreaterThanOrEqual(0);
     });
   }
+});
+
+describe('level top row', () => {
+  const base: string[] = Array.from({ length: 12 }, (_, r) =>
+    r === 0 || r === 11
+      ? '####################'
+      : r === 10
+        ? '#P................E#'
+        : '#..................#',
+  );
+  const name = { en: 't', es: 't', 'pt-BR': 't' };
+
+  it('accepts hazards on the floor row', () => {
+    const map = [...base];
+    map[11] = '###*****^^^^^#######';
+    expect(() => parseLevel({ id: 't', name, par: 1, map })).not.toThrow();
+  });
+
+  it('rejects a gap in the top row (the HUD covers it)', () => {
+    const map = [...base];
+    map[0] = '#########.##########';
+    expect(() => parseLevel({ id: 't', name, par: 1, map })).toThrow(/row 0/);
+  });
 });

@@ -10,6 +10,11 @@
     "es": "Movete con ◀ ▶. Juntá todas las gemas para abrir la salida.",
     "pt-BR": "Mova-se com ◀ ▶. Pegue todas as gemas para abrir a saída."
   },
+  "hintTouch": {
+    "en": "Slide your finger left or right anywhere to move. Collect every gem to open the exit.",
+    "es": "Deslizá el dedo hacia los costados en cualquier parte para moverte. Juntá todas las gemas para abrir la salida.",
+    "pt-BR": "Deslize o dedo para os lados em qualquer lugar para se mover. Pegue todas as gemas para abrir a saída."
+  },
   "par": 15,
   "map": [
     "####################",
