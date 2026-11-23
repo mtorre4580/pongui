@@ -17,7 +17,7 @@ const WHITE = [255, 255, 255],
   FLOOR = hex('#2a9d8f'),
   FLOOR_TOP = hex('#5ee6d6');
 
-function scene(u, v, { maskable }) {
+function scene(u, v, { maskable, splash = false }) {
   // u,v in [0,1]. Returns [r,g,b,a]
   const pad = maskable ? 0 : 0.06;
   const rad = maskable ? 0 : 0.22;
@@ -26,15 +26,16 @@ function scene(u, v, { maskable }) {
   const qy = Math.max(Math.abs(v - 0.5) - (0.5 - pad - rad), 0);
   if (Math.hypot(qx, qy) > rad + 1e-9 && !maskable) return [0, 0, 0, 0];
   const mix = (a, b, t) => a.map((x, i) => x + (b[i] - x) * t);
-  let col = mix(BG_TOP, BG_BOT, v);
-  const k = maskable ? 0.78 : 1; // maskable icon safe zone
+  // Splash screen: flat background and a small ball in the middle, no floor
+  let col = splash ? BG_BOT : mix(BG_TOP, BG_BOT, v);
+  const k = splash ? 0.3 : maskable ? 0.78 : 1; // maskable icon safe zone
   const X = (u - 0.5) / k + 0.5,
     Y = (v - 0.5) / k + 0.5;
   // floor
-  if (Y > 0.76 && X > 0.14 && X < 0.86) col = Y < 0.8 ? FLOOR_TOP : FLOOR;
+  if (!splash && Y > 0.76 && X > 0.14 && X < 0.86) col = Y < 0.8 ? FLOOR_TOP : FLOOR;
   // shadow
   const sh = ((X - 0.5) / 0.2) ** 2 + ((Y - 0.76) / 0.03) ** 2;
-  if (sh < 1 && Y <= 0.76) col = mix(col, [0, 0, 0], 0.35);
+  if (!splash && sh < 1 && Y <= 0.76) col = mix(col, [0, 0, 0], 0.35);
   // ball (squashed)
   const bx = 0.5,
     by = 0.5,
@@ -55,8 +56,7 @@ function scene(u, v, { maskable }) {
   return [...col, 255];
 }
 
-function render(size, opts) {
-  const SS = 4;
+function render(size, opts, SS = 4) {
   const px = Buffer.alloc(size * size * 4);
   for (let y = 0; y < size; y++)
     for (let x = 0; x < size; x++) {
@@ -133,6 +133,16 @@ for (const [name, size, opts] of out) {
   writeFileSync(`public/icons/${name}`, render(size, opts));
   console.log('✓', name);
 }
+
+// Sources for the native apps: `pnpm native:assets` (@capacitor/assets) derives every iOS and
+// Android icon and splash size from these. The icon is full-bleed: each platform masks it.
+mkdirSync('assets', { recursive: true });
+writeFileSync('assets/icon-only.png', render(1024, { maskable: true }));
+console.log('✓ assets/icon-only.png');
+const splash = render(2732, { maskable: true, splash: true }, 2);
+writeFileSync('assets/splash.png', splash);
+writeFileSync('assets/splash-dark.png', splash);
+console.log('✓ assets/splash.png, assets/splash-dark.png');
 
 writeFileSync(
   'public/icons/icon.svg',

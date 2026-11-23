@@ -1,4 +1,7 @@
 dist
+dist-native
+ios
+android
 dev-dist
 coverage
 pnpm-lock.yaml

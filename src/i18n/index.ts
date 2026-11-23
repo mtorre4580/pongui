@@ -2,6 +2,7 @@
 import { en, type MessageKey, type Messages } from './messages/en';
 import { es } from './messages/es';
 import { ptBR } from './messages/pt-BR';
+import { persistNative } from '../native';
 
 export type Locale = 'en' | 'es' | 'pt-BR';
 export type Localized<T> = Record<Locale, T>;
@@ -35,6 +36,7 @@ export function setLocale(locale: Locale) {
   current = locale;
   try {
     localStorage.setItem(STORAGE_KEY, locale);
+    persistNative(STORAGE_KEY, locale);
   } catch {
     /* the choice just will not persist */
   }

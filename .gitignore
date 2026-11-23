@@ -12,3 +12,6 @@ coverage
 .lighthouseci
 playwright-report
 test-results
+
+# Native web build (copied into ios/ and android/ by `cap sync`)
+dist-native

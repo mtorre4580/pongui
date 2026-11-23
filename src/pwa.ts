@@ -1,4 +1,5 @@
 // App install (PWA) and fullscreen.
+import { IS_NATIVE } from './native';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -35,7 +36,9 @@ export async function promptInstall() {
   notify();
 }
 
+/** True when running as an installed app: a PWA window or the native iOS/Android app. */
 export const isStandalone = () =>
+  IS_NATIVE ||
   window.matchMedia('(display-mode: standalone)').matches ||
   window.matchMedia('(display-mode: fullscreen)').matches ||
   (navigator as unknown as { standalone?: boolean }).standalone === true;
@@ -66,7 +69,8 @@ export async function toggleFullscreen() {
  * to the site root from any page (/, /play/) and under any base folder.
  */
 export function registerServiceWorker() {
-  if (!import.meta.env.PROD || !('serviceWorker' in navigator)) return;
+  // The native app ships every file inside the package: no service worker needed
+  if (!import.meta.env.PROD || IS_NATIVE || !('serviceWorker' in navigator)) return;
   const root = new URL('../', import.meta.url);
   window.addEventListener('load', () => {
     void navigator.serviceWorker

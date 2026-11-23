@@ -36,7 +36,8 @@ export class Overlay extends Phaser.Scene {
     const last = d.index >= LEVELS.length - 1;
 
     const dim = this.add
-      .rectangle(GAME_W / 2, GAME_H / 2, GAME_W, GAME_H, 0x05060f, 0)
+      // Larger than the world: it dims the whole screen at any aspect ratio
+      .rectangle(GAME_W / 2, GAME_H / 2, GAME_W * 4, GAME_H * 4, 0x05060f, 0)
       .setInteractive();
     this.tweens.add({ targets: dim, fillAlpha: 0.6, duration: 200 });
 
