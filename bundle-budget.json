@@ -1,9 +1,9 @@
 {
-  "$comment": "Gzip size limits in KB. Chunks are matched by name without the content hash. `initial` is what the landing page (dist/index.html) loads up front. play.js is the game: Phaser is ~340 KB of it. levels.js holds every level map (about 2 KB per world).",
+  "$comment": "Gzip size limits in KB. Chunks are matched by name without the content hash. `initial` is what the landing page (dist/index.html) loads up front. play.js is the game: Phaser is ~340 KB of it and the ten bosses about 20 KB. levels.js holds every level map (about 2 KB per world).",
   "initial": 40,
   "defaultChunk": 20,
   "chunks": {
-    "play.js": 370,
+    "play.js": 400,
     "main.js": 15,
     "levels.js": 30
   }
