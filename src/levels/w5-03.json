@@ -1,0 +1,28 @@
+{
+  "id": "w5-03",
+  "name": {
+    "en": "Twin portals",
+    "es": "Portales gemelos",
+    "pt-BR": "Portais gêmeos"
+  },
+  "hint": {
+    "en": "Each pair of portals has its own color and dots.",
+    "es": "Cada par de portales tiene su propio color y sus puntos.",
+    "pt-BR": "Cada par de portais tem a sua cor e os seus pontos."
+  },
+  "par": 15,
+  "map": [
+    "####################",
+    "#3....#1.....#2....#",
+    "#.....#......#.....#",
+    "#.....#......#.....#",
+    "#.....#......#.....#",
+    "#.....#......#.....#",
+    "#.....#......#.....#",
+    "#.....#..g...#..g..#",
+    "#.....#......#.....#",
+    "#..####...####..####",
+    "#.P..1#.....2#.E..3#",
+    "####################"
+  ]
+}

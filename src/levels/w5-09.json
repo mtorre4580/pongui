@@ -1,0 +1,28 @@
+{
+  "id": "w5-09",
+  "name": {
+    "en": "Ramp portal",
+    "es": "Rampa al portal",
+    "pt-BR": "Rampa para o portal"
+  },
+  "hint": {
+    "en": "A ramp always flies the same way: aim it at a portal.",
+    "es": "Una rampa siempre vuela igual: apuntala a un portal.",
+    "pt-BR": "Uma rampa sempre voa do mesmo jeito: mire num portal."
+  },
+  "par": 9,
+  "map": [
+    "####################",
+    "#.........#.....g..#",
+    "#.........#.1......#",
+    "#.........#....g.E.#",
+    "#.........#..#######",
+    "#.........#........#",
+    "#.........#........#",
+    "#....1....#........#",
+    "#.........#........#",
+    "#.........#........#",
+    "#P........#........#",
+    "##>>#######********#"
+  ]
+}

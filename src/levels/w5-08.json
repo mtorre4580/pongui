@@ -1,0 +1,28 @@
+{
+  "id": "w5-08",
+  "name": {
+    "en": "Deep current",
+    "es": "Corriente profunda",
+    "pt-BR": "Corrente funda"
+  },
+  "hint": {
+    "en": "Underwater, pushers carry you twice as far.",
+    "es": "Bajo el agua, los empujadores te llevan el doble de lejos.",
+    "pt-BR": "Debaixo d’água, os empurradores levam você duas vezes mais longe."
+  },
+  "par": 11,
+  "map": [
+    "####################",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#~~~~~~~~~~~~~~~~E~#",
+    "#~~~~~~~~~~~~~~~~~~#",
+    "#~~~~~~~~~~~~~~~~~~#",
+    "#~~~~g~~~~~~~g~~~~~#",
+    "#~~~~~~~~~~~~~~~~~~#",
+    "#~~~~~~~~~~~~~~~~~~#",
+    "#P~~~~~~~~~~~~~~~~~#",
+    "#))******))******###"
+  ]
+}

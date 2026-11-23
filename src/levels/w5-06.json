@@ -1,0 +1,28 @@
+{
+  "id": "w5-06",
+  "name": {
+    "en": "Sunken key",
+    "es": "Llave hundida",
+    "pt-BR": "Chave afundada"
+  },
+  "hint": {
+    "en": "Dive for the key, then use the water to bounce back out.",
+    "es": "Bajá a buscar la llave y usá el agua para rebotar hacia afuera.",
+    "pt-BR": "Mergulhe atrás da chave e use a água para quicar para fora."
+  },
+  "par": 22,
+  "map": [
+    "####################",
+    "#####..............#",
+    "#...L..............#",
+    "#.E.L..P...........#",
+    "#...L..............#",
+    "#####~~~~~~~~~~~~~~#",
+    "#####~~~~~~~~~g~~~~#",
+    "#####~~~g~~~~~~~~~~#",
+    "#######~~~~~~~~~~~~#",
+    "#####~~~~~~~~~~~~~~#",
+    "#####~~~~~~k~~~~~~~#",
+    "####################"
+  ]
+}

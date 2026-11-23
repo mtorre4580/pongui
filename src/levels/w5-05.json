@@ -1,0 +1,28 @@
+{
+  "id": "w5-05",
+  "name": {
+    "en": "Up and out",
+    "es": "Arriba y afuera",
+    "pt-BR": "Para cima e para fora"
+  },
+  "hint": {
+    "en": "A portal keeps your speed: fly into it upward and you come out flying up.",
+    "es": "Un portal mantiene tu velocidad: entrá subiendo y salís subiendo.",
+    "pt-BR": "Um portal mantém a sua velocidade: entre subindo e saia subindo."
+  },
+  "par": 20,
+  "map": [
+    "####################",
+    "#.....#............#",
+    "#.....#...g.....E..#",
+    "#.....#.##.##.######",
+    "#.....#...1........#",
+    "#...1.#............#",
+    "#.....#............#",
+    "#.....#............#",
+    "#.....#.......g....#",
+    "#.....#............#",
+    "#.P.s..............#",
+    "####################"
+  ]
+}
