@@ -17,12 +17,14 @@ import {
   TILE,
   UPDRAFT_LIFT,
   UPDRAFT_VMAX,
+  WATER_GRAVITY,
+  WATER_MAX_FALL,
   V_HIGH,
   V_LOW,
   V_SPRING,
 } from './constants';
 import type { ItemKind, ParsedLevel } from './level';
-import { fragileMax, isToggle, T } from './tiles';
+import { fragileMax, isPortal, isToggle, T } from './tiles';
 
 export interface InputState {
   left: boolean;
@@ -45,6 +47,8 @@ export type WorldEvent =
   | { type: 'exitOpen' }
   | { type: 'wind'; inside: boolean }
   | { type: 'switch'; on: boolean }
+  | { type: 'portal'; from: number; to: number }
+  | { type: 'water'; inside: boolean }
   | { type: 'die'; cause: DeathCause }
   | { type: 'win' };
 
@@ -81,6 +85,10 @@ export interface WorldState {
   switchOn: boolean;
   /** Toggle blocks held open until the ball leaves them (their `hits` is 1). */
   pending: number;
+  /** The portal the ball just came out of: it does not work again until the ball leaves it. */
+  portalHold: number;
+  /** The ball's center is in water. */
+  water: boolean;
 }
 
 interface Cell {
@@ -102,6 +110,7 @@ export function cloneState(s: WorldState): WorldState {
 export class World {
   readonly level: ParsedLevel;
   s: WorldState;
+  private readonly partner = new Map<number, number>();
 
   constructor(level: ParsedLevel, skipItems: Iterable<number> = []) {
     this.level = level;
@@ -129,7 +138,15 @@ export class World {
       wind: false,
       switchOn: false,
       pending: 0,
+      portalHold: -1,
+      water: false,
     };
+    // Each portal's partner (the other tile with the same digit)
+    level.tiles.forEach((t, idx) => {
+      if (!isPortal(t)) return;
+      const other = level.tiles.findIndex((u, j) => u === t && j !== idx);
+      if (other >= 0) this.partner.set(idx, other);
+    });
   }
 
   get exitOpen(): boolean {
@@ -144,7 +161,7 @@ export class World {
 
   /** Whether the ball passes through tile `t` at `idx` right now (air, wind, open blocks). */
   isOpen(t: number, idx: number): boolean {
-    if (t === T.EMPTY || t === T.UPDRAFT) return true;
+    if (t === T.EMPTY || t === T.UPDRAFT || t === T.WATER || isPortal(t)) return true;
     if (isToggle(t)) return idx < 0 || this.s.hits[idx] > 0 || !this.toggleSolid(t);
     return false;
   }
@@ -198,6 +215,25 @@ export class World {
       s.hits[idx] = 0;
       s.pending--;
     }
+  }
+
+  /**
+   * Entering a portal (with the ball's center) moves the ball to the center of its partner,
+   * keeping its speed. The partner stays inactive until the ball's center leaves it.
+   */
+  private portals(ev: WorldEvent[]) {
+    const s = this.s;
+    const c = Math.floor(s.x / TILE);
+    const r = Math.floor(s.y / TILE);
+    const idx = c >= 0 && c < COLS && r >= 0 && r < ROWS ? r * COLS + c : -1;
+    if (idx === s.portalHold) return;
+    s.portalHold = -1;
+    const to = idx >= 0 && isPortal(s.tiles[idx]) ? this.partner.get(idx) : undefined;
+    if (to === undefined) return;
+    s.x = (to % COLS) * TILE + TILE / 2;
+    s.y = Math.floor(to / COLS) * TILE + TILE / 2;
+    s.portalHold = to;
+    ev.push({ type: 'portal', from: idx, to });
   }
 
   private flipSwitches(ev: WorldEvent[]) {
@@ -369,8 +405,10 @@ export class World {
       if (s.grace > 0 && s.vy < 0) {
         const h0 = s.surfaceY - (s.y + BALL_R);
         const rem = H_HIGH - h0;
-        if (rem > 0) {
-          s.vy = -Math.sqrt(2 * GRAVITY * rem);
+        // In water the same push goes further: keep the high bounce's speed for the height left
+        const v2 = s.water ? V_HIGH * V_HIGH - 2 * GRAVITY * WATER_GRAVITY * h0 : 2 * GRAVITY * rem;
+        if (rem > 0 && v2 > 0) {
+          s.vy = -Math.sqrt(v2);
           ev.push({ type: 'boost' });
         }
         s.grace = 0;
@@ -396,12 +434,19 @@ export class World {
       }
     }
     const r = Math.floor(s.y / TILE);
-    const wind = r >= 0 && this.tileAt(Math.floor(s.x / TILE), r) === T.UPDRAFT;
+    const here = r >= 0 ? this.tileAt(Math.floor(s.x / TILE), r) : T.EMPTY;
+    const wind = here === T.UPDRAFT;
     if (wind !== s.wind) {
       s.wind = wind;
       ev.push({ type: 'wind', inside: wind });
     }
+    const water = here === T.WATER;
+    if (water !== s.water) {
+      s.water = water;
+      ev.push({ type: 'water', inside: water });
+    }
     if (wind) s.vy = Math.max(s.vy - UPDRAFT_LIFT * dt, -UPDRAFT_VMAX);
+    else if (water) s.vy = Math.min(s.vy + GRAVITY * WATER_GRAVITY * dt, WATER_MAX_FALL);
     else s.vy = Math.min(s.vy + GRAVITY * dt, MAX_FALL);
 
     // X axis
@@ -462,6 +507,7 @@ export class World {
       return ev;
     }
     this.settle();
+    this.portals(ev);
 
     // Items
     for (let i = 0; i < s.items.length; i++) {

@@ -30,6 +30,10 @@ export const MAX_VX = 160;
 export const RAMP_VX = 220;
 export const PUSH_VX = 280; // pushers: a low bounce at this fixed sideways speed
 
+// Water: gravity is scaled down and the fall speed is capped (px/s)
+export const WATER_GRAVITY = 0.5;
+export const WATER_MAX_FALL = 240;
+
 // Updrafts replace gravity with a lift up to a top speed (px/s², px/s)
 export const UPDRAFT_LIFT = 2200;
 export const UPDRAFT_VMAX = 260;

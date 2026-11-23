@@ -67,6 +67,12 @@ export function parseLevel(data: LevelData): ParsedLevel {
     }
   });
 
+  // Each portal digit appears exactly twice: entering one leads to the other
+  for (const t of [T.PORTAL_1, T.PORTAL_2, T.PORTAL_3]) {
+    const n = tiles.reduce((k, v) => k + (v === t ? 1 : 0), 0);
+    if (n !== 0 && n !== 2)
+      throw new Error(`${data.id}: portal ${t - T.PORTAL_1 + 1} appears ${n} times (expected 2)`);
+  }
   if (!start) throw new Error(`${data.id}: missing start (P)`);
   if (!exit) throw new Error(`${data.id}: missing exit (E)`);
   const s = start as { col: number; row: number };
