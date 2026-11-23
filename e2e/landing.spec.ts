@@ -77,6 +77,15 @@ test('the privacy page is linked from the footer and has no WCAG 2.2 AA violatio
 }) => {
   const errors = trackErrors(page);
   await page.goto('./');
+  // The game's profiles sit next to it
+  await expect(page.getByRole('link', { name: 'Instagram' })).toHaveAttribute(
+    'href',
+    'https://www.instagram.com/playpongui/',
+  );
+  await expect(page.getByRole('link', { name: 'YouTube' })).toHaveAttribute(
+    'href',
+    'https://www.youtube.com/@playpongui',
+  );
   await page.getByRole('link', { name: 'Privacy' }).click();
   await expect(page).toHaveURL(/\/privacy\/$/);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Privacy');

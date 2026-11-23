@@ -385,15 +385,17 @@ p {
   background: linear-gradient(90deg, #fff 0 35%, transparent 35% 65%, #fff 65%);
 }
 .clip-toggle.is-paused::before {
-  /* play icon: triangle */
+  /* play icon: a triangle, centered by its own box. It sits 2px to the right because a
+     triangle's weight is near its base, so a box-centered one looks off to the left */
+  inset: 50% auto auto 50%;
   width: 0;
   height: 0;
-  margin: auto auto auto 15px;
+  margin: 0;
   background: none;
   border-style: solid;
   border-width: 8px 0 8px 13px;
   border-color: transparent transparent transparent #fff;
-  top: 12px;
+  transform: translate(calc(-50% + 2px), -50%);
 }
 
 /* --- Sections --- */
@@ -751,8 +753,15 @@ details p {
   flex-wrap: wrap;
   gap: 6px;
 }
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 22px;
+  margin: 0 0 0 auto;
+  padding: 0;
+  list-style: none;
+}
 .footer a {
-  margin-left: auto;
   color: var(--text);
 }
 
