@@ -8,6 +8,7 @@ import { SPROCKET } from './w4-sprocket';
 import { INKWELL } from './w5-inkwell';
 import { FLURRY } from './w6-flurry';
 import { CINDER } from './w7-cinder';
+import { ORBIT } from './w8-orbit';
 
 export type { Boss } from './types';
 
@@ -19,6 +20,7 @@ export const BOSSES = {
   5: INKWELL,
   6: FLURRY,
   7: CINDER,
+  8: ORBIT,
 } satisfies Record<number, Boss>;
 
 /** The boss of a world, if it has one. */

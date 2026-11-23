@@ -48,7 +48,7 @@ export class BossView {
       this.pose = boss.pose;
       this.body.setTexture(bossTexture(this.scene, this.world, def.width, def.height, this.pose));
     }
-    this.body.setVisible(!boss.away && boss.alpha > 0);
+    this.body.setVisible((!boss.away || !!this.art.faint) && boss.alpha > 0);
     this.body.setPosition(boss.x, bottom + this.oy);
     this.body.setFlipX(boss.dir > 0);
     // Coming out of the ground: only what is above its floor shows
@@ -58,7 +58,7 @@ export class BossView {
     }
     // Dazed: it blinks (the Canvas renderer has no tint) and sags a little
     const blink = dazed ? (Math.floor(fight.world.s.time * 12) % 2 ? 0.35 : 0.8) : 1;
-    this.body.setAlpha(blink * boss.alpha);
+    this.body.setAlpha(blink * boss.alpha * (boss.away ? 0.4 : 1));
     this.body.setScale(1 / TEX, (dazed ? 0.86 : 1) / TEX);
     this.drawShots();
     this.drawMarks();

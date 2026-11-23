@@ -280,4 +280,13 @@ const BOSS_FX: Record<string, (() => void) | undefined> = {
   'shot-fire': () => tone(1400, 500, 0.45, 'sine', 0.06),
   'end-fire': () => noise(0.2, 0.35, 500, 0.8, 0, 'lowpass'),
   crack: () => [0, 0.05, 0.11].forEach((d) => noise(0.04, 0.3, 2600, 3, d)),
+  // Orbit: an orb let out, the beam charging, humming on and failing
+  'warn-orb': () => tone(1200, 900, 0.1, 'sine', 0.06),
+  'shot-orb': () => tone(500, 800, 0.2, 'triangle', 0.08),
+  'warn-beam': () => tone(200, 900, 0.9, 'sine', 0.08),
+  'beam-on': () => {
+    tone(900, 880, 0.5, 'sawtooth', 0.07);
+    tone(450, 440, 0.5, 'sine', 0.1);
+  },
+  'beam-off': () => tone(700, 90, 0.5, 'sawtooth', 0.1),
 };

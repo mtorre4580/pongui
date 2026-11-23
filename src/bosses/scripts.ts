@@ -6,6 +6,7 @@ import type { BossFight } from '../game/boss';
 import { BALL_R, GRAVITY, MAX_VX } from '../game/constants';
 import type { Serpent } from './w2-serpstone';
 import type { Giant } from './w6-flurry';
+import type { Saucer } from './w8-orbit';
 import type { InputState } from '../game/physics';
 
 /** What the script wants held right now (`jumpPressed` is left to whoever presses the keys). */
@@ -284,6 +285,49 @@ const cinder: BossScript = () => {
   };
 };
 
+/**
+ * Orbit: keep moving away from the orbs. When the beam's column lights up, step out of it;
+ * once the saucer is down, bounce high from beside the beam and come down on its dome. Caught,
+ * shake left and right.
+ */
+const orbit: BossScript = () => (f) => {
+  const s = f.world.s;
+  const { boss } = f;
+  const beat = Math.floor(s.time * 5) % 2 === 0;
+  if (f.grab) return { jump: false, left: beat, right: !beat };
+  const mode = (f.brain as Saucer).mode;
+  const [, top] = f.box;
+  const down = (mode === 'beam' || mode === 'stall') && !f.dazed;
+  if (down && s.y + BALL_R < top - 2) return { jump: false, ...steer(s.x, boss.x) };
+  const orbs = f.shots.filter((shot) => shot.kind === 'orb');
+  /** Whether an orb is near the way from the ball to x (they are slow: near means near). */
+  const orbNear = (x: number) =>
+    orbs.some(
+      (o) =>
+        o.x > Math.min(s.x, x) - 46 && o.x < Math.max(s.x, x) + 46 && Math.abs(o.y - s.y) < 110,
+    );
+  if (down || mode === 'aim') {
+    // Beside the beam (or where it is about to be): the ball's side, or the other one if an
+    // orb is in the way; with orbs on both, away from the beam
+    const side = s.x < boss.x ? -1 : 1;
+    const spots = [boss.x + side * 62, boss.x - side * 62].filter((x) => x > 60 && x < 580);
+    // (the other side is reached under the saucer only before the beam is on)
+    const open = spots.filter((x, i) => !orbNear(x) && (i === 0 || mode === 'aim'));
+    if (open.length) return { jump: down, ...steer(s.x, open[0]) };
+    return { jump: false, ...steer(s.x, s.x + side * 60) };
+  }
+  // Hovering: away from the nearest orb, and off the walls
+  const orb = orbs.sort(
+    (a, b) => Math.hypot(a.x - s.x, a.y - s.y) - Math.hypot(b.x - s.x, b.y - s.y),
+  )[0];
+  let goal = s.x;
+  if (orb && Math.hypot(orb.x - s.x, orb.y - s.y) < 120) goal = s.x + (s.x >= orb.x ? 60 : -60);
+  // Cornered: under the orb to the other side (it is slower than the ball)
+  if (goal < 110) goal = orb && orb.y < s.y - 40 ? 300 : 110;
+  if (goal > 530) goal = orb && orb.y < s.y - 40 ? 340 : 530;
+  return { jump: false, ...steer(s.x, goal) };
+};
+
 export const SCRIPTS: Record<number, BossScript> = {
   1: grumble,
   2: serpstone,
@@ -292,4 +336,5 @@ export const SCRIPTS: Record<number, BossScript> = {
   5: inkwell,
   6: flurry,
   7: cinder,
+  8: orbit,
 };

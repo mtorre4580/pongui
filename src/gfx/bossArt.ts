@@ -12,6 +12,8 @@ export interface BossArt {
   side?: number;
   /** Depth of the body: 4 by default (over the tiles, under the ball). */
   depth?: number;
+  /** Out of reach (`boss.away`) it is still drawn, faintly, instead of hidden. */
+  faint?: boolean;
   /** It comes out of the ground: the part of it under its floor is not drawn. */
   buried?: boolean;
   /** Draws the body for a pose. `w` and `h` are its box in texture pixels, from (0, top). */
@@ -374,6 +376,40 @@ const ART: Record<number, BossArt> = {
       }
     },
   },
+  // Orbit: a saucer with a glass dome and one big eye inside. 'beam': its lights and its
+  // emitter are on; 'stall': everything dark and the eye half shut
+  8: {
+    top: 14,
+    side: 10,
+    faint: true,
+    draw(g, W, H, pose) {
+      const TOP = 14;
+      const hull = { body: 0x8d99ae, dark: 0x4a5568, light: 0xd9e2ec, glass: 0x9bf6ff };
+      const lit = pose === 'beam' ? 0x80ffdb : pose === 'stall' ? 0x4a5568 : 0xffd166;
+      // Antenna
+      g.fillStyle(hull.dark, 1).fillRect(W / 2 - 2, 0, 4, TOP + 6);
+      g.fillStyle(lit, 1).fillCircle(W / 2, 4, 5);
+      // Dome, with the pilot's eye
+      g.fillStyle(hull.glass, 0.85).fillEllipse(W / 2, TOP + H * 0.36, W * 0.56, H * 0.72);
+      g.fillStyle(C.white, 1).fillEllipse(W / 2, TOP + H * 0.34, 34, 30);
+      g.fillStyle(0x7b2cbf, 1).fillCircle(W / 2, TOP + H * 0.36, 10);
+      g.fillStyle(C.ink, 1).fillCircle(W / 2, TOP + H * 0.36, 5);
+      if (pose === 'stall')
+        g.fillStyle(hull.glass, 1).fillRect(W / 2 - 18, TOP + H * 0.34 - 16, 36, 16);
+      g.fillStyle(C.white, 0.7).fillEllipse(W * 0.4, TOP + H * 0.18, 16, 8);
+      // Hull: a disc, darker underneath
+      g.fillStyle(hull.dark, 1).fillEllipse(W / 2, TOP + H * 0.72, W + 16, H * 0.5);
+      g.fillStyle(hull.body, 1).fillEllipse(W / 2, TOP + H * 0.66, W + 16, H * 0.42);
+      g.fillStyle(hull.light, 1).fillEllipse(W / 2, TOP + H * 0.58, W * 0.8, H * 0.12);
+      // A row of lights
+      g.fillStyle(lit, 1);
+      for (let i = 0; i < 5; i++) g.fillCircle(W * 0.14 + i * W * 0.18, TOP + H * 0.72, 6);
+      // The emitter under it
+      g.fillStyle(hull.dark, 1).fillRoundedRect(W * 0.34, TOP + H * 0.86, W * 0.32, H * 0.14, 6);
+      if (pose === 'beam')
+        g.fillStyle(lit, 1).fillRoundedRect(W * 0.38, TOP + H * 0.92, W * 0.24, H * 0.08, 4);
+    },
+  },
 };
 
 /** A round shot: a ball of one color with a lighter core. */
@@ -439,6 +475,7 @@ const SHOTS: Record<string, ShotArt> = {
     },
   },
   snow: orb(0xc7e3f7, 0xffffff),
+  orb: orb(0x7b2cbf, 0xe0aaff),
   // A drop of fire, point up
   fire: {
     draw(g, w, h) {
@@ -464,6 +501,9 @@ const WARNS: Record<string, WarnArt> = {
   charge: { color: 0xff5964 },
   stomp: { color: 0x7ad7f0 },
   fire: { color: 0xff7b1c, shape: 'spot' },
+  orb: { color: 0xc77dff, shape: 'spot' },
+  beam: { color: 0x80ffdb },
+  tractor: { color: 0x80ffdb },
   'gust-left': { color: 0xffffff, shape: 'wind', dir: -1, soft: true },
   'gust-right': { color: 0xffffff, shape: 'wind', dir: 1, soft: true },
   'blow-left': { color: 0xffffff, shape: 'wind', dir: -1 },
