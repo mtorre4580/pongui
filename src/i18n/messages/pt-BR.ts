@@ -51,6 +51,12 @@ export const ptBR: Messages = {
   'overlay.shareCopied': 'Copiado!',
   'overlay.shareText':
     'Passei a fase {level} do Pongui em {t} s com {stars}. Você faz melhor? {url}',
+  'overlay.watchBot': 'Ver o robô',
+  'game.botPlaying': 'O robô está jogando: veja como ele faz',
+  'overlay.watched': 'Sua vez!',
+  'overlay.watchedText': 'Esse é um jeito de passar. Agora você.',
+  'overlay.tryIt': 'Tentar eu',
+  'overlay.watchAgain': 'Ver de novo',
   'mine.title': 'Meus níveis',
   'mine.new': '+ Novo nível',
   'mine.openCode': 'Abrir um link',

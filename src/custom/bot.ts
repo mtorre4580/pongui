@@ -1,6 +1,8 @@
 // Asks the bot (the level solver, in a Web Worker) whether a level can be beaten.
 import { draftIssues, mapHash, type CustomLevelData } from '../game/custom';
-import type { BotReply, BotRequest } from './bot.worker';
+import type { ParsedLevel } from '../game/level';
+import type { Decision } from '../game/solver';
+import type { BotReply, BotRequest, PlanReply, PlanRequest } from './bot.worker';
 
 export interface BotCheck extends BotReply {
   hash: string;
@@ -44,4 +46,25 @@ export function checkLevel(level: CustomLevelData): Promise<BotCheck | null> {
     };
     w.postMessage(req);
   });
+}
+
+/**
+ * Asks the bot how it beats a level, to play its solution back. Each call has a worker of its
+ * own (apart from the editor's checks); `cancel()` stops the search. Resolves with null when
+ * there is no solution or the worker fails.
+ */
+export function planFor(level: ParsedLevel): { plan: Promise<Decision[] | null>; cancel(): void } {
+  const w = new Worker(new URL('./bot.worker.ts', import.meta.url), { type: 'module' });
+  let settle: (plan: Decision[] | null) => void = () => undefined;
+  const plan = new Promise<Decision[] | null>((resolve) => {
+    settle = (value) => {
+      w.terminate();
+      resolve(value);
+    };
+    w.onmessage = (e: MessageEvent<PlanReply>) => settle(e.data.plan);
+    w.onerror = () => settle(null);
+  });
+  const req: PlanRequest = { parsed: level };
+  w.postMessage(req);
+  return { plan, cancel: () => settle(null) };
 }

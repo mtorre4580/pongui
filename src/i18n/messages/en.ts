@@ -50,6 +50,12 @@ export const en = {
   'overlay.shareCopied': 'Copied!',
   'overlay.shareText':
     'I beat level {level} of Pongui in {t} s with {stars}. Can you do better? {url}',
+  'overlay.watchBot': 'Watch the bot',
+  'game.botPlaying': 'The bot is playing: watch how it does it',
+  'overlay.watched': 'Your turn!',
+  'overlay.watchedText': 'That is one way to do it. Now you.',
+  'overlay.tryIt': 'Try it myself',
+  'overlay.watchAgain': 'Watch again',
   'mine.title': 'My levels',
   'mine.new': '+ New level',
   'mine.openCode': 'Open a link',

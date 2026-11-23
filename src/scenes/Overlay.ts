@@ -11,7 +11,8 @@ import { leaveCustom, type CustomRun } from '../custom/run';
 import { gamePage, levelUrl, shareText, starsText } from '../share';
 
 export interface OverlayData {
-  mode: 'pause' | 'complete' | 'gameover';
+  /** `watched`: the bot has just played the level ("watch the bot"). */
+  mode: 'pause' | 'complete' | 'gameover' | 'watched';
   index: number;
   stars?: number;
   time?: number;
@@ -97,8 +98,21 @@ export class Overlay extends Phaser.Scene {
       );
       panel.add(text(this, 0, -h / 2 + 70, t('overlay.outOfLivesText'), 14, '#c9cff7'));
       add(t('overlay.retry'), () => this.startLevel(d.index), 0xe85d75);
+      // Out of lives means three failed attempts: offer to see how the level is done. Not on a
+      // level still being tested in the editor, which the bot may not be able to beat
+      if (custom?.from !== 'editor') add(t('overlay.watchBot'), () => this.watchBot());
       add(backLabel, () => this.toLevels());
-      layout(-h / 2 + 128);
+      layout(-h / 2 + (buttons.length > 2 ? 108 : 128));
+      this.group = new ButtonGroup(buttons, 1, () => this.toLevels());
+    } else if (d.mode === 'watched') {
+      panel.add(
+        text(this, 0, -h / 2 + 36, t('overlay.watched'), 28, '#ffd166', { fontStyle: '700' }),
+      );
+      panel.add(text(this, 0, -h / 2 + 70, t('overlay.watchedText'), 14, '#c9cff7'));
+      add(t('overlay.tryIt'), () => this.startLevel(d.index), 0xe85d75);
+      add(t('overlay.watchAgain'), () => this.watchBot());
+      add(backLabel, () => this.toLevels());
+      layout(-h / 2 + 108);
       this.group = new ButtonGroup(buttons, 1, () => this.toLevels());
     } else {
       panel.add(
@@ -180,6 +194,16 @@ export class Overlay extends Phaser.Scene {
     document.body.dataset.scene = 'Game';
     this.scene.resume('Game');
     this.scene.stop();
+  }
+
+  private watchBot() {
+    const d = this.data_;
+    if (!d.custom) {
+      const world = worldOf(d.index);
+      track('bot_watched', { level: `${world.n}-${d.index - world.first + 1}` });
+    }
+    this.scene.stop('Game');
+    this.scene.start('Game', { index: d.index, custom: d.custom, bot: true });
   }
 
   private startLevel(index: number) {
