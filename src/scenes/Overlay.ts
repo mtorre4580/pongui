@@ -132,7 +132,7 @@ export class Overlay extends Phaser.Scene {
           -h / 2 + 78,
           next < LEVELS.length
             ? t('overlay.bossDownText', { n: d.boss + 1 })
-            : t('overlay.time', { t: (d.time ?? 0).toFixed(1) }),
+            : t('overlay.bossFinal'),
           14,
           '#c9cff7',
         ),

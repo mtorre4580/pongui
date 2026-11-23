@@ -53,6 +53,7 @@ export const en = {
   'boss.7': 'Cinder',
   'boss.8': 'Orbit',
   'boss.9': 'Gloom',
+  'boss.10': 'King Prism',
   'select.boss': 'Boss: {name}',
   'select.bossLocked': 'Finish the ten levels to face the boss',
   'select.lockedBoss': 'Beat the boss of world {n} to open this one',
@@ -73,9 +74,12 @@ export const en = {
     'Keep away from its orbs. When it comes down, stay out of the beam and bounce high onto its dome!',
   'game.bossHint.9':
     'Its eyes glow where it will appear. Wait on the block above them: when it opens, you drop on its head!',
+  'game.bossHint.10':
+    'Get through each of his attacks. When the rainbow bridge appears, climb it and land on his crown!',
   'overlay.toBoss': 'Face the boss',
   'overlay.bossDown': 'Boss defeated!',
   'overlay.bossDownText': 'World {n} is open.',
+  'overlay.bossFinal': 'That was the last one. You beat Pongui!',
   'overlay.fightAgain': 'Fight again',
   'menu.daily': 'Daily level',
   'menu.dailyDone': 'Daily level ✓',

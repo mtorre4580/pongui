@@ -10,6 +10,7 @@ import { LEDGES, type Giant } from '../src/bosses/w6-flurry';
 import type { Dragon } from '../src/bosses/w7-cinder';
 import type { Saucer } from '../src/bosses/w8-orbit';
 import type { Specter } from '../src/bosses/w9-gloom';
+import { BRIDGE, type King } from '../src/bosses/w10-prism';
 import { BossFight, MIN_WARN, seeded, type BossBrain, type BossDef } from '../src/game/boss';
 import { BALL_R, COLS, STEP, TILE, V_LOW } from '../src/game/constants';
 import { World, type InputState } from '../src/game/physics';
@@ -1321,6 +1322,160 @@ describe('Gloom (world 9)', () => {
     expect(Math.max(...def.sweep)).toBeLessThan(160);
     // It reaches the underside of the platforms, so a ball that drops through lands on it
     expect(def.floorY - def.height).toBe(9 * TILE);
+  });
+});
+
+describe('King Prism (world 10)', () => {
+  const { def } = BOSSES[10];
+  const brain = (f: BossFight) => f.brain as King;
+  const FLOOR_ROW = 11 * COLS;
+  /** A fight in a phase, run with the ball held out of everything until the bridge is there. */
+  const toBridge = (hp: number) => {
+    const fight = fightOf(10, hp);
+    const events = [];
+    fight.f.grab = { x: 80, y: 60, need: Infinity, wiggles: 0, last: 0 };
+    for (let i = 0; i < 40 / STEP && brain(fight.f).mode !== 'bridge'; i++)
+      events.push(...fight.f.step(STEP, idle).boss);
+    fight.f.grab = null;
+    return { ...fight, events };
+  };
+  const kinds = (events: { type: string; kind?: string }[]) => [
+    ...new Set(events.filter((e) => e.type === 'boss-warn').map((e) => e.kind!.split('-')[0])),
+  ];
+
+  it('floats over the reach of the floor: low bounces pass under him, high ones do not', () => {
+    const low = fightOf(10);
+    for (let i = 0; i < 2 / STEP; i++) {
+      low.s.x = def.x;
+      brain(low.f).t = 9;
+      low.f.step(STEP, idle);
+    }
+    expect(low.s.status).toBe('playing');
+    const high = fightOf(10);
+    for (let i = 0; i < 2 / STEP && high.s.status === 'playing'; i++) {
+      high.s.x = def.x;
+      brain(high.f).t = 9;
+      high.f.step(STEP, { ...idle, jump: true });
+    }
+    expect(high.s.status).toBe('dead');
+    expect(high.f.boss.hp).toBe(def.hp);
+    for (const idx of BRIDGE) expect(low.s.tiles[idx]).toBe(T.EMPTY);
+  });
+
+  it('brings back an attack of the earlier bosses in each phase', () => {
+    expect(kinds(toBridge(5).events).sort()).toEqual(['fire']);
+    expect(kinds(toBridge(4).events).sort()).toEqual(['blow', 'bolt', 'gust']);
+    expect(kinds(toBridge(3).events).sort()).toEqual(['fire', 'hole']);
+    const dark = toBridge(2);
+    expect(kinds(dark.events).sort()).toEqual(['bolt', 'fire']);
+    expect(dark.f.dark).toBe(true);
+    expect(dark.events).toContainEqual({ type: 'boss-dark', on: true });
+    expect(kinds(toBridge(1).events).sort()).toEqual([
+      'blow',
+      'bolt',
+      'fire',
+      'gust',
+      'hole',
+      'reach',
+    ]);
+    // Only the fourth phase is dark
+    for (const hp of [5, 4, 3, 1]) expect(toBridge(hp).f.dark).toBe(false);
+  });
+
+  it('calls the rainbow bridge when a wave is over, and takes it away after a warning', () => {
+    const { f, s, events } = toBridge(5);
+    for (const idx of BRIDGE) expect(s.tiles[idx]).toBe(T.BRIDGE);
+    expect(events).toContainEqual(expect.objectContaining({ type: 'boss-fx', name: 'bridge' }));
+    // Nothing is in the air or on its way when it appears
+    expect(f.shots).toHaveLength(0);
+    expect(f.warns).toHaveLength(0);
+    const t0 = s.time;
+    let warned = -1;
+    f.grab = { x: 80, y: 300, need: Infinity, wiggles: 0, last: 0 };
+    for (let i = 0; i < 10 / STEP && brain(f).mode === 'bridge'; i++) {
+      if (f.step(STEP, idle).boss.some((e) => e.type === 'boss-warn' && e.kind === 'fade'))
+        warned = s.time;
+    }
+    expect(s.time - t0).toBeGreaterThan(def.bridge[0] - 0.1);
+    expect(s.time - warned).toBeGreaterThanOrEqual(def.bridgeWarn - STEP);
+    for (const idx of BRIDGE) expect(s.tiles[idx]).toBe(T.EMPTY);
+    expect(brain(f).mode).toBe('wave');
+  });
+
+  it('is hit by a high bounce from the end of the bridge, and the next wave begins', () => {
+    const { f, s } = toBridge(5);
+    Object.assign(s, { x: 246, y: 8 * TILE - BALL_R - 1, vx: 0, vy: 100 });
+    let hit = false;
+    for (let i = 0; i < 3 / STEP && !hit && s.status === 'playing'; i++) {
+      const over = s.y + BALL_R < f.box[1] - 2;
+      hit = f
+        .step(STEP, { ...idle, jump: true, right: over && s.x < f.boss.x })
+        .boss.some((e) => e.type === 'boss-hit');
+    }
+    expect(hit).toBe(true);
+    // A low bounce on the bridge does not get over his crown
+    expect(def.fly + def.height).toBeGreaterThan(3 * TILE + 51 + 8);
+    for (let i = 0; i < 3 / STEP && f.dazed; i++) f.step(STEP, { ...idle, left: true });
+    expect(brain(f).mode).toBe('wave');
+    for (const idx of BRIDGE) expect(s.tiles[idx]).toBe(T.EMPTY);
+    expect(f.phase).toBe(1);
+  });
+
+  it('opens the floor under the ball after a warning, and closes it again', () => {
+    const { f, s } = fightOf(10, 3);
+    const col = Math.floor(s.x / TILE);
+    const events = [];
+    let opened = -1;
+    let warned = -1;
+    for (let i = 0; i < 8 / STEP && opened < 0; i++) {
+      // Held over its own column, off the floor
+      f.grab = { x: s.x, y: 250, need: Infinity, wiggles: 0, last: 0 };
+      const now = f.step(STEP, idle).boss;
+      if (warned < 0 && now.some((e) => e.type === 'boss-warn' && e.kind === 'hole'))
+        warned = s.time;
+      if (s.tiles[FLOOR_ROW + col] === T.EMPTY) opened = s.time;
+      events.push(...now);
+    }
+    expect(opened - warned).toBeGreaterThanOrEqual(def.warn[2] - STEP);
+    const holes = [...s.tiles.subarray(FLOOR_ROW + 1, FLOOR_ROW + 19)].filter((t) => t === T.EMPTY);
+    expect(holes.length).toBeGreaterThanOrEqual(1);
+    expect(holes.length).toBeLessThanOrEqual(3);
+    for (let i = 0; i < (def.hole + 0.2) / STEP; i++) {
+      brain(f).t = 9;
+      f.step(STEP, idle);
+    }
+    expect(s.tiles[FLOOR_ROW + col]).toBe(T.SOLID);
+    // A ball that stays on the marked tile falls with it
+    const still = fightOf(10, 3);
+    still.run(10);
+    expect(still.s.status).toBe('dead');
+  });
+
+  it('catches a ball near the floor in his last phase, and lets go of one that shakes', () => {
+    const lost = fightOf(10, 1);
+    const events = lost.run(6, () => lost.f.grab !== null);
+    expect(events).toContainEqual(expect.objectContaining({ type: 'boss-warn', kind: 'reach' }));
+    expect(lost.f.grab).not.toBeNull();
+    for (let i = 0; i < 12 / STEP && lost.s.status === 'playing'; i++)
+      lost.f.step(STEP, { ...idle, left: true });
+    expect(lost.s.status).toBe('dead');
+    const free = fightOf(10, 1);
+    free.run(6, () => free.f.grab !== null);
+    for (let i = 0; i < 4 / STEP && free.f.grab; i++) {
+      const right = Math.floor(i / 24) % 2 === 1; // five changes a second
+      free.f.step(STEP, { ...idle, left: !right, right });
+    }
+    expect(free.f.grab).toBeNull();
+    expect(free.s.status).toBe('playing');
+    // Held well under him: time to shake loose at four changes a second
+    expect(def.shakes / 4).toBeLessThan((def.fly - 2 * BALL_R) / def.pull);
+  });
+
+  it('warns less and leaves the bridge for less time as the fight goes on', () => {
+    for (const down of [def.warn, def.bridge])
+      expect([...down]).toEqual([...down].sort((a, b) => b - a));
+    expect(Math.min(...def.warn, def.reachWarn, def.bridgeWarn)).toBeGreaterThanOrEqual(MIN_WARN);
+    expect(def.hp).toBe(5);
   });
 });
 

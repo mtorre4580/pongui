@@ -10,6 +10,7 @@ import { FLURRY } from './w6-flurry';
 import { CINDER } from './w7-cinder';
 import { ORBIT } from './w8-orbit';
 import { GLOOM } from './w9-gloom';
+import { PRISM } from './w10-prism';
 
 export type { Boss } from './types';
 
@@ -23,6 +24,7 @@ export const BOSSES = {
   7: CINDER,
   8: ORBIT,
   9: GLOOM,
+  10: PRISM,
 } satisfies Record<number, Boss>;
 
 /** The boss of a world, if it has one. */
