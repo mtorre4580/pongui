@@ -64,6 +64,16 @@ export function parseLevel(data: LevelData): ParsedLevel {
   if (tiles[s.row * COLS + s.col] !== T.EMPTY)
     throw new Error(`${data.id}: the start is inside a block`);
 
+  // The top row and the side columns must be plain walls: the HUD is drawn over the top row and
+  // the touch controls may cover the side columns (see gfx/layout.ts). The floor row is free.
+  for (let c = 0; c < COLS; c++) {
+    if (tiles[c] !== T.SOLID) throw new Error(`${data.id}: row 0 must be solid walls (#)`);
+  }
+  for (let r = 0; r < ROWS; r++) {
+    if (tiles[r * COLS] !== T.SOLID || tiles[r * COLS + COLS - 1] !== T.SOLID)
+      throw new Error(`${data.id}: the first and last columns must be solid walls (#)`);
+  }
+
   return {
     id: data.id,
     name: data.name,
