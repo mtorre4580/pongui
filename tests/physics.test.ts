@@ -470,4 +470,39 @@ describe('bounce physics', () => {
     expect(kinds[0]).toBe('bounce');
     expect(kinds).not.toContain('bump');
   });
+
+  it('phase blocks take turns every 1.2 s, and one closing around the ball waits for it', () => {
+    const w = new World(level({ 5: '#..%%%..&&&........#', 10: '#.P................#' }));
+    const solidA = () => !w.isOpen(T.PHASE_A, 5 * 20 + 3);
+    const solidB = () => !w.isOpen(T.PHASE_B, 5 * 20 + 8);
+    expect(solidA()).toBe(true);
+    expect(solidB()).toBe(false);
+    for (let i = 0; i < 144; i++) w.step(STEP, idle);
+    expect(solidA()).toBe(false);
+    expect(solidB()).toBe(true);
+    for (let i = 0; i < 144; i++) w.step(STEP, idle);
+    expect(solidA()).toBe(true);
+
+    // The ball inside an open `&` block when it turns solid is not trapped
+    const v = new World(level({ 5: '#.......&..........#', 10: '#.P................#' }));
+    for (let i = 0; i < 143; i++) v.step(STEP, idle);
+    v.s.x = 8 * TILE + TILE / 2;
+    v.s.y = 5 * TILE + TILE / 2;
+    v.s.vy = 0;
+    v.step(STEP, idle);
+    expect(v.phaseB).toBe(true);
+    expect(v.s.pending).toBe(1);
+    for (let i = 0; i < 120; i++) v.step(STEP, idle);
+    expect(v.s.y).toBeGreaterThan(6 * TILE);
+    expect(v.s.pending).toBe(0);
+  });
+
+  it('reads dark levels', () => {
+    const map = Array.from({ length: 12 }, (_, r) =>
+      r === 0 || r === 11 ? '####################' : r === 10 ? '#P................E#' : empty,
+    );
+    const name = { en: 't', es: 't', 'pt-BR': 't' };
+    expect(parseLevel({ id: 't', name, par: 1, map, dark: true }).dark).toBe(true);
+    expect(parseLevel({ id: 't', name, par: 1, map }).dark).toBe(false);
+  });
 });

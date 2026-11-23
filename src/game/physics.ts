@@ -27,6 +27,7 @@ import {
   V_LOW,
   V_SPRING,
   VENT_CYCLE,
+  PHASE_CYCLE,
 } from './constants';
 import { FIELD, type ItemKind, type ParsedLevel } from './level';
 import { fragileMax, isPortal, isToggle, T } from './tiles';
@@ -55,6 +56,7 @@ export type WorldEvent =
   | { type: 'portal'; from: number; to: number }
   | { type: 'water'; inside: boolean }
   | { type: 'zone'; inside: boolean }
+  | { type: 'phase'; b: boolean }
   | { type: 'bump'; idx: number }
   | { type: 'crumble'; idx: number }
   | { type: 'vent'; lit: boolean }
@@ -118,7 +120,10 @@ interface Cell {
  * the phase in its state key: the same spot at a different phase is a different situation.
  */
 export function timedCycle(level: ParsedLevel): number {
-  return level.tiles.some((t) => t === T.VENT) ? VENT_CYCLE : 0;
+  const vents = level.tiles.some((t) => t === T.VENT);
+  const phases = level.tiles.some((t) => t === T.PHASE_A || t === T.PHASE_B);
+  if (vents && phases) return 1440; // both cycles repeat together every 12 s
+  return vents ? VENT_CYCLE : phases ? PHASE_CYCLE : 0;
 }
 
 export function cloneState(s: WorldState): WorldState {
@@ -135,6 +140,7 @@ export class World {
   s: WorldState;
   private readonly partner = new Map<number, number>();
   readonly hasVents: boolean;
+  readonly hasPhases: boolean;
 
   constructor(level: ParsedLevel, skipItems: Iterable<number> = []) {
     this.level = level;
@@ -169,6 +175,7 @@ export class World {
       crumbling: 0,
     };
     this.hasVents = level.tiles.some((t) => t === T.VENT);
+    this.hasPhases = level.tiles.some((t) => t === T.PHASE_A || t === T.PHASE_B);
     // Each portal's partner (the other tile with the same digit)
     level.tiles.forEach((t, idx) => {
       if (!isPortal(t)) return;
@@ -193,6 +200,11 @@ export class World {
     s.ticks++;
     if (this.hasVents && s.ticks % (VENT_CYCLE / 2) === 0)
       ev.push({ type: 'vent', lit: this.ventLit });
+    if (this.hasPhases && s.ticks % (PHASE_CYCLE / 2) === 0) {
+      // The blocks that turn solid around the ball wait until it leaves them
+      this.holdOpen();
+      ev.push({ type: 'phase', b: this.phaseB });
+    }
     if (s.crumbling === 0) return;
     const gone: number[] = [];
     for (let idx = 0; idx < s.tiles.length; idx++) {
@@ -222,7 +234,14 @@ export class World {
   private toggleSolid(t: number): boolean {
     if (t === T.BLOCK_A) return this.s.switchOn;
     if (t === T.BLOCK_B) return !this.s.switchOn;
+    if (t === T.PHASE_A) return !this.phaseB;
+    if (t === T.PHASE_B) return this.phaseB;
     return true;
+  }
+
+  /** `&` blocks are solid (and `%` ones open) during the second half of the phase cycle. */
+  get phaseB(): boolean {
+    return this.s.ticks % PHASE_CYCLE >= PHASE_CYCLE / 2;
   }
 
   /** Every map cell the ball's box covers (only the ones it collides with, if `solid`). */

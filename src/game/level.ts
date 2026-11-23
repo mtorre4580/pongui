@@ -23,6 +23,8 @@ export interface LevelData {
   /** Replaces `hint` when playing with touch gestures (for hints that name keys or buttons). */
   hintTouch?: Localized<string>;
   par: number; // seconds to earn the time star
+  /** Only a circle of light around the ball (Shadow Keep). */
+  dark?: boolean;
   map: string[];
 }
 
@@ -32,6 +34,7 @@ export interface ParsedLevel {
   hint: Localized<string> | null;
   hintTouch: Localized<string> | null;
   par: number;
+  dark: boolean;
   tiles: Uint8Array;
   /**
    * What fills each cell: `FIELD.WATER` (`~`), `FIELD.ZONE` (low gravity, `z`) or nothing.
@@ -114,6 +117,7 @@ export function parseLevel(data: LevelData): ParsedLevel {
     name: data.name,
     hint: data.hint ?? null,
     hintTouch: data.hintTouch ?? null,
+    dark: data.dark ?? false,
     par: data.par,
     tiles,
     field,
