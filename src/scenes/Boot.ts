@@ -5,6 +5,7 @@ import { decodeLevel } from '../game/custom';
 import { levelFromParam } from '../levels';
 import { addReceived } from '../custom/store';
 import { hideSplash } from '../native';
+import { isFirstVisit } from '../save';
 
 export class Boot extends Phaser.Scene {
   constructor() {
@@ -33,6 +34,9 @@ export class Boot extends Phaser.Scene {
     }
     const index = levelFromParam(params.get('level'));
     if (index !== null) this.scene.start('Game', { index });
+    // Someone new plays at once: the first level teaches the game better than a menu, and the
+    // menu is one step away (pause, then the level list)
+    else if (isFirstVisit()) this.scene.start('Game', { index: 0 });
     else this.scene.start('Menu');
   }
 }

@@ -1,8 +1,9 @@
 import { expect, test } from '@playwright/test';
-import { expectScene, trackErrors } from './support';
+import { asReturningPlayer, expectScene, trackErrors } from './support';
 
 test('boots into the menu without errors', async ({ page }) => {
   const errors = trackErrors(page);
+  await asReturningPlayer(page);
   await page.goto('./play/');
   await expect(page).toHaveTitle(/Pongui/);
   await expect(page.locator('#game canvas')).toBeVisible();
@@ -12,6 +13,7 @@ test('boots into the menu without errors', async ({ page }) => {
 
 test('the keyboard goes from the menu to a level and pauses it', async ({ page, isMobile }) => {
   test.skip(isMobile, 'keyboard flow');
+  await asReturningPlayer(page);
   await page.goto('./play/');
   await expectScene(page, 'Menu');
   // First Enter focuses the first button, the second one activates it
@@ -68,6 +70,7 @@ test('touch play uses gestures, with no on-screen buttons', async ({ page, isMob
 
 test('the language follows the browser and can be saved', async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem('pongui:locale', 'es'));
+  await asReturningPlayer(page);
   await page.goto('./play/');
   await expect(page.locator('html')).toHaveAttribute('lang', 'es');
   await expect(page.locator('#rotate-text')).toHaveText('Girá el dispositivo para jugar');
@@ -82,6 +85,26 @@ test('the game fills the whole screen, with no empty bars', async ({ page }) => 
   expect(Math.round(box.y)).toBe(0);
   expect(Math.round(box.width)).toBe(viewport.width);
   expect(Math.round(box.height)).toBe(viewport.height);
+});
+
+test('a first visit starts on the first level, and the menu is one step away', async ({
+  page,
+  isMobile,
+}) => {
+  const errors = trackErrors(page);
+  await page.goto('./play/');
+  await expectScene(page, 'Game');
+  test.skip(isMobile, 'keyboard flow');
+  // Pause, then "Choose level" (the last button) and back to the menu
+  await page.keyboard.press('Escape');
+  await expectScene(page, 'Overlay');
+  expect(errors).toEqual([]);
+});
+
+test('a returning player opens on the menu', async ({ page }) => {
+  await asReturningPlayer(page);
+  await page.goto('./play/');
+  await expectScene(page, 'Menu');
 });
 
 test('out of lives, the bot shows how the level is done and nothing is recorded', async ({

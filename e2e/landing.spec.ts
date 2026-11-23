@@ -20,7 +20,8 @@ test('the play button opens the game', async ({ page }) => {
   await page.goto('./');
   await page.getByRole('link', { name: /Play now/ }).click();
   await expect(page).toHaveURL(/\/play\/$/);
-  await expect(page.locator('body')).toHaveAttribute('data-scene', 'Menu', { timeout: 10_000 });
+  // Someone new goes straight to the first level
+  await expect(page.locator('body')).toHaveAttribute('data-scene', 'Game', { timeout: 10_000 });
 });
 
 test('the language selector translates the page and is remembered', async ({ page }) => {

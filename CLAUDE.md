@@ -162,6 +162,9 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
   mechanics introduced in its first levels. The plan is 10 worlds (100 levels); `WORLD_COUNT` in
   `src/levels/worlds.ts` says how many exist (the landing page reads it without the maps) and
   `PLANNED_WORLDS` how many are planned (once both match, the landing stops promising more).
+- First visit: with no saved game (`isFirstVisit()` in `save.ts`), `/play/` starts on level 1-1
+  instead of the menu (pause → "Choose level" → "Menu" leads back). Browser tests that need the
+  menu call `asReturningPlayer(page)` first.
 - Watch the bot: out of lives, the panel offers to see the level solved. `Game` started with
   `bot: true` asks the solver for its plan in a worker (`planFor` in `custom/bot.ts`) and plays
   it with `PlanPlayer` (`game/replay.ts`), one input per physics step, like the solver did.
