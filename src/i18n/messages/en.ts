@@ -15,6 +15,7 @@ export const en = {
   'select.locked': 'Beat world {n} to open this one',
   'world.1': 'Bouncy Valley',
   'world.2': 'Crystal Caves',
+  'world.3': 'Cloud Peaks',
   'game.level': 'Level {n} · {name}',
   'game.exitOpen': 'Exit open!',
   'overlay.paused': 'Paused',

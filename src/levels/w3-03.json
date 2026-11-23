@@ -1,0 +1,28 @@
+{
+  "id": "w3-03",
+  "name": {
+    "en": "Cloud stairs",
+    "es": "Escalera de nubes",
+    "pt-BR": "Escada de nuvens"
+  },
+  "hint": {
+    "en": "One step at a time: low bounces climb the clouds.",
+    "es": "Un escalón por vez: los rebotes bajos suben las nubes.",
+    "pt-BR": "Um degrau de cada vez: quiques baixos sobem as nuvens."
+  },
+  "par": 14,
+  "map": [
+    "####################",
+    "#..................#",
+    "#...............gE.#",
+    "#...............---#",
+    "#............g---..#",
+    "#...........---....#",
+    "#.........---......#",
+    "#......g---........#",
+    "#......---.........#",
+    "#....---...........#",
+    "#P.---.............#",
+    "####***************#"
+  ]
+}

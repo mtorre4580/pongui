@@ -1,0 +1,28 @@
+{
+  "id": "w3-10",
+  "name": {
+    "en": "Summit",
+    "es": "Cumbre",
+    "pt-BR": "Cume"
+  },
+  "hint": {
+    "en": "Wind, clouds, a key and a spring: reach the summit!",
+    "es": "Viento, nubes, una llave y un resorte: ¡llegá a la cumbre!",
+    "pt-BR": "Vento, nuvens, uma chave e uma mola: chegue ao cume!"
+  },
+  "par": 22,
+  "map": [
+    "####################",
+    "#...............L..#",
+    "#...............L..#",
+    "#.....g.........L.E#",
+    "#.k.||.......---####",
+    "#---||....g........#",
+    "#...||.............#",
+    "#...||.XXXXXX......#",
+    "#...||..........g..#",
+    "#...||.............#",
+    "#.P.||........s....#",
+    "####*********#######"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "id": "w3-08",
+  "name": {
+    "en": "Wind tower",
+    "es": "Torre de viento",
+    "pt-BR": "Torre de vento"
+  },
+  "hint": {
+    "en": "Ride the updrafts and rest on the clouds on your way up.",
+    "es": "Subí con las corrientes y descansá en las nubes.",
+    "pt-BR": "Suba com as correntes e descanse nas nuvens."
+  },
+  "par": 26,
+  "map": [
+    "####################",
+    "#..................#",
+    "#................E.#",
+    "#......||......#####",
+    "#...g..||..........#",
+    "#..----||.g........#",
+    "#......||.----.....#",
+    "#......||..........#",
+    "#||....||...g......#",
+    "#||----............#",
+    "#||.P..............#",
+    "#############******#"
+  ]
+}

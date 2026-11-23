@@ -1,0 +1,28 @@
+{
+  "id": "w3-02",
+  "name": {
+    "en": "Wind lift",
+    "es": "Ascensor de viento",
+    "pt-BR": "Elevador de vento"
+  },
+  "hint": {
+    "en": "Rising air lifts you up. Steer out at the top.",
+    "es": "El aire que sube te levanta. Salí por arriba moviéndote a un costado.",
+    "pt-BR": "O ar que sobe levanta você. Saia pelo alto indo para o lado."
+  },
+  "par": 19,
+  "map": [
+    "####################",
+    "#..................#",
+    "#........g.........#",
+    "#........||......E.#",
+    "#........||#########",
+    "#.....g..||........#",
+    "#....####||........#",
+    "#........||........#",
+    "#........||........#",
+    "#........||........#",
+    "#.P......||........#",
+    "####################"
+  ]
+}

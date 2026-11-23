@@ -1,0 +1,28 @@
+{
+  "id": "w3-09",
+  "name": {
+    "en": "Springs and clouds",
+    "es": "Resortes y nubes",
+    "pt-BR": "Molas e nuvens"
+  },
+  "hint": {
+    "en": "Springs fly through clouds. Steer to choose where you land.",
+    "es": "Los resortes atraviesan las nubes. Movete para elegir dónde caer.",
+    "pt-BR": "As molas atravessam as nuvens. Mova-se para escolher onde cair."
+  },
+  "par": 21,
+  "map": [
+    "####################",
+    "#..................#",
+    "#...........g...E..#",
+    "#..........------..#",
+    "#...g..............#",
+    "#..-----...........#",
+    "#........g.........#",
+    "#......-----s......#",
+    "#..................#",
+    "#..................#",
+    "#.P......s.........#",
+    "####################"
+  ]
+}

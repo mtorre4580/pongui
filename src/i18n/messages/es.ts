@@ -17,6 +17,7 @@ export const es: Messages = {
   'select.locked': 'Terminá el mundo {n} para abrir este',
   'world.1': 'Valle Saltarín',
   'world.2': 'Cuevas de Cristal',
+  'world.3': 'Picos Nubosos',
   'game.level': 'Nivel {n} · {name}',
   'game.exitOpen': '¡Salida abierta!',
   'overlay.paused': 'Pausa',

@@ -16,6 +16,7 @@ export const ptBR: Messages = {
   'select.locked': 'Termine o mundo {n} para abrir este',
   'world.1': 'Vale Saltitante',
   'world.2': 'Cavernas de Cristal',
+  'world.3': 'Picos Nublados',
   'game.level': 'Fase {n} · {name}',
   'game.exitOpen': 'Saída aberta!',
   'overlay.paused': 'Pausa',
