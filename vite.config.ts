@@ -57,7 +57,9 @@ const siteFiles = (site: string): Plugin => ({
   name: 'site-files',
   apply: 'build',
   generateBundle() {
-    const urls = ['', 'play/'].map((path) => `  <url>\n    <loc>${site}${path}</loc>\n  </url>`);
+    const urls = ['', 'play/', 'privacy/'].map(
+      (path) => `  <url>\n    <loc>${site}${path}</loc>\n  </url>`,
+    );
     this.emitFile({
       type: 'asset',
       fileName: 'robots.txt',
@@ -126,7 +128,11 @@ export default defineConfig(({ mode }) => {
   // Web: the landing page at / and the game at /play/. Native: the game only
   const input: Record<string, string> = native
     ? { play: page('./play/index.html') }
-    : { main: page('./index.html'), play: page('./play/index.html') };
+    : {
+        main: page('./index.html'),
+        play: page('./play/index.html'),
+        privacy: page('./privacy/index.html'),
+      };
   return {
     base: './',
     publicDir: native ? false : 'public',

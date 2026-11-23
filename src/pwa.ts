@@ -1,4 +1,5 @@
 // App install (PWA) and fullscreen.
+import { track } from './analytics';
 import { IS_NATIVE } from './native';
 
 interface BeforeInstallPromptEvent extends Event {
@@ -16,6 +17,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
   notify();
 });
 window.addEventListener('appinstalled', () => {
+  track('install');
   deferred = null;
   notify();
 });

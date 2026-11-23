@@ -58,7 +58,8 @@ export const ptBR: LandingMessages = {
   'faq.offline.a':
     'Sim. Depois da primeira visita o jogo inteiro fica salvo no seu dispositivo, então ele funciona sem internet.',
   'faq.progress.q': 'Onde o meu progresso fica salvo?',
-  'faq.progress.a': 'Só no seu navegador, no seu dispositivo. Nada é enviado para lugar nenhum.',
+  'faq.progress.a':
+    'Só no seu navegador, no seu dispositivo. O site só conta visitas e fases jogadas de forma anônima, sem cookies nem dados pessoais.',
   'faq.devices.q': 'Em quais dispositivos posso jogar?',
   'faq.devices.a':
     'Em qualquer navegador moderno de computador, tablet ou celular. No celular, vire a tela na horizontal para jogar.',
@@ -67,6 +68,7 @@ export const ptBR: LandingMessages = {
     'Inglês, espanhol e português. Ele segue o idioma do seu navegador, e você pode trocar pelo menu.',
   'cta.title': 'Pronto para quicar?',
   'cta.play': 'Jogar Pongui',
+  'footer.privacy': 'Privacidade',
   'footer.rights': 'Todos os direitos reservados.',
   'nav.worlds': 'Mundos',
   'nav.create': 'Criar',

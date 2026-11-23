@@ -1,5 +1,6 @@
 // Playing a player-made level: which one, where it was started from, and the way back.
 import type Phaser from 'phaser';
+import { track } from '../analytics';
 import { toLevelData } from '../game/custom';
 import { parseLevel, type ParsedLevel } from '../game/level';
 import { IS_NATIVE } from '../native';
@@ -28,8 +29,13 @@ export function canCreate(): boolean {
   );
 }
 
+let editorCounted = false;
+
 /** Opens the editor (its code loads on first use: phones never download it). */
 export async function openEditor(scene: Phaser.Scene, id: string) {
+  // Coming back from a test run opens it again: count one use per visit
+  if (!editorCounted) track('editor_open');
+  editorCounted = true;
   const { Editor } = await import('../scenes/Editor');
   const manager = scene.scene.manager;
   if (!manager.getScene('Editor')) manager.add('Editor', Editor, false);

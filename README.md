@@ -139,8 +139,13 @@ stays idle until the repository has:
 |---|---|---|
 | Variable | `CLOUDFLARE_PAGES_PROJECT` | Name of the Pages project (created once with "Direct upload") |
 | Variable | `SITE_URL` | Public address, shown on the deployment |
+| Variable | `UMAMI_WEBSITE_ID` | Optional: Umami website id for anonymous statistics |
 | Secret | `CLOUDFLARE_API_TOKEN` | API token with the "Cloudflare Pages: Edit" permission |
 | Secret | `CLOUDFLARE_ACCOUNT_ID` | Account id from the Cloudflare dashboard |
+
+Usage statistics are optional: set the repository variable `UMAMI_WEBSITE_ID` (an
+[Umami Cloud](https://umami.is) website id) and the build loads its cookieless tracker; without
+it nothing is loaded. What is measured is listed in `/privacy/`.
 
 `public/_headers` sets the cache rules (hashed assets forever, the service worker never) and
 `public/404.html` is the "not found" page.

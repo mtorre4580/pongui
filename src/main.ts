@@ -1,3 +1,4 @@
+import { initAnalytics } from './analytics';
 import { registerServiceWorker } from './pwa';
 import Phaser from 'phaser';
 import { CANVAS_H, CANVAS_W } from './game/constants';
@@ -12,6 +13,7 @@ import { MyLevels } from './scenes/MyLevels';
 import { Overlay } from './scenes/Overlay';
 
 registerServiceWorker();
+initAnalytics();
 
 async function start() {
   await initNative();
