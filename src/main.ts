@@ -6,6 +6,7 @@ import Phaser from 'phaser';
 import { CANVAS_H, CANVAS_W } from './game/constants';
 import { applyDomTexts } from './i18n';
 import { controls } from './input/controls';
+import { initNative } from './native';
 import { Boot } from './scenes/Boot';
 import { Game } from './scenes/Game';
 import { LevelSelect } from './scenes/LevelSelect';
@@ -15,6 +16,7 @@ import { Overlay } from './scenes/Overlay';
 registerServiceWorker();
 
 async function start() {
+  await initNative();
   applyDomTexts();
   controls.init();
   // Wait for the font (with a timeout) so texts are not rendered with a fallback font

@@ -18,6 +18,7 @@ import { bakeSolids, C, drawBackground, sparkTexture } from '../gfx/textures';
 import { setupCamera, text } from '../gfx/ui';
 import { localized, t } from '../i18n';
 import { controls } from '../input/controls';
+import { haptic } from '../native';
 import { LEVELS } from '../levels';
 import { loadSave, recordWin } from '../save';
 
@@ -449,6 +450,9 @@ export class Game extends Phaser.Scene {
         case 'bounce': {
           this.squash = 1;
           sfx.bounce(e.kind);
+          // Low bounces happen constantly: only the bigger ones vibrate on phones
+          if (e.kind === 'spring' || e.kind === 'ramp') haptic('medium');
+          else if (e.kind === 'high') haptic('light');
           const t = e.idx >= 0 ? this.level.tiles[e.idx] : T.SOLID;
           this.burst(TILE_COLOR[t] ?? C.solidTop, e.x, e.y + OY, e.kind === 'low' ? 3 : 6, 90);
           const spr = this.tileSprites.get(e.idx);
@@ -506,7 +510,10 @@ export class Game extends Phaser.Scene {
             });
           });
           sfx.break();
-          if (e.tile === T.WALL) this.cameras.main.shake(140, 0.004);
+          if (e.tile === T.WALL) {
+            this.cameras.main.shake(140, 0.004);
+            haptic('heavy');
+          }
           break;
         }
         case 'extinguish':
@@ -560,9 +567,11 @@ export class Game extends Phaser.Scene {
           this.openExit(true);
           break;
         case 'die':
+          haptic('error');
           this.onDeath();
           break;
         case 'win':
+          haptic('success');
           this.onWin();
           break;
       }

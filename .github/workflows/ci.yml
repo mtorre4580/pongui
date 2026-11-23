@@ -44,6 +44,8 @@ jobs:
       # Types are already checked in the `check` job: skip the tsc step of `pnpm build`
       - run: pnpm exec vite build
       - run: pnpm check:bundle
+      # The iOS/Android web bundle must keep building and syncing into the native projects
+      - run: pnpm exec vite build --mode native && pnpm exec cap sync
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: dist

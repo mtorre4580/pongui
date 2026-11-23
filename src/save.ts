@@ -1,4 +1,6 @@
 // Progress saved in the browser (localStorage). The game still works if it is unavailable.
+import { persistNative } from './native';
+
 const KEY = 'boinky:save';
 // Key used before the game was renamed to Boinky: migrated on first load
 const LEGACY_KEY = 'rebotin.save.v1';
@@ -32,7 +34,9 @@ export function persist(mutate: (s: SaveData) => void) {
   const s = loadSave();
   mutate(s);
   try {
-    localStorage.setItem(KEY, JSON.stringify(s));
+    const json = JSON.stringify(s);
+    localStorage.setItem(KEY, json);
+    persistNative(KEY, json);
   } catch {
     /* private mode or blocked storage */
   }
