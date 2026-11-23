@@ -20,12 +20,15 @@ import {
   UPDRAFT_VMAX,
   WATER_GRAVITY,
   WATER_MAX_FALL,
+  ZONE_GRAVITY,
+  BUMP_VX,
+  BUMP_VY,
   V_HIGH,
   V_LOW,
   V_SPRING,
   VENT_CYCLE,
 } from './constants';
-import type { ItemKind, ParsedLevel } from './level';
+import { FIELD, type ItemKind, type ParsedLevel } from './level';
 import { fragileMax, isPortal, isToggle, T } from './tiles';
 
 export interface InputState {
@@ -51,6 +54,8 @@ export type WorldEvent =
   | { type: 'switch'; on: boolean }
   | { type: 'portal'; from: number; to: number }
   | { type: 'water'; inside: boolean }
+  | { type: 'zone'; inside: boolean }
+  | { type: 'bump'; idx: number }
   | { type: 'crumble'; idx: number }
   | { type: 'vent'; lit: boolean }
   | { type: 'die'; cause: DeathCause }
@@ -93,6 +98,8 @@ export interface WorldState {
   portalHold: number;
   /** The ball's center is in water. */
   water: boolean;
+  /** The ball's center is in a low-gravity zone. */
+  zone: boolean;
   /** Fixed steps since the start: timed tiles (vents) follow it. */
   ticks: number;
   /** Crumbling blocks counting down (their `hits` holds the steps left + 1). */
@@ -157,6 +164,7 @@ export class World {
       pending: 0,
       portalHold: -1,
       water: false,
+      zone: false,
       ticks: 0,
       crumbling: 0,
     };
@@ -467,8 +475,10 @@ export class World {
       if (s.grace > 0 && s.vy < 0) {
         const h0 = s.surfaceY - (s.y + BALL_R);
         const rem = H_HIGH - h0;
-        // In water the same push goes further: keep the high bounce's speed for the height left
-        const v2 = s.water ? V_HIGH * V_HIGH - 2 * GRAVITY * WATER_GRAVITY * h0 : 2 * GRAVITY * rem;
+        // In water or low gravity the same push goes further: keep the high bounce's speed for
+        // the height left
+        const g = s.water ? WATER_GRAVITY : s.zone ? ZONE_GRAVITY : 0;
+        const v2 = g ? V_HIGH * V_HIGH - 2 * GRAVITY * g * h0 : 2 * GRAVITY * rem;
         if (rem > 0 && v2 > 0) {
           s.vy = -Math.sqrt(v2);
           ev.push({ type: 'boost' });
@@ -503,14 +513,20 @@ export class World {
       ev.push({ type: 'wind', inside: wind });
     }
     const cc = Math.floor(s.x / TILE);
-    const water =
-      r >= 0 && r < ROWS && cc >= 0 && cc < COLS && this.level.water[r * COLS + cc] === 1;
+    const field = r >= 0 && r < ROWS && cc >= 0 && cc < COLS ? this.level.field[r * COLS + cc] : 0;
+    const water = field === FIELD.WATER;
     if (water !== s.water) {
       s.water = water;
       ev.push({ type: 'water', inside: water });
     }
+    const zone = field === FIELD.ZONE;
+    if (zone !== s.zone) {
+      s.zone = zone;
+      ev.push({ type: 'zone', inside: zone });
+    }
     if (wind) s.vy = Math.max(s.vy - UPDRAFT_LIFT * dt, -UPDRAFT_VMAX);
     else if (water) s.vy = Math.min(s.vy + GRAVITY * WATER_GRAVITY * dt, WATER_MAX_FALL);
+    else if (zone) s.vy = Math.min(s.vy + GRAVITY * ZONE_GRAVITY * dt, MAX_FALL);
     else s.vy = Math.min(s.vy + GRAVITY * dt, MAX_FALL);
 
     // X axis
@@ -522,10 +538,22 @@ export class World {
         const blocking = this.resolveContacts(cells, false, ev);
         if (!blocking) return ev;
         if (blocking.length) {
-          if (s.vx > 0) s.x = Math.min(...blocking.map((c) => c.c)) * TILE - BALL_R;
+          const dir = Math.sign(s.vx);
+          if (dir > 0) s.x = Math.min(...blocking.map((c) => c.c)) * TILE - BALL_R;
           else s.x = (Math.max(...blocking.map((c) => c.c)) + 1) * TILE + BALL_R;
-          s.vx = 0;
-          s.lockVx = null;
+          const bumper = blocking.find((c) => c.t === T.BUMPER);
+          if (bumper) {
+            // A bumper throws the ball back the way it came, always at the same speed, with a
+            // small hop; steering waits for the next bounce
+            s.lockVx = -dir * BUMP_VX;
+            s.vx = s.lockVx;
+            s.vy = Math.min(s.vy, -BUMP_VY);
+            s.grace = 0;
+            ev.push({ type: 'bump', idx: bumper.idx });
+          } else {
+            s.vx = 0;
+            s.lockVx = null;
+          }
         }
       }
     }

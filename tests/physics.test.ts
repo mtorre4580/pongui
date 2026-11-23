@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   BALL_R,
+  BUMP_VX,
   CRUMBLE_STEPS,
   H_HIGH,
   H_LOW,
@@ -10,7 +11,7 @@ import {
   TILE,
   WATER_MAX_FALL,
 } from '../src/game/constants';
-import { parseLevel } from '../src/game/level';
+import { FIELD, parseLevel } from '../src/game/level';
 import { World, type InputState } from '../src/game/physics';
 import { T } from '../src/game/tiles';
 
@@ -346,7 +347,7 @@ describe('bounce physics', () => {
       9: '#~~g~~~~~~~~~~~~~~~#',
       10: '#~P~~~~~~~~~~~~~~~~#',
     });
-    const at = (c: number, r: number) => lv.water[r * 20 + c];
+    const at = (c: number, r: number) => lv.field[r * 20 + c];
     expect(at(3, 9)).toBe(1); // the gem
     expect(at(2, 10)).toBe(1); // the start
     expect(at(7, 8)).toBe(0); // an air pocket drawn with '.'
@@ -433,5 +434,40 @@ describe('bounce physics', () => {
     expect(w.ventLit).toBe(true);
     for (let i = 0; i < 180 && w.s.status === 'playing'; i++) w.step(STEP, idle);
     expect(w.s.status).toBe('dead');
+  });
+
+  it('a low-gravity zone lets a bounce rise much higher', () => {
+    const zone = '#zzzzzzzzzzzzzzzzzz#';
+    const w = new World(
+      level({ 4: zone, 5: zone, 6: zone, 7: zone, 8: zone, 9: zone, 10: '#zPzzzzzzzzzzzzzzzz#' }),
+    );
+    expect(w.level.field[10 * 20 + 2]).toBe(FIELD.ZONE);
+    const peak = peakAfterBounces(w, idle, 2);
+    const h = 11 * TILE - BALL_R - peak;
+    expect(h).toBeGreaterThan(H_LOW * 2);
+    expect(h).toBeLessThan(H_LOW * 2.4);
+  });
+
+  it('a bumper throws the ball back from the side, and is a normal block from above', () => {
+    const w = new World(
+      level({ 8: '#......b...........#', 9: '#......b...........#', 10: '#..P...b...........#' }),
+    );
+    let bumped = false;
+    for (let i = 0; i < 300 && !bumped; i++) {
+      bumped = w.step(STEP, { ...idle, right: true }).some((e) => e.type === 'bump');
+    }
+    expect(bumped).toBe(true);
+    expect(w.s.vx).toBe(-BUMP_VX);
+    // Holding right does not stop it until the next bounce
+    w.step(STEP, { ...idle, right: true });
+    expect(w.s.vx).toBe(-BUMP_VX);
+
+    const top = new World(level({ 9: '#......P...........#', 10: '#......b...........#' }));
+    const kinds: string[] = [];
+    for (let i = 0; i < 200; i++)
+      for (const e of top.step(STEP, idle))
+        if (e.type === 'bounce' || e.type === 'bump') kinds.push(e.type);
+    expect(kinds[0]).toBe('bounce');
+    expect(kinds).not.toContain('bump');
   });
 });

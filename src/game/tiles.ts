@@ -26,6 +26,7 @@ export const T = {
   THIN_ICE: 24, // holds low bounces; a high bounce breaks it and the ball falls through
   CRUMBLE: 25, // starts crumbling on the first touch and is gone a moment later
   VENT: 26, // a lava vent: solid while off, deadly while lit, on a fixed rhythm
+  BUMPER: 27, // a side hit throws the ball back at a fixed speed; from above it is a block
 } as const;
 
 export type TileCode = (typeof T)[keyof typeof T];
@@ -56,6 +57,7 @@ export const CHAR_TO_TILE: Record<string, TileCode> = {
   j: T.THIN_ICE,
   c: T.CRUMBLE,
   '!': T.VENT,
+  b: T.BUMPER,
 };
 
 export function isPortal(t: number): boolean {
