@@ -11,7 +11,7 @@ export interface Theme {
   /** Small marks drawn on solid blocks (pebbles, crystals…). */
   speck: number;
   /** What the marks look like: round pebbles by default. */
-  pattern?: 'crystals' | 'rivets' | 'coral' | 'snow' | 'embers' | 'panels';
+  pattern?: 'crystals' | 'rivets' | 'coral' | 'snow' | 'embers' | 'panels' | 'bricks';
 }
 
 export const THEMES: Record<number, Theme> = {
@@ -100,6 +100,17 @@ export const THEMES: Record<number, Theme> = {
     solidDark: 0x363c4c,
     speck: 0x2a2f3c,
     pattern: 'panels',
+  },
+  // 9 · Shadow Keep: worn castle stone in the dark
+  9: {
+    bgTop: 0x221a3a,
+    bgBottom: 0x07050d,
+    bubbles: [0x6c4ab6, 0x3c1874, 0xc77dff],
+    solidTop: 0x9a93b3,
+    solid: 0x4c4663,
+    solidDark: 0x2c283b,
+    speck: 0x2a2638,
+    pattern: 'bricks',
   },
 };
 
