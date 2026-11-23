@@ -2,7 +2,7 @@
 // From the browser console: `await replay(3)` replays the solver's solution for level 4.
 import type Phaser from 'phaser';
 import { STEP } from './game/constants';
-import { solve } from './game/solver';
+import { endsStep, solve } from './game/solver';
 import type { World } from './game/physics';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -52,7 +52,7 @@ export function installDevTools(game: Phaser.Game) {
         sc['prevY'] = world.s.y;
         if (ev.length) sc.handle(ev);
         if (++steps % 2 === 0) tick(1);
-        if (world.s.status !== 'playing' || ev.some((e) => e.type === 'bounce')) break;
+        if (world.s.status !== 'playing' || endsStep(ev)) break;
       }
       if (world.s.status !== 'playing') break;
     }
@@ -99,7 +99,7 @@ export function installDevTools(game: Phaser.Game) {
               jumpPressed: false,
             });
             i++;
-            if (ev.some((e) => e.type === 'bounce')) {
+            if (endsStep(ev)) {
               k++;
               i = 0;
             }
