@@ -43,6 +43,8 @@ export interface BossState {
   away: boolean;
   /** Shielded: landing on its head is a bounce, not a hit (its sides still kill). */
   armor: boolean;
+  /** Deadly from above too: there is no landing on it. */
+  spiked: boolean;
   /** How it is drawn: 0 unseen, 1 solid. */
   alpha: number;
   /** Which of its looks is shown (the view has a texture for each). */
@@ -180,6 +182,7 @@ export class BossFight {
       sinceHop: 0,
       away: false,
       armor: false,
+      spiked: false,
       alpha: 1,
       pose: '',
     };
@@ -468,7 +471,7 @@ export class BossFight {
     // Coming down on its head: the ball was above it a step ago. A few pixels of slack, since
     // the boss can rise into the ball while hopping
     const above = fromY + BALL_R <= top + 8;
-    if (above && s.vy > 0) {
+    if (above && s.vy > 0 && !boss.spiked) {
       // Its head is always something to bounce off
       s.y = top - BALL_R;
       s.vy = -V_HIGH;
