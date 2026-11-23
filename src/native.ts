@@ -5,7 +5,7 @@
 export const IS_NATIVE = import.meta.env.MODE === 'native';
 
 // Keys mirrored to native storage: iOS may clear a web view's localStorage when space runs low
-const DURABLE_KEYS = ['boinky:save', 'boinky:locale'];
+const DURABLE_KEYS = ['boinky:save', 'boinky:locale', 'boinky:custom'];
 
 /**
  * Prepares the native shell before the game starts: restores saved progress from native
