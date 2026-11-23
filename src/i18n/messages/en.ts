@@ -17,6 +17,7 @@ export const en = {
   'world.2': 'Crystal Caves',
   'world.3': 'Cloud Peaks',
   'world.4': 'Gear Works',
+  'world.5': 'Coral Lagoon',
   'game.level': 'Level {n} · {name}',
   'game.exitOpen': 'Exit open!',
   'overlay.paused': 'Paused',

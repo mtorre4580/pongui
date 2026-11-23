@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { BALL_R, H_HIGH, H_LOW, H_SPRING, PUSH_VX, STEP, TILE } from '../src/game/constants';
+import {
+  BALL_R,
+  H_HIGH,
+  H_LOW,
+  H_SPRING,
+  PUSH_VX,
+  STEP,
+  TILE,
+  WATER_MAX_FALL,
+} from '../src/game/constants';
 import { parseLevel } from '../src/game/level';
 import { World, type InputState } from '../src/game/physics';
 import { T } from '../src/game/tiles';
@@ -270,5 +279,76 @@ describe('bounce physics', () => {
     expect(launched).toBe(true);
     const h = 11 * TILE - BALL_R - top;
     expect(h).toBeLessThan(H_LOW + 3);
+  });
+
+  it('a portal moves the ball to its partner, keeping its speed, and waits until it leaves', () => {
+    // The ball falls into portal 1 at (3, 6) and comes out of (15, 3), still falling
+    const w = new World(
+      level({ 3: '#..............1...#', 6: '#..1...............#', 5: '#..P...............#' }),
+    );
+    const events: number[] = [];
+    let vyBefore = 0;
+    for (let i = 0; i < 200 && !events.length; i++) {
+      vyBefore = w.s.vy;
+      for (const e of w.step(STEP, idle)) if (e.type === 'portal') events.push(e.to);
+    }
+    expect(events).toEqual([3 * 20 + 15]);
+    expect(w.s.x).toBe(15 * TILE + TILE / 2);
+    expect(w.s.y).toBe(3 * TILE + TILE / 2);
+    expect(w.s.vy).toBeGreaterThanOrEqual(vyBefore);
+    // It falls out of the partner without being sent back through it
+    let back = false;
+    for (let i = 0; i < 400; i++)
+      for (const e of w.step(STEP, idle)) if (e.type === 'portal') back = true;
+    expect(w.s.status).toBe('playing');
+    expect(back).toBe(false);
+  });
+
+  it('rejects a portal without a partner', () => {
+    const map = Array.from({ length: 12 }, (_, r) =>
+      r === 0 || r === 11 ? '####################' : r === 10 ? '#P...1............E#' : empty,
+    );
+    expect(() =>
+      parseLevel({ id: 't', name: { en: 't', es: 't', 'pt-BR': 't' }, par: 1, map }),
+    ).toThrow(/portal 1/);
+  });
+
+  it('water slows the fall and lets a bounce rise higher', () => {
+    const water = '#~~~~~~~~~~~~~~~~~~#';
+    const w = new World(
+      level({
+        2: '#.P................#',
+        5: water,
+        6: water,
+        7: water,
+        8: water,
+        9: water,
+        10: water,
+      }),
+    );
+    let maxFall = 0;
+    for (let i = 0; i < 400; i++) {
+      w.step(STEP, idle);
+      if (w.s.water) maxFall = Math.max(maxFall, w.s.vy);
+    }
+    expect(maxFall).toBeLessThanOrEqual(WATER_MAX_FALL);
+    // A normal bounce from the floor under water climbs about twice as high
+    const peak = peakAfterBounces(w, idle, 2);
+    const h = 11 * TILE - BALL_R - peak;
+    expect(h).toBeGreaterThan(H_LOW * 1.8);
+    expect(h).toBeLessThan(H_LOW * 2.2);
+  });
+
+  it('things placed in a pool are under water too, air cells stay dry', () => {
+    const lv = level({
+      8: '#~~~~~~.~~~~~~~~~~~#',
+      9: '#~~g~~~~~~~~~~~~~~~#',
+      10: '#~P~~~~~~~~~~~~~~~~#',
+    });
+    const at = (c: number, r: number) => lv.water[r * 20 + c];
+    expect(at(3, 9)).toBe(1); // the gem
+    expect(at(2, 10)).toBe(1); // the start
+    expect(at(7, 8)).toBe(0); // an air pocket drawn with '.'
+    expect(at(5, 7)).toBe(0); // above the surface
   });
 });

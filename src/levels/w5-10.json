@@ -1,0 +1,28 @@
+{
+  "id": "w5-10",
+  "name": {
+    "en": "Coral Lagoon",
+    "es": "Laguna de Coral",
+    "pt-BR": "Lagoa de Coral"
+  },
+  "hint": {
+    "en": "Portals, water, a spring and a key: explore the whole lagoon!",
+    "es": "Portales, agua, un resorte y una llave: ¡recorré toda la laguna!",
+    "pt-BR": "Portais, água, uma mola e uma chave: explore a lagoa inteira!"
+  },
+  "par": 29,
+  "map": [
+    "####################",
+    "#.....#.....1L.....#",
+    "#.....#......L..E..#",
+    "#.....#......#######",
+    "#k.1..#...g........#",
+    "#.....#............#",
+    "#~~~~~#~~~~~~~~~~~~#",
+    "#~~~~~#~~~~~~~~~~~~#",
+    "#~~g~~#~~~~~~~~g~~~#",
+    "#~~~~###~~~~~~~~~~~#",
+    "#~P~~2#2~~~~s~~~~~~#",
+    "####################"
+  ]
+}

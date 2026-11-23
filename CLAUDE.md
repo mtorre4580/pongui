@@ -107,6 +107,13 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
   open until the ball leaves it (its `hits` is 1 meanwhile), so the ball is never trapped.
 - Pushers catch the ball like ramps (any contact, snapped to the pusher's center) but give a
   low bounce at a fixed 280 px/s sideways: about 4 tiles on flat ground, under a 3-row ceiling.
+- Portals `1` `2` `3` come in pairs (`parseLevel` checks it). When the ball's center enters one,
+  it moves to the other's center with the same velocity (ramp and pusher locks included); the
+  exit portal stays inactive until the ball's center leaves it.
+- Water is a layer (`ParsedLevel.water`), not a tile: `~` cells, plus anything placed in a pool
+  (a gem, the start, a portal, spikes) whose cell above or side neighbor is wet. Inside, gravity
+  is halved and the fall speed is capped at 240 px/s, so bounces climb about twice as high.
+  Plan steps also end at portals and at the water's edge (`endsStep`).
 - `World.step` returns events (`bounce`, `break`, `collect`, `die`, `win`…); scenes only render
   them. Never put gameplay rules in scenes.
 
@@ -149,6 +156,13 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
   a pusher on its arc or after it (4-10 first had a start gem a quick tap could carry you past
   with no way back). A single floor tile between pushers is a trap: a bounce off it flies over
   the next pushers.
+- Portals: an exit portal must never sit where the ball bounces back into it (right above a floor
+  or a ledge): bouncing in place sends it back and forth forever. Put entrances at the end of
+  1-tall tunnels or in 1-tall doors (the ball's center cannot miss them, and bouncing in place
+  under the ceiling stays inside the cell) and exits in mid-air or in doors. A spring or a fall
+  that leads back into an exit makes a "geyser" loop: fine only if people can steer out of it.
+- Pools: a pool's edge is hard to climb out of. From the pool floor a high bounce clears the
+  surface by less than half a tile, so give people an underwater ledge to jump from.
 - Switches flip on every bounce: a switch you must cross mid-route should sit between solid
   tiles so people can stop on them, and the lamp shows which color is solid.
 
@@ -329,8 +343,9 @@ characters must stay unique across the game.
 - [x] World 2 — Crystal Caves: keys and lock blocks, moss
 - [x] World 3 — Cloud Peaks: one-way clouds, updrafts
 - [x] World 4 — Gear Works: switches with A/B blocks, pushers
-- [ ] Worlds 5–10 (planned: portals and water, ice, crumbling blocks and vents, low gravity and
-      bumpers, dark rooms and phase blocks, rainbow bridges)
+- [x] World 5 — Coral Lagoon: portals, water
+- [ ] Worlds 6–10 (planned: ice, crumbling blocks and vents, low gravity and bumpers, dark rooms
+      and phase blocks, rainbow bridges)
 - [x] Native apps — Capacitor iOS and Android projects (iOS verified in the simulator)
 - [ ] Store release (developer accounts, signing, store listings, privacy policy)
 - [ ] Public release (license, Pages deploy, CodeQL)

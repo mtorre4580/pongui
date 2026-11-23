@@ -13,8 +13,8 @@ import {
 } from '../game/constants';
 import type { ParsedLevel } from '../game/level';
 import { World, type WorldEvent } from '../game/physics';
-import { isStatic, isToggle, T } from '../game/tiles';
-import { bakeSolids, C, drawBackground, sparkTexture } from '../gfx/textures';
+import { isPortal, isStatic, isToggle, T } from '../game/tiles';
+import { bakeSolids, C, drawBackground, sparkTexture, TEX } from '../gfx/textures';
 import { themeOf, type Theme } from '../gfx/themes';
 import { setupCamera, text } from '../gfx/ui';
 import { localized, t } from '../i18n';
@@ -55,6 +55,9 @@ const TILE_TEX: Record<number, string> = {
   [T.BLOCK_B]: 'blockB',
   [T.PUSH_L]: 'pushL',
   [T.PUSH_R]: 'pushR',
+  [T.PORTAL_1]: 'portal1',
+  [T.PORTAL_2]: 'portal2',
+  [T.PORTAL_3]: 'portal3',
 };
 // Particle colors per tile (solid blocks use the world's color)
 const TILE_COLOR: Record<number, number> = {
@@ -74,6 +77,9 @@ const TILE_COLOR: Record<number, number> = {
   [T.BLOCK_B]: C.blockB,
   [T.PUSH_L]: C.pusherLight,
   [T.PUSH_R]: C.pusherLight,
+  [T.PORTAL_1]: C.portal1,
+  [T.PORTAL_2]: C.portal2,
+  [T.PORTAL_3]: C.portal3,
 };
 
 export class Game extends Phaser.Scene {
@@ -203,6 +209,7 @@ export class Game extends Phaser.Scene {
       }
       if (t === T.SPRING) img.setOrigin(0.5, 1).setY((r + 1) * TILE + OY);
       if (isToggle(t)) this.toggles.push({ idx, tex, img });
+      if (isPortal(t)) this.tweens.add({ targets: img, angle: 360, duration: 2600, repeat: -1 });
       if (t === T.SWITCH) this.switches.push(img);
       this.tileSprites.set(idx, img);
       if (t === T.FIRE) {
@@ -225,7 +232,40 @@ export class Game extends Phaser.Scene {
       }
     }
     this.buildWind();
+    this.buildWater();
     this.syncToggles(false);
+  }
+
+  /** Water is static: one baked image over the ball, with a surface line on each pool's top. */
+  private buildWater() {
+    const water = this.level.water;
+    if (!water.some((w) => w === 1)) return;
+    const key = `water-${this.level.id}`;
+    if (!this.textures.exists(key)) {
+      const k = TEX;
+      const tex = this.textures.createCanvas(key, COLS * TILE * k, ROWS * TILE * k)!;
+      const ctx = tex.getContext();
+      const css = (c: number, a: number) =>
+        `rgba(${(c >> 16) & 255}, ${(c >> 8) & 255}, ${c & 255}, ${a})`;
+      for (let idx = 0; idx < water.length; idx++) {
+        if (!water[idx]) continue;
+        const x = (idx % COLS) * TILE * k;
+        const y = Math.floor(idx / COLS) * TILE * k;
+        const top = idx < COLS || !water[idx - COLS];
+        ctx.fillStyle = css(C.water, 0.32);
+        ctx.fillRect(x, y + (top ? 5 * k : 0), TILE * k, TILE * k - (top ? 5 * k : 0));
+        if (top) {
+          ctx.fillStyle = css(C.waterLight, 0.7);
+          ctx.fillRect(x, y + 4 * k, TILE * k, 2 * k);
+        }
+      }
+      tex.refresh();
+    }
+    this.add
+      .image(0, OY, key)
+      .setOrigin(0)
+      .setScale(1 / TEX)
+      .setDepth(6);
   }
 
   /** Shows each toggle block as solid or as an outline, following the world. */
@@ -680,6 +720,24 @@ export class Game extends Phaser.Scene {
           break;
         case 'wind':
           if (e.inside) sfx.wind();
+          break;
+        case 'portal': {
+          sfx.portal();
+          haptic('light');
+          const color = TILE_COLOR[this.level.tiles[e.from]] ?? C.white;
+          const a = this.cellCenter(e.from);
+          const b = this.cellCenter(e.to);
+          this.burst(color, a.x, a.y, 10, 120);
+          this.burst(color, b.x, b.y, 14, 160);
+          // Jump the drawn ball too, instead of sliding it across the screen
+          this.prevX = this.world.s.x;
+          this.prevY = this.world.s.y;
+          this.trail.emitting = false;
+          break;
+        }
+        case 'water':
+          sfx.splash(e.inside);
+          this.burst(C.waterLight, this.world.s.x, this.world.s.y + OY, e.inside ? 8 : 5, 90);
           break;
         case 'switch':
           sfx.switch(e.on);

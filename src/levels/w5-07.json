@@ -1,0 +1,28 @@
+{
+  "id": "w5-07",
+  "name": {
+    "en": "Door switch",
+    "es": "Portal trabado",
+    "pt-BR": "Portal travado"
+  },
+  "hint": {
+    "en": "A teal block blocks the portal: flip the switch first.",
+    "es": "Un bloque turquesa tapa el portal: primero cambiá el interruptor.",
+    "pt-BR": "Um bloco turquesa tapa o portal: primeiro acione o interruptor."
+  },
+  "par": 15,
+  "map": [
+    "####################",
+    "#........#1........#",
+    "#........#.........#",
+    "#........#.........#",
+    "#........#####.....#",
+    "#........#.........#",
+    "#........#.....AAA.#",
+    "#...g....#.....AgA.#",
+    "#........#.....AAA.#",
+    "#.....####.........#",
+    "#.P....B1#.....o.E.#",
+    "#####o##############"
+  ]
+}

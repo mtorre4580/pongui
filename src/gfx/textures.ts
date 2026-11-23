@@ -62,6 +62,11 @@ export const C = {
   pusher: 0xe63946,
   pusherLight: 0xff8fa3,
   pusherDark: 0x9d1c28,
+  portal1: 0xff4d9d,
+  portal2: 0xa7f432,
+  portal3: 0xff9e00,
+  water: 0x3fa7d6,
+  waterLight: 0xb8f2ff,
   hammerHandle: 0x9c6644,
   heart: 0xff4d6d,
   exit: 0x80ed99,
@@ -310,6 +315,24 @@ export function createTextures(scene: Phaser.Scene) {
     });
   }
 
+  // --- Coral Lagoon: portals and water ---
+  // Portals: glowing rings with one, two or three dots, so pairs read without color too
+  [C.portal1, C.portal2, C.portal3].forEach((color, i) => {
+    make(scene, `portal${i + 1}`, S, S, (g) => {
+      g.fillStyle(color, 0.18).fillCircle(32, 32, 30);
+      g.lineStyle(5, color, 1).strokeCircle(32, 32, 25);
+      g.lineStyle(3, color, 0.6);
+      g.beginPath()
+        .arc(32, 32, 16, 0, Math.PI * 1.2)
+        .strokePath();
+      g.fillStyle(C.white, 0.95);
+      for (let k = 0; k <= i; k++) {
+        const a = (k / (i + 1)) * Math.PI * 2 - Math.PI / 2;
+        g.fillCircle(32 + Math.cos(a) * (i ? 7 : 0), 32 + Math.sin(a) * (i ? 7 : 0), 4);
+      }
+    });
+  });
+
   // --- Ball ---
   const BR = BALL_R * TEX + 2;
   make(scene, 'ball', BR * 2, BR * 2, (g) => {
@@ -464,6 +487,12 @@ function drawSolids(
           y + (25 - (seed % 2) * 4) * k,
           1.2 * k,
         );
+      } else if (theme.pattern === 'coral' && !isAsh) {
+        // Little coral polyps: rings of different sizes
+        g.lineStyle(1.2 * k, theme.speck, 0.55);
+        g.strokeCircle(x + (8 + seed * 3) * k, y + (17 + (seed % 3) * 3) * k, 2.2 * k);
+        g.strokeCircle(x + (22 - seed) * k, y + (25 - (seed % 2) * 4) * k, 1.5 * k);
+        g.fillStyle(theme.speck, 0.4).fillCircle(x + (15 + seed) * k, y + 22 * k, 1 * k);
       } else if (theme.pattern === 'rivets' && !isAsh) {
         // Bolted metal plates
         g.fillStyle(theme.speck, 0.6);

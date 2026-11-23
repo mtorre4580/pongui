@@ -1,0 +1,28 @@
+{
+  "id": "w5-01",
+  "name": {
+    "en": "Portals",
+    "es": "Portales",
+    "pt-BR": "Portais"
+  },
+  "hint": {
+    "en": "Roll into a portal to come out of its twin, just as fast.",
+    "es": "Metete en un portal y salís por su gemelo, igual de rápido.",
+    "pt-BR": "Entre num portal e saia pelo gêmeo dele, na mesma velocidade."
+  },
+  "par": 13,
+  "map": [
+    "####################",
+    "#........#1........#",
+    "#........#.........#",
+    "#........#.........#",
+    "#........#.........#",
+    "#........#.........#",
+    "#........#.........#",
+    "#........#...g.....#",
+    "#........#.........#",
+    "#....#####......g..#",
+    "#.P.....1#.......E.#",
+    "####################"
+  ]
+}

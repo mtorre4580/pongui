@@ -40,15 +40,18 @@ function hashTiles(s: WorldState): number {
 function key(s: WorldState): string {
   let mask = 0;
   for (let i = 0; i < s.items.length; i++) if (s.items[i].taken) mask |= 1 << i;
-  return `${Math.round(s.x / 2)}|${Math.round(s.y / 2)}|${Math.round(s.vx / 10)}|${Math.round(s.vy / 20)}|${s.lockVx ?? 'n'}|${s.drops}|${s.hammers}|${s.keys}|${mask}|${hashTiles(s)}|${s.switchOn ? 1 : 0}`;
+  return `${Math.round(s.x / 2)}|${Math.round(s.y / 2)}|${Math.round(s.vx / 10)}|${Math.round(s.vy / 20)}|${s.lockVx ?? 'n'}|${s.drops}|${s.hammers}|${s.keys}|${mask}|${hashTiles(s)}|${s.switchOn ? 1 : 0}|${s.portalHold}`;
 }
 
 /**
- * A plan step lasts until the next bounce, or until the ball enters or leaves an updraft (so
- * the plan can steer out at its top). Replays must split steps the same way.
+ * A plan step lasts until the next bounce, until the ball enters or leaves an updraft or water
+ * (so the plan can steer out at an updraft's top or change course as it sinks), or until it
+ * comes out of a portal. Replays must split steps the same way.
  */
 export const endsStep = (ev: WorldEvent[]) =>
-  ev.some((e) => e.type === 'bounce' || e.type === 'wind');
+  ev.some(
+    (e) => e.type === 'bounce' || e.type === 'wind' || e.type === 'water' || e.type === 'portal',
+  );
 
 type Outcome = 'bounce' | 'win' | 'dead' | 'timeout';
 

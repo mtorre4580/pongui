@@ -1,0 +1,28 @@
+{
+  "id": "w5-02",
+  "name": {
+    "en": "Underwater",
+    "es": "Bajo el agua",
+    "pt-BR": "Debaixo d’água"
+  },
+  "hint": {
+    "en": "In water you sink slowly and every bounce goes much higher.",
+    "es": "En el agua te hundís despacio y cada rebote llega mucho más alto.",
+    "pt-BR": "Na água você afunda devagar e cada quique vai muito mais alto."
+  },
+  "par": 20,
+  "map": [
+    "####################",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#~~~~~~~~~~~~......#",
+    "#~~~~~g~~~~~#......#",
+    "#~~~~~~~~~~~#......#",
+    "#~~~~~~~~~g~#......#",
+    "#~~~~~~~~~~~#......#",
+    "#~P~~~~~~~~~#...E..#",
+    "####################"
+  ]
+}
