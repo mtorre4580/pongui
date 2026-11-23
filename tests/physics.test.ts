@@ -142,4 +142,36 @@ describe('bounce physics', () => {
     expect(h).toBeGreaterThan(H_LOW - 3);
     expect(h).toBeLessThan(H_LOW + 3);
   });
+
+  it('a cloud catches the ball from above and lets it pass from below and the sides', () => {
+    // Bouncing up from the floor through a cloud 2 rows above, then landing on it
+    const w = new World(level({ 8: '#..----............#', 10: '#..P...............#' }));
+    let landedOnCloud = false;
+    for (let i = 0; i < 600; i++) {
+      const ev = w.step(STEP, { ...idle, jump: true });
+      if (ev.some((e) => e.type === 'bounce' && e.y === 8 * TILE)) landedOnCloud = true;
+    }
+    expect(landedOnCloud).toBe(true);
+    // Sideways: a cloud wall does not stop the ball
+    const side = new World(level({ 9: '#.....-............#', 10: '#..P..-............#' }));
+    for (let i = 0; i < 300; i++) side.step(STEP, { ...idle, right: true });
+    expect(side.s.x).toBeGreaterThan(7 * TILE);
+  });
+
+  it('an updraft lifts the ball and lets it fall back at its top', () => {
+    const w = new World(level({ 10: '#..P...............#' }));
+    for (let r = 4; r <= 10; r++) w.s.tiles[r * 20 + 3] = T.UPDRAFT;
+    let top = Infinity;
+    const events: boolean[] = [];
+    for (let i = 0; i < 600; i++) {
+      for (const e of w.step(STEP, idle)) if (e.type === 'wind') events.push(e.inside);
+      top = Math.min(top, w.s.y);
+    }
+    // It rises to the top of the column (row 4) and hovers there
+    expect(top).toBeLessThan(4 * TILE);
+    expect(top).toBeGreaterThan(2 * TILE);
+    expect(w.s.y).toBeLessThan(5 * TILE);
+    expect(events[0]).toBe(true);
+    expect(events).toContain(false);
+  });
 });

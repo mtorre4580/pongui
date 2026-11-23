@@ -35,6 +35,8 @@ Thanks for helping! New levels, mechanics, translations and fixes are all welcom
 | `*` | spikes |
 | `L` | lock block: a key opens the whole connected group (from any side) |
 | `m` | moss: always a low bounce, even with jump held |
+| `-` | cloud: one-way platform, you pass through it from below and the sides |
+| `\|` | updraft: rising air that lifts the ball while its center is inside |
 | `g` `d` `h` `l` `k` | gem, water drop, hammer, extra life, key |
 | `P` `E` | start and exit |
 | `.` | empty |

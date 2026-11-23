@@ -130,6 +130,14 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
   recoverable or kill you, rarely leave you stuck). Also try each key jump from rest, holding
   the direction with a 0.1–0.2 s reaction delay: the bot carries momentum from earlier bounces
   and can make jumps a person cannot (a gap of 3 tiles up 2 rows is out of reach from rest).
+- Updrafts: the ball hovers about half a tile above a column's top and drifts only ~1 tile
+  sideways before falling, so platforms reached from a column must touch it and sit at least a
+  tile below its top. Plan steps also end when the ball enters or leaves an updraft
+  (`endsStep` in `solver.ts`), so replays must split steps the same way.
+- A gem on a falling path must sit on the line people actually take: sweep simple inputs (hold
+  the direction from different moments, for different times) and count how often they get the
+  gem *and* survive. The bot finds odd lines (3-7 first had a pit gem no sweep could combine
+  with reaching the updraft).
 
 ## Landing page
 
@@ -267,9 +275,9 @@ its legend entry in `CONTRIBUTING.md`, and a level that introduces it.
 - [x] Project setup — CI, hooks, browser tests, Lighthouse, docs
 - [x] Landing page
 - [x] World 2 — Crystal Caves: keys and lock blocks, moss
-- [ ] Worlds 3–10 (planned: clouds and updrafts, switches and pushers, portals and water, ice,
-      crumbling blocks and vents, low gravity and bumpers, dark rooms and phase blocks, rainbow
-      bridges)
+- [x] World 3 — Cloud Peaks: one-way clouds, updrafts
+- [ ] Worlds 4–10 (planned: switches and pushers, portals and water, ice, crumbling blocks and
+      vents, low gravity and bumpers, dark rooms and phase blocks, rainbow bridges)
 - [x] Native apps — Capacitor iOS and Android projects (iOS verified in the simulator)
 - [ ] Store release (developer accounts, signing, store listings, privacy policy)
 - [ ] Public release (license, Pages deploy, CodeQL)

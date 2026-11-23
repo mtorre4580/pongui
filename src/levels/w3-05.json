@@ -1,0 +1,28 @@
+{
+  "id": "w3-05",
+  "name": {
+    "en": "Crosswinds",
+    "es": "Corrientes cruzadas",
+    "pt-BR": "Correntes cruzadas"
+  },
+  "hint": {
+    "en": "Hop from one updraft to the next. Don't touch the spikes!",
+    "es": "Saltá de una corriente a la otra. ¡No toques los pinchos!",
+    "pt-BR": "Pule de uma corrente para a outra. Não toque nos espinhos!"
+  },
+  "par": 19,
+  "map": [
+    "####################",
+    "#............g.....#",
+    "#....g......|||....#",
+    "#...|||.....|||....#",
+    "#...|||.....|||..E.#",
+    "#...|||..g..|||#####",
+    "#...|||.|||.|||....#",
+    "#...|||.|||.|||....#",
+    "#...|||.|||.|||....#",
+    "#...|||.|||.|||....#",
+    "#.P.|||.|||.|||....#",
+    "####***************#"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "id": "w3-04",
+  "name": {
+    "en": "Crumbling sky",
+    "es": "Cielo que se rompe",
+    "pt-BR": "Céu que desmorona"
+  },
+  "hint": {
+    "en": "If the blocks give way, the clouds below will catch you.",
+    "es": "Si los bloques ceden, las nubes de abajo te atajan.",
+    "pt-BR": "Se os blocos cederem, as nuvens embaixo seguram você."
+  },
+  "par": 16,
+  "map": [
+    "####################",
+    "#..................#",
+    "#..................#",
+    "#........g...g.....#",
+    "#..................#",
+    "#.P...............E#",
+    "####.XX.XX.XX.XX.###",
+    "#..................#",
+    "#..................#",
+    "#...-------------..#",
+    "#..................#",
+    "####*************###"
+  ]
+}

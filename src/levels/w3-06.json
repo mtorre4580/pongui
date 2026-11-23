@@ -1,0 +1,28 @@
+{
+  "id": "w3-06",
+  "name": {
+    "en": "Cloud ceiling",
+    "es": "Techo de nubes",
+    "pt-BR": "Teto de nuvens"
+  },
+  "hint": {
+    "en": "Clouds hold you from above. Find the gap to come back down.",
+    "es": "Las nubes te sostienen desde arriba. Buscá el hueco para bajar.",
+    "pt-BR": "As nuvens seguram você por cima. Ache o buraco para descer."
+  },
+  "par": 32,
+  "map": [
+    "####################",
+    "#..................#",
+    "#..................#",
+    "#...g.....g.....g..#",
+    "#..................#",
+    "#..----------------#",
+    "#..................#",
+    "#..................#",
+    "#...###.....###....#",
+    "#..................#",
+    "#.P...............E#",
+    "########***#########"
+  ]
+}

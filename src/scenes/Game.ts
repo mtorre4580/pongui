@@ -48,6 +48,8 @@ const TILE_TEX: Record<number, string> = {
   [T.SPIKE]: 'spike',
   [T.LOCK]: 'lockblock',
   [T.MOSS]: 'moss',
+  [T.CLOUD]: 'cloud',
+  [T.UPDRAFT]: 'updraft',
 };
 // Particle colors per tile (solid blocks use the world's color)
 const TILE_COLOR: Record<number, number> = {
@@ -61,6 +63,7 @@ const TILE_COLOR: Record<number, number> = {
   [T.WALL]: C.brick,
   [T.LOCK]: C.key,
   [T.MOSS]: C.mossTop,
+  [T.CLOUD]: C.cloud,
 };
 
 export class Game extends Phaser.Scene {
@@ -202,6 +205,32 @@ export class Game extends Phaser.Scene {
         this.flames.set(idx, fl);
       }
     }
+    this.buildWind();
+  }
+
+  /** One particle emitter for every updraft tile: streaks of air rising through the columns. */
+  private buildWind() {
+    const cells: number[] = [];
+    this.world.s.tiles.forEach((t, idx) => t === T.UPDRAFT && cells.push(idx));
+    if (!cells.length) return;
+    const source = {
+      getRandomPoint: (point: Phaser.Types.Math.Vector2Like) => {
+        const idx = cells[Math.floor(Math.random() * cells.length)];
+        point.x = (idx % COLS) * TILE + 6 + Math.random() * (TILE - 12);
+        point.y = Math.floor(idx / COLS) * TILE + Math.random() * TILE + OY;
+        return point;
+      },
+    };
+    this.add
+      .particles(0, 0, sparkTexture(this, C.wind), {
+        speedY: { min: -140, max: -90 },
+        scale: { start: 0.35, end: 0 },
+        alpha: { start: 0.7, end: 0 },
+        lifespan: 520,
+        frequency: Math.max(12, 160 / cells.length),
+        emitZone: { type: 'random', source },
+      })
+      .setDepth(1);
   }
 
   private buildItems() {
@@ -615,6 +644,9 @@ export class Game extends Phaser.Scene {
         }
         case 'exitOpen':
           this.openExit(true);
+          break;
+        case 'wind':
+          if (e.inside) sfx.wind();
           break;
         case 'die':
           haptic('error');

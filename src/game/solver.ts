@@ -2,7 +2,7 @@
 // Proves every level can be beaten with the real game physics.
 import { STEP } from './constants';
 import type { ParsedLevel } from './level';
-import { cloneState, World, type InputState, type WorldState } from './physics';
+import { cloneState, World, type InputState, type WorldEvent, type WorldState } from './physics';
 
 export interface Decision {
   dir: -1 | 0 | 1;
@@ -43,6 +43,13 @@ function key(s: WorldState): string {
   return `${Math.round(s.x / 2)}|${Math.round(s.y / 2)}|${Math.round(s.vx / 10)}|${Math.round(s.vy / 20)}|${s.lockVx ?? 'n'}|${s.drops}|${s.hammers}|${s.keys}|${mask}|${hashTiles(s)}`;
 }
 
+/**
+ * A plan step lasts until the next bounce, or until the ball enters or leaves an updraft (so
+ * the plan can steer out at its top). Replays must split steps the same way.
+ */
+export const endsStep = (ev: WorldEvent[]) =>
+  ev.some((e) => e.type === 'bounce' || e.type === 'wind');
+
 type Outcome = 'bounce' | 'win' | 'dead' | 'timeout';
 
 function fly(w: World, d: Decision): Outcome {
@@ -54,7 +61,7 @@ function fly(w: World, d: Decision): Outcome {
     const ev = w.step(STEP, inp);
     if (w.s.status === 'won') return 'win';
     if (w.s.status === 'dead') return 'dead';
-    if (ev.some((e) => e.type === 'bounce')) return 'bounce';
+    if (endsStep(ev)) return 'bounce';
   }
   return 'timeout';
 }

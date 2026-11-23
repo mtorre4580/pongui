@@ -1,0 +1,28 @@
+{
+  "id": "w3-01",
+  "name": {
+    "en": "Above the clouds",
+    "es": "Sobre las nubes",
+    "pt-BR": "Sobre as nuvens"
+  },
+  "hint": {
+    "en": "Clouds let you through from below: jump up and land on top.",
+    "es": "Las nubes te dejan pasar desde abajo: saltá a través y caé encima.",
+    "pt-BR": "As nuvens deixam você passar por baixo: pule através delas e caia em cima."
+  },
+  "par": 13,
+  "map": [
+    "####################",
+    "#..................#",
+    "#..............g.E.#",
+    "#.............-----#",
+    "#..................#",
+    "#.........g........#",
+    "#........----......#",
+    "#..................#",
+    "#....g.............#",
+    "#...----...........#",
+    "#.P................#",
+    "####################"
+  ]
+}

@@ -36,6 +36,16 @@ export const THEMES: Record<number, Theme> = {
     speck: 0xe7dcff,
     crystals: true,
   },
+  // 3 · Cloud Peaks: grassy rock under a blue sky
+  3: {
+    bgTop: 0x4a78c2,
+    bgBottom: 0x1a2a55,
+    bubbles: [0xffffff, 0xbde0fe, 0xa2d2ff],
+    solidTop: 0x9be564,
+    solid: 0x6b705c,
+    solidDark: 0x484b3d,
+    speck: 0x3f4236,
+  },
 };
 
 export const themeOf = (world: number): Theme => THEMES[world] ?? THEMES[1];

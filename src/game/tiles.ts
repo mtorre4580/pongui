@@ -12,6 +12,8 @@ export const T = {
   ASH: 10, // extinguished fire (solid)
   LOCK: 11, // lock block: a key opens the whole connected group
   MOSS: 12, // soft moss: always a low bounce, even with jump held
+  CLOUD: 13, // one-way platform: solid only when landing on it from above
+  UPDRAFT: 14, // rising air: pushes the ball up while its center is inside
 } as const;
 
 export type TileCode = (typeof T)[keyof typeof T];
@@ -28,6 +30,8 @@ export const CHAR_TO_TILE: Record<string, TileCode> = {
   '*': T.SPIKE,
   L: T.LOCK,
   m: T.MOSS,
+  '-': T.CLOUD,
+  '|': T.UPDRAFT,
 };
 
 export function fragileMax(t: number): number {

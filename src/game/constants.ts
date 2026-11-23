@@ -29,6 +29,10 @@ export const AIR_DECEL = 2400;
 export const MAX_VX = 160;
 export const RAMP_VX = 220;
 
+// Updrafts replace gravity with a lift up to a top speed (px/s², px/s)
+export const UPDRAFT_LIFT = 2200;
+export const UPDRAFT_VMAX = 260;
+
 export const JUMP_BUFFER = 0.12; // s: pressing jump a bit before landing still counts
 export const BOUNCE_GRACE = 0.07; // s: pressing jump right after a bounce turns it into a high one
 
