@@ -128,9 +128,9 @@ const pwa = () =>
       globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
       // Landing media is only for the web page, never needed offline
       globIgnores: ['landing/**', 'og-image.jpg', '404.html'],
-      // `?level=N` deep links and shared levels (`?c=CODE`) must still hit the precached game
-      // page offline
-      ignoreURLParametersMatching: [/^utm_/, /^fbclid$/, /^level$/, /^c$/],
+      // `?level=N` deep links, shared levels (`?c=CODE`) and `?boss=N` must still hit the
+      // precached game page offline
+      ignoreURLParametersMatching: [/^utm_/, /^fbclid$/, /^level$/, /^c$/, /^boss$/],
       maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
     },
   });

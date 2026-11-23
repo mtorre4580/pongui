@@ -224,3 +224,28 @@ test('the boss of world 1 opens after its ten levels and guards world 2', async 
   expect(save.unlocked).toBe(9);
   expect(errors).toEqual([]);
 });
+
+test('?boss= opens a boss the player has reached, and nothing else', async ({ page }) => {
+  const errors = trackErrors(page);
+  // Nine levels of world 1 beaten: its boss is not open yet
+  await page.addInitScript(() => {
+    if (localStorage.getItem('pongui:save') !== null) return;
+    const levels = Object.fromEntries(
+      Array.from({ length: 9 }, (_, i) => [`w1-0${i + 1}`, { stars: 1, bestTime: 9 }]),
+    );
+    localStorage.setItem('pongui:save', JSON.stringify({ unlocked: 9, levels, sound: false }));
+  });
+  await page.goto('./play/?boss=1');
+  await expectScene(page, 'Menu');
+  // The tenth beaten: the address leads to the fight
+  await page.evaluate(() => {
+    const save = JSON.parse(localStorage.getItem('pongui:save')!);
+    save.levels['w1-10'] = { stars: 1, bestTime: 9 };
+    localStorage.setItem('pongui:save', JSON.stringify(save));
+  });
+  await page.goto('./play/?boss=1');
+  await expectScene(page, 'Game');
+  await page.goto('./play/?boss=99');
+  await expectScene(page, 'Menu');
+  expect(errors).toEqual([]);
+});
