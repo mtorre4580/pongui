@@ -103,7 +103,8 @@ Hashtags (5 como máximo): `#indiegame #puzzlegame #webgame #juegosindie #gamede
 4. **Embed options:** tamaño `960 × 624`, activar **Fullscreen button** y **Mobile friendly**
    con orientación **Landscape**.
 5. Descripción: el texto de presentación de esta guía, con el link
-   `https://pongui.com/?utm_source=itch` y capturas de `docs/media/`.
+   `https://pongui.com/?utm_source=itch`. La portada (`cover.png`) y cinco capturas salen de
+   `pnpm media itch`, en `docs/social/itch/`.
 6. Género **Puzzle**; etiquetas `puzzle`, `platformer`, `browser`, `level-editor`, `singleplayer`.
 7. Dejarlo en **Draft**, probarlo con el botón de vista previa y recién ahí pasarlo a **Public**.
 
