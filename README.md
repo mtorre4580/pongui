@@ -68,13 +68,14 @@ come from `assets/` (`pnpm icons` then `pnpm native:assets`).
 
 ## Features
 
-- **60 levels in six worlds**, each level teaching one idea. Bouncy Valley brings high bounces,
+- **70 levels in seven worlds**, each level teaching one idea. Bouncy Valley brings high bounces,
   fragile floors, ramps, springs, fire and water, walls and hammers and spikes; Crystal Caves adds
   keys that open lock blocks and soft moss that never bounces you high; Cloud Peaks adds one-way
   clouds and updrafts that lift you; Gear Works adds switches that swap orange and teal blocks
   and pushers that throw you sideways; Coral Lagoon adds paired portals and water where you sink
   slowly and bounce higher; Frost Peaks adds slippery ice and thin ice that cracks under a high
-  bounce. More worlds are coming.
+  bounce; Ember Core adds crumbling rock and lava vents that blaze on a rhythm. More worlds are
+  coming.
 - **Solvable by construction**: an automatic solver plays every level with the real physics in CI,
   so no level ships without a proven solution.
 - **Keyboard, touch gestures and gamepad**, with menus you can drive from any of them.
