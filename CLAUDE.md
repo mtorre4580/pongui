@@ -127,8 +127,14 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
   vanish for good. Vents `!` follow the world's clock (`ticks`): 1.5 s off and solid, then
   1.5 s lit and deadly (a hazard by the same center rule), starting off; a small flame flickers
   in the last 0.4 s before they light. The solver keeps the vents' phase in its key (in 0.25 s
-  buckets) and, on levels with timed tiles, expands the states nearest to a target first: the
-  phase multiplies the states, so keep those levels compact (fill unused space with rock).
+  buckets) and, on levels with timed tiles, takes turns between the states nearest to a target
+  and plain breadth-first order: the phase multiplies the states, so keep those levels compact
+  (fill unused space with rock).
+- Phase blocks `%` and `&` take turns every 1.2 s on the world clock (`%` solid first); one
+  that turns solid around the ball is held open until the ball leaves it (like A/B blocks),
+  and they flicker in the last 0.3 s before swapping. Plan steps end on every swap. Dark levels
+  (`"dark": true`) only change the look: a veil with a soft hole of light around the ball,
+  with items and the exit drawn over it.
 - `World.step` returns events (`bounce`, `break`, `collect`, `die`, `win`…); scenes only render
   them. Never put gameplay rules in scenes.
 
@@ -195,6 +201,11 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
   vent to vent. Bumper chimneys need a low entrance (a 1-tall tunnel) or the ball bumps the
   wall's side on the way in and is thrown back; make one wall taller so the exit side is
   fixed.
+- Phase blocks inside an updraft column cut the lift (the ball's center leaves the wind), so
+  put them beside the column, not in it. Dark levels: never ask for a jump into something
+  the light does not show yet; gems glow, so put them on the safe line. Spikes and pits must
+  be in the floor row, not standing on it: a 1-tall obstacle on a floor cannot be bounced over
+  under a low ceiling.
 - Switches flip on every bounce: a switch you must cross mid-route should sit between solid
   tiles so people can stop on them, and the lamp shows which color is solid.
 
@@ -379,7 +390,8 @@ characters must stay unique across the game.
 - [x] World 6 — Frost Peaks: ice, thin ice
 - [x] World 7 — Ember Core: crumbling blocks, vents
 - [x] World 8 — Star Station: low-gravity zones, bumpers
-- [ ] Worlds 9–10 (planned: dark rooms and phase blocks, rainbow bridges)
+- [x] World 9 — Shadow Keep: dark levels, phase blocks
+- [ ] World 10 (planned: rainbow bridges and a remix of every mechanic)
 - [x] Native apps — Capacitor iOS and Android projects (iOS verified in the simulator)
 - [ ] Store release (developer accounts, signing, store listings, privacy policy)
 - [ ] Public release (license, Pages deploy, CodeQL)

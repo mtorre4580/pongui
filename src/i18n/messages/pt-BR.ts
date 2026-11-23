@@ -22,6 +22,7 @@ export const ptBR: Messages = {
   'world.6': 'Picos Gelados',
   'world.7': 'Núcleo de Brasas',
   'world.8': 'Estação Estelar',
+  'world.9': 'Fortaleza Sombria',
   'game.level': 'Fase {n} · {name}',
   'game.exitOpen': 'Saída aberta!',
   'overlay.paused': 'Pausa',

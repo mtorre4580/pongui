@@ -8,6 +8,7 @@ import {
   HUD_H,
   ROWS,
   START_LIVES,
+  PHASE_CYCLE,
   STEP,
   TILE,
   VENT_CYCLE,
@@ -64,6 +65,8 @@ const TILE_TEX: Record<number, string> = {
   [T.CRUMBLE]: 'crumble',
   [T.VENT]: 'vent-off',
   [T.BUMPER]: 'bumper',
+  [T.PHASE_A]: 'phaseA',
+  [T.PHASE_B]: 'phaseB',
 };
 // Particle colors per tile (solid blocks use the world's color)
 const TILE_COLOR: Record<number, number> = {
@@ -91,6 +94,8 @@ const TILE_COLOR: Record<number, number> = {
   [T.CRUMBLE]: C.crumbleTop,
   [T.VENT]: C.lava,
   [T.BUMPER]: C.bumperLight,
+  [T.PHASE_A]: C.phaseA,
+  [T.PHASE_B]: C.phaseB,
 };
 
 export class Game extends Phaser.Scene {
@@ -108,6 +113,7 @@ export class Game extends Phaser.Scene {
   private prevX = 0;
   private prevY = 0;
   private squash = 0;
+  private lastBonk = 0;
 
   private solids!: Phaser.GameObjects.Image;
   private solidsVersion = 0;
@@ -121,6 +127,8 @@ export class Game extends Phaser.Scene {
   private itemSprites: (Phaser.GameObjects.Image | null)[] = [];
   private exitSprite!: Phaser.GameObjects.Image;
   private ball!: Phaser.GameObjects.Container;
+  /** Dark levels: a black veil with a hole of light that follows the ball. */
+  private darkness?: Phaser.GameObjects.Image;
   private eyes!: Phaser.GameObjects.Image;
   private trail!: Phaser.GameObjects.Particles.ParticleEmitter;
   private bursts = new Map<number, Phaser.GameObjects.Particles.ParticleEmitter>();
@@ -175,6 +183,7 @@ export class Game extends Phaser.Scene {
     this.buildTiles();
     this.buildItems();
     this.buildBall();
+    if (this.level.dark) this.buildDarkness();
     this.buildHud();
     this.showBanner();
 
@@ -336,8 +345,14 @@ export class Game extends Phaser.Scene {
 
   /** Shows each toggle block as solid or as an outline, following the world. */
   private syncToggles(fx = true) {
+    // Phase blocks about to swap (the last 0.3 s of each half cycle) flicker as a warning
+    const half = PHASE_CYCLE / 2;
+    const warn = this.world.s.ticks % half >= half - 36;
+    const flicker = warn ? 0.55 + 0.45 * Math.abs(Math.sin(this.time.now / 60)) : 1;
     for (const tg of this.toggles) {
-      const open = this.world.isOpen(this.world.s.tiles[tg.idx], tg.idx);
+      const t = this.world.s.tiles[tg.idx];
+      const open = this.world.isOpen(t, tg.idx);
+      if (t === T.PHASE_A || t === T.PHASE_B) tg.img.setAlpha(flicker);
       const key = open ? `${tg.tex}-open` : tg.tex;
       if (tg.img.texture.key === key) continue;
       tg.img.setTexture(key);
@@ -379,7 +394,11 @@ export class Game extends Phaser.Scene {
       }
       const x = it.col * TILE + TILE / 2;
       const y = it.row * TILE + TILE / 2 + OY;
-      const img = this.add.image(x, y, ITEM_TEX[it.kind]).setScale(0.5);
+      // In dark levels items glow over the darkness
+      const img = this.add
+        .image(x, y, ITEM_TEX[it.kind])
+        .setScale(0.5)
+        .setDepth(this.level.dark ? 8 : 0);
       this.tweens.add({
         targets: img,
         y: y - 3,
@@ -402,8 +421,35 @@ export class Game extends Phaser.Scene {
     const ex = this.level.exit;
     this.exitSprite = this.add
       .image(ex.col * TILE + TILE / 2, ex.row * TILE + TILE / 2 + OY, 'exit-locked')
-      .setScale(0.5);
+      .setScale(0.5)
+      .setDepth(this.level.dark ? 8 : 0);
     if (this.world.exitOpen) this.openExit(false);
+  }
+
+  /**
+   * One baked image (at a quarter of the resolution: it is all soft) much larger than the
+   * screen, with a soft round hole in its middle. It moves with the ball every frame.
+   */
+  private buildDarkness() {
+    const key = 'darkness';
+    const q = 4; // world units per texture pixel
+    const w = (GAME_W * 4) / q;
+    const h = (GAME_H * 3) / q;
+    if (!this.textures.exists(key)) {
+      const tex = this.textures.createCanvas(key, w, h)!;
+      const ctx = tex.getContext();
+      const grad = ctx.createRadialGradient(w / 2, h / 2, 64 / q, w / 2, h / 2, 118 / q);
+      grad.addColorStop(0, 'rgba(6, 4, 14, 0)');
+      grad.addColorStop(0.55, 'rgba(6, 4, 14, 0.7)');
+      grad.addColorStop(1, 'rgba(6, 4, 14, 0.97)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
+      tex.refresh();
+    }
+    this.darkness = this.add
+      .image(this.world.s.x, this.world.s.y + OY, key)
+      .setScale(q)
+      .setDepth(7);
   }
 
   private buildBall() {
@@ -603,6 +649,7 @@ export class Game extends Phaser.Scene {
     const a = this.started ? Math.min(1, this.acc / STEP) : 1;
     const x = this.prevX + (s.x - this.prevX) * a;
     const y = this.prevY + (s.y - this.prevY) * a;
+    this.darkness?.setPosition(x, y + OY);
     this.squash = Math.max(0, this.squash - dt / 0.12);
     const stretch = Math.min(0.18, Math.abs(s.vy) / 4500);
     const sq = Math.sin(this.squash * Math.PI) * 0.32;
@@ -675,7 +722,9 @@ export class Game extends Phaser.Scene {
           this.burst(C.ballLight, this.world.s.x, this.world.s.y + OY + BALL_R, 5, 80);
           break;
         case 'bonk':
-          sfx.bonk();
+          // A ball held against a ceiling (by an updraft) bonks every step: play it once
+          if (this.time.now - this.lastBonk > 150) sfx.bonk();
+          this.lastBonk = this.time.now;
           break;
         case 'crack': {
           const spr = this.tileSprites.get(e.idx);
@@ -836,6 +885,10 @@ export class Game extends Phaser.Scene {
         }
         case 'zone':
           if (e.inside) sfx.zone();
+          break;
+        case 'phase':
+          sfx.phase();
+          this.syncToggles();
           break;
         case 'vent':
           if (e.lit) sfx.vent();

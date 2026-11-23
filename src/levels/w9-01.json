@@ -1,0 +1,29 @@
+{
+  "id": "w9-01",
+  "name": {
+    "en": "Lights out",
+    "es": "Apagón",
+    "pt-BR": "Apagão"
+  },
+  "hint": {
+    "en": "It is dark: only the gems glow. Feel your way to them.",
+    "es": "Está oscuro: solo brillan las gemas. Andá tanteando hasta ellas.",
+    "pt-BR": "Está escuro: só as gemas brilham. Vá tateando até elas."
+  },
+  "dark": true,
+  "par": 28,
+  "map": [
+    "####################",
+    "#..................#",
+    "#..g...........E...#",
+    "#.#####....#######.#",
+    "#.#..............#.#",
+    "#.#..g...........#.#",
+    "#.#....#######...#.#",
+    "#.#..............#.#",
+    "#.#........g.....#.#",
+    "#.###.........####.#",
+    "#.P................#",
+    "####################"
+  ]
+}

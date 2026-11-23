@@ -1,0 +1,29 @@
+{
+  "id": "w9-05",
+  "name": {
+    "en": "Dark vault",
+    "es": "Bóveda oscura",
+    "pt-BR": "Cofre escuro"
+  },
+  "hint": {
+    "en": "The key glows in the dark, and so does the way out once it is open.",
+    "es": "La llave brilla en la oscuridad, y la salida también cuando se abre.",
+    "pt-BR": "A chave brilha no escuro, e a saída também quando abre."
+  },
+  "dark": true,
+  "par": 38,
+  "map": [
+    "####################",
+    "#..........#.......#",
+    "#..k.......#..g....#",
+    "#####..#####.......#",
+    "#..........#.......#",
+    "#.g........#....LLL#",
+    "#.....###..#....L.E#",
+    "#..........#....L..#",
+    "#####......#..######",
+    "#.......####.......#",
+    "#.P................#",
+    "####################"
+  ]
+}

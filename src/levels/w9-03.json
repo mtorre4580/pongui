@@ -1,0 +1,29 @@
+{
+  "id": "w9-03",
+  "name": {
+    "en": "Dark spikes",
+    "es": "Pinches a oscuras",
+    "pt-BR": "Espinhos no escuro"
+  },
+  "hint": {
+    "en": "The gems mark the safe path between the spikes. Go slowly.",
+    "es": "Las gemas marcan el camino seguro entre los pinches. Andá despacio.",
+    "pt-BR": "As gemas marcam o caminho seguro entre os espinhos. Vá devagar."
+  },
+  "dark": true,
+  "par": 24,
+  "map": [
+    "####################",
+    "#..................#",
+    "#............g.....#",
+    "#..................#",
+    "#..........#####...#",
+    "#.....g............#",
+    "#...............E..#",
+    "#....####...########",
+    "#..................#",
+    "#..#.....g.........#",
+    "#.P................#",
+    "#####**####**#######"
+  ]
+}

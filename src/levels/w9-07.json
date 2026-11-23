@@ -1,0 +1,29 @@
+{
+  "id": "w9-07",
+  "name": {
+    "en": "Dark pool",
+    "es": "Pileta oscura",
+    "pt-BR": "Piscina escura"
+  },
+  "hint": {
+    "en": "Dive into the dark water: the gems show you where to swim.",
+    "es": "Zambullite en el agua oscura: las gemas te muestran por dónde nadar.",
+    "pt-BR": "Mergulhe na água escura: as gemas mostram por onde nadar."
+  },
+  "dark": true,
+  "par": 23,
+  "map": [
+    "####################",
+    "#..................#",
+    "#.P..............E.#",
+    "#####~~~~~~~~#######",
+    "#####~~~~~~~~#######",
+    "#####~~g~~~~~#######",
+    "#####~~~~###~#######",
+    "#####~~~~#g~~#######",
+    "#####~~~~#~~~#######",
+    "#####~~~~~~~~#######",
+    "#####~~~~~~g~#######",
+    "####################"
+  ]
+}

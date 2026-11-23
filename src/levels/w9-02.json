@@ -1,0 +1,28 @@
+{
+  "id": "w9-02",
+  "name": {
+    "en": "Phase blocks",
+    "es": "Bloques de fase",
+    "pt-BR": "Blocos de fase"
+  },
+  "hint": {
+    "en": "Violet and cyan blocks take turns being solid. They flicker just before they switch.",
+    "es": "Los bloques violetas y celestes se turnan para ser sólidos. Titilan justo antes de cambiar.",
+    "pt-BR": "Os blocos roxos e azuis se revezam para ser sólidos. Eles piscam logo antes de trocar."
+  },
+  "par": 18,
+  "map": [
+    "####################",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#.....g.......&....#",
+    "#.............&..g.#",
+    "#.............&....#",
+    "#.P....%%%....&..E.#",
+    "######***###########"
+  ]
+}

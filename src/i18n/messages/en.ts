@@ -21,6 +21,7 @@ export const en = {
   'world.6': 'Frost Peaks',
   'world.7': 'Ember Core',
   'world.8': 'Star Station',
+  'world.9': 'Shadow Keep',
   'game.level': 'Level {n} · {name}',
   'game.exitOpen': 'Exit open!',
   'overlay.paused': 'Paused',

@@ -80,6 +80,12 @@ export const C = {
   bumper: 0xff006e,
   bumperLight: 0xff8fc0,
   bumperDark: 0xa1004a,
+  phaseA: 0x9b5de5,
+  phaseALight: 0xd5b8ff,
+  phaseADark: 0x5e2f9e,
+  phaseB: 0x00bbf9,
+  phaseBLight: 0xa6ecff,
+  phaseBDark: 0x00739c,
   water: 0x3fa7d6,
   waterLight: 0xb8f2ff,
   hammerHandle: 0x9c6644,
@@ -290,11 +296,26 @@ export function createTextures(scene: Phaser.Scene) {
     });
   }
   // Solid A/B blocks, and the dashed outline they leave while open
-  const toggle = (key: string, body: number, light: number, dark: number, mark: 'A' | 'B') => {
+  const toggle = (
+    key: string,
+    body: number,
+    light: number,
+    dark: number,
+    mark: 'A' | 'B' | 'moon' | 'sun',
+  ) => {
     make(scene, key, S, S, (g) => {
       block(g, body, light, dark);
       g.fillStyle(dark, 0.9);
-      if (mark === 'A') {
+      if (mark === 'moon') {
+        g.fillCircle(32, 36, 12);
+        g.fillStyle(body, 1).fillCircle(38, 32, 10);
+      } else if (mark === 'sun') {
+        g.fillCircle(32, 36, 8);
+        for (let i = 0; i < 8; i++) {
+          const a = (i / 8) * Math.PI * 2;
+          g.fillCircle(32 + Math.cos(a) * 14, 36 + Math.sin(a) * 14, 2.5);
+        }
+      } else if (mark === 'A') {
         g.fillTriangle(22, 48, 32, 22, 42, 48);
         g.fillStyle(body, 1).fillTriangle(28, 48, 32, 36, 36, 48);
       } else {
@@ -314,6 +335,9 @@ export function createTextures(scene: Phaser.Scene) {
   };
   toggle('blockA', C.blockA, C.blockALight, C.blockADark, 'A');
   toggle('blockB', C.blockB, C.blockBLight, C.blockBDark, 'B');
+  // Shadow Keep phase blocks: violet moons (`%`, solid first) and cyan suns (`&`)
+  toggle('phaseA', C.phaseA, C.phaseALight, C.phaseADark, 'moon');
+  toggle('phaseB', C.phaseB, C.phaseBLight, C.phaseBDark, 'sun');
   for (const dir of ['L', 'R'] as const) {
     make(scene, `push${dir}`, S, S, (g) => {
       block(g, C.pusher, C.pusherLight, C.pusherDark);
@@ -563,6 +587,12 @@ function drawSolids(
           y + (25 - (seed % 2) * 4) * k,
           1.2 * k,
         );
+      } else if (theme.pattern === 'bricks' && !isAsh) {
+        // Castle masonry: two courses of stone
+        g.fillStyle(theme.speck, 0.55);
+        g.fillRect(x, y + 15 * k, T2, 1 * k);
+        g.fillRect(x, y + 25 * k, T2, 1 * k);
+        g.fillRect(x + ((r % 2) * 12 + 8) * k, y + 15 * k, 1 * k, 10 * k);
       } else if (theme.pattern === 'panels' && !isAsh) {
         // Metal panels: a seam and two screws
         g.fillStyle(theme.speck, 0.5);

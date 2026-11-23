@@ -117,6 +117,11 @@ export const sfx = {
     [660, 880, 1175].forEach((f, i) => tone(f, f, 0.14, 'triangle', 0.15, 0.06 + i * 0.06));
   },
   wind: () => noise(0.4, 0.16, 650, 0.6),
+  /** Phase blocks swapping: a soft chime. */
+  phase: () => {
+    tone(660, 660, 0.08, 'sine', 0.06);
+    tone(990, 990, 0.1, 'sine', 0.05, 0.05);
+  },
   /** A springy pinball "boing". */
   bump: () => {
     tone(700, 260, 0.16, 'square', 0.08);

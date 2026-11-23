@@ -1,0 +1,28 @@
+{
+  "id": "w9-06",
+  "name": {
+    "en": "Phase wind",
+    "es": "Viento de fase",
+    "pt-BR": "Vento de fase"
+  },
+  "hint": {
+    "en": "Float at the top of the wind and drop onto whichever block is solid.",
+    "es": "Flotá arriba del viento y bajá sobre el bloque que esté sólido.",
+    "pt-BR": "Flutue no alto do vento e desça no bloco que estiver sólido."
+  },
+  "par": 32,
+  "map": [
+    "####################",
+    "#..............g...#",
+    "#..E...............#",
+    "#.####...||...####.#",
+    "#......%%||&&......#",
+    "#........||........#",
+    "#........||........#",
+    "#........||........#",
+    "#........||....g...#",
+    "#..g.....||........#",
+    "#.P......||........#",
+    "####################"
+  ]
+}

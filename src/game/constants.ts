@@ -58,3 +58,5 @@ export const START_LIVES = 3;
 // spend half of their cycle off (solid) and half lit (deadly), starting off
 export const CRUMBLE_STEPS = 72;
 export const VENT_CYCLE = 360; // steps (3 s)
+// Shadow Keep: phase blocks swap every half of this cycle (1.2 s each)
+export const PHASE_CYCLE = 288;

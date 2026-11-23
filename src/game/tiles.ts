@@ -27,6 +27,8 @@ export const T = {
   CRUMBLE: 25, // starts crumbling on the first touch and is gone a moment later
   VENT: 26, // a lava vent: solid while off, deadly while lit, on a fixed rhythm
   BUMPER: 27, // a side hit throws the ball back at a fixed speed; from above it is a block
+  PHASE_A: 28, // phase blocks take turns: `%` is solid first, then `&`, every 1.2 s
+  PHASE_B: 29,
 } as const;
 
 export type TileCode = (typeof T)[keyof typeof T];
@@ -58,6 +60,8 @@ export const CHAR_TO_TILE: Record<string, TileCode> = {
   c: T.CRUMBLE,
   '!': T.VENT,
   b: T.BUMPER,
+  '%': T.PHASE_A,
+  '&': T.PHASE_B,
 };
 
 export function isPortal(t: number): boolean {
@@ -76,5 +80,5 @@ export function isStatic(t: number): boolean {
 
 /** Blocks whose solidity changes during play (they wait for the ball to leave before closing). */
 export function isToggle(t: number): boolean {
-  return t === T.BLOCK_A || t === T.BLOCK_B;
+  return t === T.BLOCK_A || t === T.BLOCK_B || t === T.PHASE_A || t === T.PHASE_B;
 }

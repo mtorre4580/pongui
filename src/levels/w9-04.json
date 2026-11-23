@@ -1,0 +1,28 @@
+{
+  "id": "w9-04",
+  "name": {
+    "en": "Phase stairs",
+    "es": "Escalera de fase",
+    "pt-BR": "Escada de fase"
+  },
+  "hint": {
+    "en": "Jump onto a phase step right after it turns solid, then rest on the rock.",
+    "es": "Saltá a un escalón de fase justo cuando se vuelve sólido y descansá en la roca.",
+    "pt-BR": "Pule num degrau de fase logo que ele ficar sólido e descanse na rocha."
+  },
+  "par": 17,
+  "map": [
+    "####################",
+    "#..............g...#",
+    "#...............E..#",
+    "#.............####.#",
+    "#..........&&&.....#",
+    "#..................#",
+    "#........##........#",
+    "#..................#",
+    "#.....%%%..........#",
+    "#..g...............#",
+    "#.P................#",
+    "####################"
+  ]
+}
