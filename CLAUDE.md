@@ -110,10 +110,14 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
 - Portals `1` `2` `3` come in pairs (`parseLevel` checks it). When the ball's center enters one,
   it moves to the other's center with the same velocity (ramp and pusher locks included); the
   exit portal stays inactive until the ball's center leaves it.
-- Water is a layer (`ParsedLevel.water`), not a tile: `~` cells, plus anything placed in a pool
-  (a gem, the start, a portal, spikes) whose cell above or side neighbor is wet. Inside, gravity
-  is halved and the fall speed is capped at 240 px/s, so bounces climb about twice as high.
-  Plan steps also end at portals and at the water's edge (`endsStep`).
+- Water and low-gravity zones are a layer (`ParsedLevel.field`), not tiles: `~` and `z` cells,
+  plus anything placed inside one (a gem, the start, a portal, spikes) whose cell above or side
+  neighbor is in it. In water gravity is halved and the fall speed is capped at 240 px/s, so
+  bounces climb about twice as high; in a zone gravity is 45%, so they climb about 2.2 times.
+  Plan steps also end at portals and at the edge of water or a zone (`endsStep`).
+- Bumpers `b`: a side hit throws the ball back the way it came at a fixed 260 px/s (locked until
+  the next bounce) with a small hop (at least 380 px/s up); from above or below they are plain
+  blocks. Two bumper walls two tiles apart make a "chimney" the ball ricochets up by itself.
 - Ice `i`: a bounce on it keeps the ball's horizontal speed (`lockVx`) and steering waits for
   the next bounce, so the ball slides until a wall stops it (a ball that lands still can steer).
   Thin ice `j` holds low bounces; a high bounce (jump held or buffered on landing) breaks every
@@ -186,6 +190,11 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
   cycle and see who survives; a person starts right as the vents go dark). Keep strips 3 tiles
   wide or less, give a solid resting spot before each strip, and never make people commit
   (slide on ice, jump over a wall) while the vents are still lit.
+- Low gravity stretches every flight (a low bounce lasts about a second), so a timed landing
+  after a jump in a zone leaves a much smaller window: jump from a solid spot at a vent, never
+  vent to vent. Bumper chimneys need a low entrance (a 1-tall tunnel) or the ball bumps the
+  wall's side on the way in and is thrown back; make one wall taller so the exit side is
+  fixed.
 - Switches flip on every bounce: a switch you must cross mid-route should sit between solid
   tiles so people can stop on them, and the lamp shows which color is solid.
 
@@ -369,8 +378,8 @@ characters must stay unique across the game.
 - [x] World 5 — Coral Lagoon: portals, water
 - [x] World 6 — Frost Peaks: ice, thin ice
 - [x] World 7 — Ember Core: crumbling blocks, vents
-- [ ] Worlds 8–10 (planned: low gravity and bumpers, dark rooms and phase blocks, rainbow
-      bridges)
+- [x] World 8 — Star Station: low-gravity zones, bumpers
+- [ ] Worlds 9–10 (planned: dark rooms and phase blocks, rainbow bridges)
 - [x] Native apps — Capacitor iOS and Android projects (iOS verified in the simulator)
 - [ ] Store release (developer accounts, signing, store listings, privacy policy)
 - [ ] Public release (license, Pages deploy, CodeQL)

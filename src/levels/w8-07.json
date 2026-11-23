@@ -1,0 +1,28 @@
+{
+  "id": "w8-07",
+  "name": {
+    "en": "Bumper switch",
+    "es": "Interruptor rebotador",
+    "pt-BR": "Interruptor rebatedor"
+  },
+  "hint": {
+    "en": "Ricochet up and bonk the switch to open the way out.",
+    "es": "Rebotá hacia arriba y pegale al interruptor para abrir la salida.",
+    "pt-BR": "Ricocheteie para cima e acerte o interruptor para abrir a saída."
+  },
+  "par": 16,
+  "map": [
+    "####################",
+    "#......b...........#",
+    "#......b...........#",
+    "#......b..b.o......#",
+    "#......b..b####....#",
+    "#......b..b#.......#",
+    "#......b..b#.......#",
+    "#......b..b#.......#",
+    "#......b..b#...BBBB#",
+    "#..g..#b..b#...B.E.#",
+    "#.P.......b#...B...#",
+    "####################"
+  ]
+}

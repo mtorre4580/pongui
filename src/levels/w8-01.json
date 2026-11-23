@@ -1,0 +1,28 @@
+{
+  "id": "w8-01",
+  "name": {
+    "en": "Low gravity",
+    "es": "Baja gravedad",
+    "pt-BR": "Baixa gravidade"
+  },
+  "hint": {
+    "en": "Inside the purple zones gravity is weak: you float and bounce much higher.",
+    "es": "Dentro de las zonas violetas la gravedad es débil: flotás y rebotás mucho más alto.",
+    "pt-BR": "Dentro das zonas roxas a gravidade é fraca: você flutua e quica muito mais alto."
+  },
+  "par": 16,
+  "map": [
+    "####################",
+    "#.......zzzzz......#",
+    "#.......zzgzz......#",
+    "#.......zzzzz...E..#",
+    "#.......zzzzz#######",
+    "#.......zzzzz#######",
+    "#.......zzzzz#######",
+    "#...g...zzzzz#######",
+    "#.......zzzzz#######",
+    "#.......zzzzz#######",
+    "#.P.....zzzzz#######",
+    "####################"
+  ]
+}

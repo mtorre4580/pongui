@@ -1,0 +1,28 @@
+{
+  "id": "w8-05",
+  "name": {
+    "en": "Star clouds",
+    "es": "Nubes de estrellas",
+    "pt-BR": "Nuvens de estrelas"
+  },
+  "hint": {
+    "en": "In low gravity a bounce off a cloud reaches the next one up.",
+    "es": "En baja gravedad, un rebote en una nube llega a la de arriba.",
+    "pt-BR": "Em baixa gravidade, um quique numa nuvem alcança a de cima."
+  },
+  "par": 22,
+  "map": [
+    "####################",
+    "#zzzzzzzzzzzzzzzzzz#",
+    "#zzzzzzzzzzzzzzEzzz#",
+    "#zzzzzzzzzzzz-----z#",
+    "#zzzzzgzzzzzzzzzzzz#",
+    "#zzzz----zzzzzzzzzz#",
+    "#zzzzzzzzzzzzzzgzzz#",
+    "#zzzzzzzzzzz----zzz#",
+    "#zzzzzzzzzzzzzzzzzz#",
+    "#zzzzzzzzzzzzzzzzzz#",
+    "#zPzzzzzzzzzzzzzzzz#",
+    "#####**********#####"
+  ]
+}

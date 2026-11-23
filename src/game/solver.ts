@@ -58,9 +58,9 @@ function key(s: WorldState, cycle: number): string {
 }
 
 /**
- * A plan step lasts until the next bounce, until the ball enters or leaves an updraft or water
- * (so the plan can steer out at an updraft's top or change course as it sinks), until it comes
- * out of a portal, or until it breaks through thin ice (so it can let go of jump before the
+ * A plan step lasts until the next bounce, until the ball enters or leaves an updraft, water or
+ * a low-gravity zone (so the plan can steer out at an updraft's top or change course as it
+ * sinks), until it comes out of a portal or off a bumper, or until it breaks through thin ice (so it can let go of jump before the
  * next landing). Replays must split steps the same way.
  */
 export const endsStep = (ev: WorldEvent[]) =>
@@ -69,6 +69,8 @@ export const endsStep = (ev: WorldEvent[]) =>
       e.type === 'bounce' ||
       e.type === 'wind' ||
       e.type === 'water' ||
+      e.type === 'zone' ||
+      e.type === 'bump' ||
       e.type === 'portal' ||
       (e.type === 'break' && e.tile === T.THIN_ICE),
   );

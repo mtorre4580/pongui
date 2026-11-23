@@ -1,0 +1,28 @@
+{
+  "id": "w8-10",
+  "name": {
+    "en": "Star Station",
+    "es": "Estación Estelar",
+    "pt-BR": "Estação Estelar"
+  },
+  "hint": {
+    "en": "Low gravity, bumpers, spikes and a key: dock at the exit!",
+    "es": "Baja gravedad, rebotadores, pinches y una llave: ¡acoplate a la salida!",
+    "pt-BR": "Baixa gravidade, rebatedores, espinhos e uma chave: atraque na saída!"
+  },
+  "par": 27,
+  "map": [
+    "####################",
+    "#.E.L.....b........#",
+    "#...L.....b.....k..#",
+    "######.b..b.zzzzzzz#",
+    "#......b..b.zzzzzzz#",
+    "#......b..b.zzzzzzz#",
+    "#......b..b.zzz*zzz#",
+    "#......b..b.zzzzzzz#",
+    "#......b..b.zzzzzzz#",
+    "#..g..#b..#.zzzzzzz#",
+    "#.P........zzzzzgzz#",
+    "####################"
+  ]
+}

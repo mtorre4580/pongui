@@ -12,6 +12,10 @@ const CHAR_TO_ITEM: Record<string, ItemKind> = {
   k: 'key',
 };
 
+/** What fills a cell (see `ParsedLevel.field`). */
+export const FIELD = { NONE: 0, WATER: 1, ZONE: 2 } as const;
+const FIELD_CHARS: Record<string, number> = { '~': FIELD.WATER, z: FIELD.ZONE };
+
 export interface LevelData {
   id: string;
   name: Localized<string>;
@@ -29,8 +33,11 @@ export interface ParsedLevel {
   hintTouch: Localized<string> | null;
   par: number;
   tiles: Uint8Array;
-  /** 1 where the cell is under water (`~`, and anything placed in a pool: see parseLevel). */
-  water: Uint8Array;
+  /**
+   * What fills each cell: `FIELD.WATER` (`~`), `FIELD.ZONE` (low gravity, `z`) or nothing.
+   * Anything placed inside one (a gem, the start, a portal, spikes) is in it too.
+   */
+  field: Uint8Array;
   items: { kind: ItemKind; col: number; row: number }[];
   start: { col: number; row: number };
   exit: { col: number; row: number };
@@ -42,7 +49,7 @@ export function parseLevel(data: LevelData): ParsedLevel {
   if (map.length !== ROWS)
     throw new Error(`${data.id}: the map has ${map.length} rows (expected ${ROWS})`);
   const tiles = new Uint8Array(ROWS * COLS);
-  const water = new Uint8Array(ROWS * COLS);
+  const field = new Uint8Array(ROWS * COLS);
   const items: ParsedLevel['items'] = [];
   let start: ParsedLevel['start'] | null = null;
   let exit: ParsedLevel['exit'] | null = null;
@@ -54,20 +61,21 @@ export function parseLevel(data: LevelData): ParsedLevel {
       const ch = line[col];
       const idx = row * COLS + col;
       if (ch === '.' || ch === ' ') continue;
-      // Water is a layer, not a tile. Anything placed in a pool (a gem, the start, a portal,
-      // spikes…) is under water too: a cell is wet if the cell above it or a side neighbor is.
-      const wet = (c: number, r: number) =>
-        c >= 0 &&
-        c < COLS &&
-        r >= 0 &&
+      // Water and low-gravity zones are layers, not tiles. Anything placed in one (a gem, the
+      // start, a portal, spikes…) is in it too: it takes the field of the cell above it or of a
+      // side neighbor.
+      const fieldAt = (c: number, r: number): number => {
+        if (c < 0 || c >= COLS || r < 0) return 0;
         // Cells already read (above, or to the left) use the result, the rest their character
-        (r < row || c < col ? water[r * COLS + c] === 1 : map[r][c] === '~');
-      if (
-        ch === '~' ||
-        (ch !== '#' && (wet(col, row - 1) || wet(col - 1, row) || wet(col + 1, row)))
-      )
-        water[idx] = 1;
-      if (ch === '~') continue;
+        if (r < row || c < col) return field[r * COLS + c];
+        return FIELD_CHARS[map[r][c]] ?? 0;
+      };
+      if (ch in FIELD_CHARS) {
+        field[idx] = FIELD_CHARS[ch];
+        continue;
+      }
+      if (ch !== '#')
+        field[idx] = fieldAt(col, row - 1) || fieldAt(col - 1, row) || fieldAt(col + 1, row);
       if (ch === 'P') {
         if (start) throw new Error(`${data.id}: more than one start (P)`);
         start = { col, row };
@@ -108,7 +116,7 @@ export function parseLevel(data: LevelData): ParsedLevel {
     hintTouch: data.hintTouch ?? null,
     par: data.par,
     tiles,
-    water,
+    field,
     items,
     start: s,
     exit: exit as { col: number; row: number },

@@ -12,7 +12,7 @@ import {
   TILE,
   VENT_CYCLE,
 } from '../game/constants';
-import type { ParsedLevel } from '../game/level';
+import { FIELD, type ParsedLevel } from '../game/level';
 import { World, type WorldEvent } from '../game/physics';
 import { isPortal, isStatic, isToggle, T } from '../game/tiles';
 import { bakeSolids, C, drawBackground, sparkTexture, TEX } from '../gfx/textures';
@@ -63,6 +63,7 @@ const TILE_TEX: Record<number, string> = {
   [T.THIN_ICE]: 'thinice',
   [T.CRUMBLE]: 'crumble',
   [T.VENT]: 'vent-off',
+  [T.BUMPER]: 'bumper',
 };
 // Particle colors per tile (solid blocks use the world's color)
 const TILE_COLOR: Record<number, number> = {
@@ -89,6 +90,7 @@ const TILE_COLOR: Record<number, number> = {
   [T.THIN_ICE]: C.iceLight,
   [T.CRUMBLE]: C.crumbleTop,
   [T.VENT]: C.lava,
+  [T.BUMPER]: C.bumperLight,
 };
 
 export class Game extends Phaser.Scene {
@@ -254,32 +256,57 @@ export class Game extends Phaser.Scene {
       }
     }
     this.buildWind();
-    this.buildWater();
+    this.buildFields();
     this.syncToggles(false);
   }
 
-  /** Water is static: one baked image over the ball, with a surface line on each pool's top. */
-  private buildWater() {
-    const water = this.level.water;
-    if (!water.some((w) => w === 1)) return;
-    const key = `water-${this.level.id}`;
+  /**
+   * Water and low-gravity zones are static: one baked image over the ball. Pools get a surface
+   * line on their top row; zones a faint violet fill, a dotted outline and a few stars.
+   */
+  private buildFields() {
+    const field = this.level.field;
+    if (!field.some((f) => f !== FIELD.NONE)) return;
+    const key = `fields-${this.level.id}`;
     if (!this.textures.exists(key)) {
       const k = TEX;
-      const tex = this.textures.createCanvas(key, COLS * TILE * k, ROWS * TILE * k)!;
+      const T2 = TILE * k;
+      const tex = this.textures.createCanvas(key, COLS * T2, ROWS * T2)!;
       const ctx = tex.getContext();
       const css = (c: number, a: number) =>
         `rgba(${(c >> 16) & 255}, ${(c >> 8) & 255}, ${c & 255}, ${a})`;
-      for (let idx = 0; idx < water.length; idx++) {
-        if (!water[idx]) continue;
-        const x = (idx % COLS) * TILE * k;
-        const y = Math.floor(idx / COLS) * TILE * k;
-        const top = idx < COLS || !water[idx - COLS];
-        ctx.fillStyle = css(C.water, 0.32);
-        ctx.fillRect(x, y + (top ? 5 * k : 0), TILE * k, TILE * k - (top ? 5 * k : 0));
-        if (top) {
-          ctx.fillStyle = css(C.waterLight, 0.7);
-          ctx.fillRect(x, y + 4 * k, TILE * k, 2 * k);
+      const at = (c: number, r: number) =>
+        c < 0 || c >= COLS || r < 0 || r >= ROWS ? FIELD.NONE : field[r * COLS + c];
+      for (let idx = 0; idx < field.length; idx++) {
+        const f = field[idx];
+        if (f === FIELD.NONE) continue;
+        const c = idx % COLS;
+        const r = Math.floor(idx / COLS);
+        const x = c * T2;
+        const y = r * T2;
+        if (f === FIELD.WATER) {
+          const top = at(c, r - 1) !== FIELD.WATER;
+          ctx.fillStyle = css(C.water, 0.32);
+          ctx.fillRect(x, y + (top ? 5 * k : 0), T2, T2 - (top ? 5 * k : 0));
+          if (top) {
+            ctx.fillStyle = css(C.waterLight, 0.7);
+            ctx.fillRect(x, y + 4 * k, T2, 2 * k);
+          }
+          continue;
         }
+        ctx.fillStyle = css(C.zone, 0.16);
+        ctx.fillRect(x, y, T2, T2);
+        // A dotted outline where the zone ends
+        ctx.fillStyle = css(C.zoneLight, 0.6);
+        for (let d = 2 * k; d < T2; d += 6 * k) {
+          if (at(c, r - 1) !== FIELD.ZONE) ctx.fillRect(x + d, y, 2 * k, 1.5 * k);
+          if (at(c, r + 1) !== FIELD.ZONE) ctx.fillRect(x + d, y + T2 - 1.5 * k, 2 * k, 1.5 * k);
+          if (at(c - 1, r) !== FIELD.ZONE) ctx.fillRect(x, y + d, 1.5 * k, 2 * k);
+          if (at(c + 1, r) !== FIELD.ZONE) ctx.fillRect(x + T2 - 1.5 * k, y + d, 1.5 * k, 2 * k);
+        }
+        ctx.fillStyle = css(C.white, 0.5);
+        const seed = (c * 7 + r * 13) % 5;
+        ctx.fillRect(x + (6 + seed * 4) * k, y + (8 + seed * 3) * k, 1.5 * k, 1.5 * k);
       }
       tex.refresh();
     }
@@ -799,6 +826,17 @@ export class Game extends Phaser.Scene {
           this.burst(C.crumbleTop, p.x, p.y - 12, 4, 60);
           break;
         }
+        case 'bump': {
+          sfx.bump();
+          haptic('medium');
+          const spr = this.tileSprites.get(e.idx);
+          if (spr) this.tweens.add({ targets: spr, scale: 0.58, duration: 70, yoyo: true });
+          this.burst(C.bumperLight, this.world.s.x, this.world.s.y + OY, 8, 140);
+          break;
+        }
+        case 'zone':
+          if (e.inside) sfx.zone();
+          break;
         case 'vent':
           if (e.lit) sfx.vent();
           break;

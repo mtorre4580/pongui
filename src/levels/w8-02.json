@@ -1,0 +1,28 @@
+{
+  "id": "w8-02",
+  "name": {
+    "en": "Bumpers",
+    "es": "Rebotadores",
+    "pt-BR": "Rebatedores"
+  },
+  "hint": {
+    "en": "Bumpers throw you back when you hit their sides. Bounce between two to climb!",
+    "es": "Los rebotadores te devuelven cuando los chocás de costado. ¡Rebotá entre dos para subir!",
+    "pt-BR": "Os rebatedores devolvem você quando você bate de lado. Quique entre dois para subir!"
+  },
+  "par": 16,
+  "map": [
+    "####################",
+    "#......b...........#",
+    "#......b.......g...#",
+    "#......b.........E.#",
+    "#......b..b#########",
+    "#......b..b#########",
+    "#......b..b#########",
+    "#......b..b#########",
+    "#......b..b#########",
+    "#..g..#b..b#########",
+    "#.P.......b#########",
+    "####################"
+  ]
+}

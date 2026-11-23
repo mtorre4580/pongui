@@ -34,6 +34,12 @@ export const PUSH_VX = 280; // pushers: a low bounce at this fixed sideways spee
 export const WATER_GRAVITY = 0.5;
 export const WATER_MAX_FALL = 240;
 
+// Star Station: gravity inside a low-gravity zone, and the fixed speed a bumper throws the ball
+// back at (sideways, with a small hop)
+export const ZONE_GRAVITY = 0.45;
+export const BUMP_VX = 260;
+export const BUMP_VY = 380;
+
 // Updrafts replace gravity with a lift up to a top speed (px/s², px/s)
 export const UPDRAFT_LIFT = 2200;
 export const UPDRAFT_VMAX = 260;
