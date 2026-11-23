@@ -660,7 +660,10 @@ export class Game extends Phaser.Scene {
   /** A boss changed tiles of its arena: their sprites are made again. */
   private refreshTiles(idxs: number[]) {
     for (const idx of idxs) {
-      this.tileSprites.get(idx)?.destroy();
+      const old = this.tileSprites.get(idx);
+      // A switch that goes away must not be lit by the next flip
+      if (old) this.switches = this.switches.filter((img) => img !== old);
+      old?.destroy();
       this.tileSprites.delete(idx);
       this.flames.get(idx)?.destroy();
       this.flames.delete(idx);

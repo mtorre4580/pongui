@@ -37,7 +37,7 @@ const shot = (name: string) =>
 let won = false;
 /** Hits the boss takes (the first report of a fight says it). */
 let def = 0;
-for (let attempt = 1; attempt <= tries && !won; attempt++) {
+for (let attempt = 1; attempt <= tries && !won && errors.length === 0; attempt++) {
   await page.goto(`${base}play/?boss=${world}`);
   await page.waitForFunction(() => document.body.dataset.scene === 'Game');
   const held = { left: false, right: false, jump: false };
@@ -47,7 +47,7 @@ for (let attempt = 1; attempt <= tries && !won; attempt++) {
   let busyAt = -1;
   const taken = new Set<number>();
   const t0 = Date.now();
-  while (Date.now() - t0 < 240_000) {
+  while (Date.now() - t0 < 240_000 && errors.length === 0) {
     const r = await page.evaluate(
       () => (window as unknown as { boss(): Report | null }).boss?.() ?? null,
     );
