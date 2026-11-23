@@ -1,7 +1,8 @@
 import { expect, test } from '@playwright/test';
-import { expectScene } from './support';
+import { asReturningPlayer, expectScene } from './support';
 
 test('the web app manifest is installable', async ({ page, request }) => {
+  await asReturningPlayer(page);
   await page.goto('./play/');
   const href = await page.locator('link[rel="manifest"]').getAttribute('href');
   expect(href).toBeTruthy();
@@ -20,6 +21,7 @@ test('the web app manifest is installable', async ({ page, request }) => {
 
 test('works offline after the first visit', async ({ page, context, isMobile }) => {
   test.skip(isMobile, 'one browser is enough for the service worker');
+  await asReturningPlayer(page);
   await page.goto('./play/');
   await page.waitForFunction(async () => {
     const reg = await navigator.serviceWorker.getRegistration();
@@ -44,6 +46,7 @@ test('works offline after the first visit', async ({ page, context, isMobile }) 
 
 test('a precache holding an old page repairs itself', async ({ page, isMobile }) => {
   test.skip(isMobile, 'one browser is enough for the service worker');
+  await asReturningPlayer(page);
   await page.goto('./play/');
   await page.waitForFunction(async () => {
     const reg = await navigator.serviceWorker.getRegistration();

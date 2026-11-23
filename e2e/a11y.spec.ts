@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
-import { expectScene } from './support';
+import { asReturningPlayer, expectScene } from './support';
 
 const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 
@@ -13,6 +13,8 @@ const views = [
 
 for (const view of views) {
   test(`${view.name} has no WCAG 2.2 AA violations`, async ({ page }) => {
+    // The menu is what a returning player sees: a first visit starts on the first level
+    await asReturningPlayer(page);
     await page.goto(view.path);
     await expectScene(page, view.scene);
     const { violations } = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
