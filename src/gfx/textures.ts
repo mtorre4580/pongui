@@ -86,6 +86,7 @@ export const C = {
   phaseB: 0x00bbf9,
   phaseBLight: 0xa6ecff,
   phaseBDark: 0x00739c,
+  rainbow: [0xff595e, 0xffca3a, 0x8ac926, 0x1982c4, 0x6a4c93] as const,
   water: 0x3fa7d6,
   waterLight: 0xb8f2ff,
   hammerHandle: 0x9c6644,
@@ -431,6 +432,22 @@ export function createTextures(scene: Phaser.Scene) {
     g.fillStyle(C.bumper, 1).fillCircle(32, 31, 13);
     g.fillStyle(C.white, 1);
     star(g, 32, 32, 10, 4.5);
+  });
+
+  // --- Rainbow Summit: bridges of light ---
+  make(scene, 'bridge', S, S, (g) => {
+    const h = 5;
+    C.rainbow.forEach((color, i) => g.fillStyle(color, 1).fillRect(0, 2 + i * h, S, h));
+    g.fillStyle(C.white, 0.5).fillRect(0, 2, S, 2);
+    g.fillStyle(C.white, 0.8);
+    for (const x of [12, 40]) star(g, x, 14, 4, 1.8);
+  });
+  make(scene, 'bridge-open', S, S, (g) => {
+    // Not there yet: a faint dotted rainbow
+    C.rainbow.forEach((color, i) => {
+      g.fillStyle(color, 0.75);
+      for (let x = 2 + (i % 2) * 6; x < S; x += 12) g.fillRect(x, 2 + i * 5, 6, 4);
+    });
   });
 
   // --- Ball ---

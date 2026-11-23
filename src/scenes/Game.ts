@@ -67,6 +67,7 @@ const TILE_TEX: Record<number, string> = {
   [T.BUMPER]: 'bumper',
   [T.PHASE_A]: 'phaseA',
   [T.PHASE_B]: 'phaseB',
+  [T.BRIDGE]: 'bridge',
 };
 // Particle colors per tile (solid blocks use the world's color)
 const TILE_COLOR: Record<number, number> = {
@@ -96,6 +97,7 @@ const TILE_COLOR: Record<number, number> = {
   [T.BUMPER]: C.bumperLight,
   [T.PHASE_A]: C.phaseA,
   [T.PHASE_B]: C.phaseB,
+  [T.BRIDGE]: C.rainbow[1],
 };
 
 export class Game extends Phaser.Scene {
@@ -928,6 +930,7 @@ export class Game extends Phaser.Scene {
     });
     if (!fx) return;
     sfx.exitOpen();
+    if (this.level.tiles.includes(T.BRIDGE)) sfx.bridge();
     this.burst(C.exit, ex.x, ex.y, 20, 200);
     const toast = text(this, GAME_W / 2, 64, t('game.exitOpen'), 20, '#80ed99', {
       fontStyle: '700',

@@ -1,0 +1,28 @@
+{
+  "id": "w10-10",
+  "name": {
+    "en": "Rainbow Summit",
+    "es": "Cumbre Arcoíris",
+    "pt-BR": "Cume Arco-íris"
+  },
+  "hint": {
+    "en": "Every trick you know, one last time: reach the summit!",
+    "es": "Todos los trucos que conocés, una última vez: ¡llegá a la cumbre!",
+    "pt-BR": "Todos os truques que você conhece, uma última vez: chegue ao cume!"
+  },
+  "par": 28,
+  "map": [
+    "####################",
+    "#E.L...............#",
+    "#..L..........k....#",
+    "######=====######..#",
+    "#..................#",
+    "#.........zzzzzz...#",
+    "#.........zzzzzz...#",
+    "#..g......zz!zzz...#",
+    "#.........zzzzzz...#",
+    "#.........zzzgzz..s#",
+    "#.P..ccc...........#",
+    "#####***############"
+  ]
+}

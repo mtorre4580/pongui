@@ -1,0 +1,28 @@
+{
+  "id": "w10-08",
+  "name": {
+    "en": "Moon ice",
+    "es": "Hielo lunar",
+    "pt-BR": "Gelo lunar"
+  },
+  "hint": {
+    "en": "In low gravity a high bounce breaks thin ice from much higher up.",
+    "es": "En baja gravedad, un rebote alto rompe el hielo fino desde mucho más arriba.",
+    "pt-BR": "Em baixa gravidade, um quique alto quebra o gelo fino de muito mais alto."
+  },
+  "par": 26,
+  "map": [
+    "####################",
+    "#zzzzzzzzzzzzzzzzzz#",
+    "#zzzzzzzzzzzzzzgzzz#",
+    "#zPzzzzzzzzzzzzzzzz#",
+    "#############jjjj###",
+    "#zzzzzzzzzzzzzzzzzz#",
+    "#zzzgzzzzzzzzzzzzzz#",
+    "#zzzzzzzzzzzzzzzzzz#",
+    "###jjjj#############",
+    "#..................#",
+    "#.......g.......E..#",
+    "####################"
+  ]
+}

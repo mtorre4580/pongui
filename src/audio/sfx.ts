@@ -117,6 +117,10 @@ export const sfx = {
     [660, 880, 1175].forEach((f, i) => tone(f, f, 0.14, 'triangle', 0.15, 0.06 + i * 0.06));
   },
   wind: () => noise(0.4, 0.16, 650, 0.6),
+  /** Rainbow bridges appearing: a rising sparkle. */
+  bridge: () => {
+    [784, 988, 1175, 1568].forEach((f, i) => tone(f, f, 0.18, 'sine', 0.08, 0.15 + i * 0.06));
+  },
   /** Phase blocks swapping: a soft chime. */
   phase: () => {
     tone(660, 660, 0.08, 'sine', 0.06);

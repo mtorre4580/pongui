@@ -1,0 +1,28 @@
+{
+  "id": "w10-01",
+  "name": {
+    "en": "Rainbow bridge",
+    "es": "Puente arcoíris",
+    "pt-BR": "Ponte arco-íris"
+  },
+  "hint": {
+    "en": "Rainbow bridges appear once you have every gem.",
+    "es": "Los puentes arcoíris aparecen cuando juntaste todas las gemas.",
+    "pt-BR": "As pontes de arco-íris aparecem quando você pega todas as gemas."
+  },
+  "par": 12,
+  "map": [
+    "####################",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#...g..g...........#",
+    "#.P.......====..E..#",
+    "##########****######"
+  ]
+}
