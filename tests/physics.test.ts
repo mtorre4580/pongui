@@ -116,4 +116,30 @@ describe('bounce physics', () => {
     expect(w.s.hammers).toBe(0);
     expect([8, 9, 10].every((r) => w.s.tiles[r * 20 + 5] === T.EMPTY)).toBe(true);
   });
+
+  it('a key opens the whole connected lock group, and locks block without one', () => {
+    // Without a key the lock is a wall
+    const blocked = new World(level({ 9: '#..P.L.............#', 10: '#....L.............#' }));
+    for (let i = 0; i < 400; i++) blocked.step(STEP, { ...idle, right: true });
+    expect(blocked.s.x).toBeLessThan(5 * TILE);
+    expect(blocked.s.tiles[9 * 20 + 5]).toBe(T.LOCK);
+
+    const w = new World(
+      level({ 8: '#....L.............#', 9: '#..P.L.............#', 10: '#..k.L.............#' }),
+    );
+    for (let i = 0; i < 30; i++) w.step(STEP, idle);
+    expect(w.s.keys).toBe(1);
+    for (let i = 0; i < 400; i++) w.step(STEP, { ...idle, right: true });
+    expect(w.s.keys).toBe(0);
+    expect([8, 9, 10].every((r) => w.s.tiles[r * 20 + 5] === T.EMPTY)).toBe(true);
+    expect(w.s.x).toBeGreaterThan(5 * TILE);
+  });
+
+  it('moss always gives a low bounce, even with jump held', () => {
+    const w = new World(level({ 10: '#.P................#', 11: '#mmm################' }));
+    const peak = peakAfterBounces(w, { ...idle, jump: true, jumpPressed: true }, 2);
+    const h = 11 * TILE - BALL_R - peak;
+    expect(h).toBeGreaterThan(H_LOW - 3);
+    expect(h).toBeLessThan(H_LOW + 3);
+  });
 });

@@ -61,6 +61,7 @@ export interface WorldState {
   lockVx: number | null; // forced horizontal speed (ramps)
   drops: number;
   hammers: number;
+  keys: number;
   gemsTaken: number;
   gemsTotal: number;
   status: 'playing' | 'dead' | 'won';
@@ -105,6 +106,7 @@ export class World {
       lockVx: null,
       drops: 0,
       hammers: 0,
+      keys: 0,
       gemsTaken: 0,
       gemsTotal: level.gems,
       status: 'playing',
@@ -149,14 +151,14 @@ export class World {
     ev.push({ type: 'die', cause });
   }
 
-  /** Breaks every wall tile connected to the given cells. */
-  private floodWalls(seeds: Cell[]): number[] {
+  /** Removes every tile of the given kind connected to the given cells (walls, locks). */
+  private flood(seeds: Cell[], tile: number): number[] {
     const s = this.s;
     const stack = seeds.filter((c) => c.idx >= 0).map((c) => c.idx);
     const out: number[] = [];
     while (stack.length) {
       const idx = stack.pop()!;
-      if (s.tiles[idx] !== T.WALL) continue;
+      if (s.tiles[idx] !== tile) continue;
       s.tiles[idx] = T.EMPTY;
       out.push(idx);
       const c = idx % COLS;
@@ -202,8 +204,14 @@ export class World {
     const walls = cells.filter((c) => c.t === T.WALL);
     if (walls.length && s.hammers > 0) {
       s.hammers--;
-      const idxs = this.floodWalls(walls);
+      const idxs = this.flood(walls, T.WALL);
       ev.push({ type: 'break', idxs, tile: T.WALL });
+    }
+    const locks = cells.filter((c) => c.t === T.LOCK);
+    if (locks.length && s.keys > 0) {
+      s.keys--;
+      const idxs = this.flood(locks, T.LOCK);
+      ev.push({ type: 'break', idxs, tile: T.LOCK });
     }
     return cells.filter((c) => this.tileAt(c.c, c.r) !== T.EMPTY);
   }
@@ -230,7 +238,9 @@ export class World {
       }
     }
 
-    const wantHigh = input.jump || s.jumpBuffer > 0;
+    // Moss is soft: it always gives a low bounce, and it cannot be upgraded afterwards
+    const soft = prim.t === T.MOSS;
+    const wantHigh = !soft && (input.jump || s.jumpBuffer > 0);
     const isRamp = (c: Cell) => c.t === T.RAMP_L || c.t === T.RAMP_R;
     // Ramps "catch" the ball as soon as it touches them (even with its edge), so they cannot
     // be skipped by accident, and always launch it the same way from the ramp's center:
@@ -266,7 +276,7 @@ export class World {
       }
     }
     s.jumpBuffer = 0;
-    s.grace = kind === 'low' ? BOUNCE_GRACE : 0;
+    s.grace = kind === 'low' && !soft ? BOUNCE_GRACE : 0;
     s.surfaceY = top;
     s.bounces++;
     ev.push({ type: 'bounce', kind, x: s.x, y: top, idx: prim.idx });
@@ -374,6 +384,7 @@ export class World {
       if (it.kind === 'gem') s.gemsTaken++;
       else if (it.kind === 'drop') s.drops++;
       else if (it.kind === 'hammer') s.hammers++;
+      else if (it.kind === 'key') s.keys++;
       ev.push({ type: 'collect', item: i, kind: it.kind });
       if (it.kind === 'gem' && s.gemsTaken === s.gemsTotal) ev.push({ type: 'exitOpen' });
     }

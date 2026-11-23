@@ -2,9 +2,15 @@ import type { Localized } from '../i18n';
 import { COLS, ROWS } from './constants';
 import { CHAR_TO_TILE, T } from './tiles';
 
-export type ItemKind = 'gem' | 'drop' | 'hammer' | 'life';
+export type ItemKind = 'gem' | 'drop' | 'hammer' | 'life' | 'key';
 
-const CHAR_TO_ITEM: Record<string, ItemKind> = { g: 'gem', d: 'drop', h: 'hammer', l: 'life' };
+const CHAR_TO_ITEM: Record<string, ItemKind> = {
+  g: 'gem',
+  d: 'drop',
+  h: 'hammer',
+  l: 'life',
+  k: 'key',
+};
 
 export interface LevelData {
   id: string;
