@@ -49,6 +49,7 @@ export const ptBR: Messages = {
   'boss.2': 'Serpedra',
   'boss.3': 'Borrasca',
   'boss.4': 'Rosca',
+  'boss.5': 'Tinta',
   'select.boss': 'Chefe: {name}',
   'select.bossLocked': 'Termine as dez fases para enfrentar o chefe',
   'select.lockedBoss': 'Vença o chefe do mundo {n} para abrir este',
@@ -59,6 +60,8 @@ export const ptBR: Messages = {
     'Suba pelo ar até uma nuvem e caia em cima dela. Saia das colunas que se iluminam!',
   'game.bossHint.4':
     'Quique no interruptor: o escudo dele apaga e a ponte se fecha. Atravesse e caia na cabeça dele!',
+  'game.bossHint.5':
+    'Foi pego? Sacuda para a esquerda e a direita para se soltar! Depois quique alto e caia na cabeça dele.',
   'overlay.toBoss': 'Enfrentar o chefe',
   'overlay.bossDown': 'Chefe derrotado!',
   'overlay.bossDownText': 'O mundo {n} foi aberto.',

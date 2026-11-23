@@ -199,6 +199,75 @@ const ART: Record<number, BossArt> = {
       g.fillStyle(0x7ae7ff, 0.18).fillRoundedRect(-11, 3, W + 22, H + TOP - 6, 34);
     },
   },
+  // Inkwell: an octopus with a big round head. Guarding, two arms cross over it; 'open', they
+  // hang at its sides and its eyes spin
+  5: {
+    top: 30,
+    side: 26,
+    draw(g, W, H, pose) {
+      const TOP = 30;
+      const skin = { body: 0xd65db1, dark: 0x9b3d86, light: 0xf3a6d8, sucker: 0xffd6ef };
+      /** An arm: fat dots along a curve from (x0, y0), bending by `bend` per dot. */
+      const arm = (x0: number, y0: number, angle: number, bend: number, n: number) => {
+        let x = x0;
+        let y = y0;
+        let a = angle;
+        for (let i = 0; i < n; i++) {
+          const r = 13 - (i * 8) / n;
+          g.fillStyle(skin.dark, 1).fillCircle(x, y, r);
+          g.fillStyle(skin.sucker, 1).fillCircle(x, y, r * 0.35);
+          x += Math.cos(a) * r * 1.3;
+          y += Math.sin(a) * r * 1.3;
+          a += bend;
+        }
+      };
+      const open = pose === 'open';
+      // The arms on the sand, always there
+      arm(W * 0.2, TOP + H - 14, Math.PI, -0.3, 6);
+      arm(W * 0.8, TOP + H - 14, 0, 0.3, 6);
+      if (open) {
+        // Gathered: hanging limp by its sides
+        arm(4, TOP + H * 0.55, Math.PI * 0.6, -0.12, 9);
+        arm(W - 4, TOP + H * 0.55, Math.PI * 0.4, 0.12, 9);
+      }
+      // Head
+      g.fillStyle(skin.dark, 1).fillRoundedRect(0, TOP, W, H, { tl: 70, tr: 70, bl: 30, br: 30 });
+      g.fillStyle(skin.body, 1).fillRoundedRect(0, TOP, W - 12, H - 12, {
+        tl: 70,
+        tr: 60,
+        bl: 30,
+        br: 30,
+      });
+      g.fillStyle(skin.light, 1).fillEllipse(W * 0.36, TOP + 30, W * 0.4, 22);
+      // Spots
+      g.fillStyle(skin.dark, 0.5)
+        .fillCircle(W * 0.72, TOP + 46, 9)
+        .fillCircle(W * 0.6, TOP + 24, 6);
+      const eyeY = TOP + H * 0.5;
+      g.fillStyle(C.white, 1)
+        .fillEllipse(W * 0.3, eyeY, 34, 40)
+        .fillEllipse(W * 0.68, eyeY, 34, 40);
+      if (open) {
+        // Dizzy: rings instead of pupils
+        g.lineStyle(4, C.ink, 1)
+          .strokeCircle(W * 0.3, eyeY, 9)
+          .strokeCircle(W * 0.68, eyeY, 9);
+      } else {
+        g.fillStyle(C.ink, 1)
+          .fillEllipse(W * 0.32, eyeY + 4, 14, 22)
+          .fillEllipse(W * 0.66, eyeY + 4, 14, 22);
+        g.fillStyle(skin.dark, 1);
+        g.fillTriangle(W * 0.12, eyeY - 30, W * 0.46, eyeY - 12, W * 0.14, eyeY - 14);
+        g.fillTriangle(W * 0.86, eyeY - 30, W * 0.52, eyeY - 12, W * 0.84, eyeY - 14);
+      }
+      // A small round mouth
+      g.fillStyle(C.ink, 1).fillEllipse(W * 0.49, TOP + H * 0.74, open ? 22 : 30, open ? 22 : 14);
+      if (open) return;
+      // Guarding: two arms crossed over its head
+      arm(-10, TOP + H * 0.42, -Math.PI * 0.42, 0.2, 11);
+      arm(W + 10, TOP + H * 0.42, -Math.PI * 0.58, -0.2, 11);
+    },
+  },
 };
 
 /** What bosses throw, by the shot's kind. */
@@ -247,6 +316,14 @@ const SHOTS: Record<string, ShotArt> = {
       g.fillStyle(0x23285a, 1).fillCircle(w / 2, h / 2, w * 0.14);
     },
   },
+  // A bubble of ink
+  ink: {
+    draw(g, w, h) {
+      g.fillStyle(0x2b1d4f, 1).fillEllipse(w / 2, h / 2, w, h);
+      g.fillStyle(0x5a3e9b, 1).fillEllipse(w / 2, h / 2, w * 0.74, h * 0.74);
+      g.fillStyle(0xcdb8ff, 0.9).fillEllipse(w * 0.36, h * 0.32, w * 0.22, h * 0.16);
+    },
+  },
 };
 
 /** The color (and shape) of each kind of warning. */
@@ -257,6 +334,9 @@ const WARNS: Record<string, WarnArt> = {
   screw: { color: 0xff5964 },
   gear: { color: 0xffb703, shape: 'spot' },
   shield: { color: 0x7ae7ff },
+  reach: { color: 0xd65db1 },
+  grab: { color: 0x9b3d86 },
+  ink: { color: 0x5a3e9b, shape: 'spot' },
   'gust-left': { color: 0xffffff, shape: 'wind', dir: -1, soft: true },
   'gust-right': { color: 0xffffff, shape: 'wind', dir: 1, soft: true },
   'blow-left': { color: 0xffffff, shape: 'wind', dir: -1 },

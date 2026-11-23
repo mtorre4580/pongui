@@ -50,6 +50,7 @@ export const es: Messages = {
   'boss.2': 'Sierpe',
   'boss.3': 'Borrasca',
   'boss.4': 'Tuerca',
+  'boss.5': 'Tinta',
   'select.boss': 'Jefe: {name}',
   'select.bossLocked': 'Terminá los diez niveles para enfrentar al jefe',
   'select.lockedBoss': 'Vencé al jefe del mundo {n} para abrir este',
@@ -61,6 +62,8 @@ export const es: Messages = {
     'Subí por el aire hasta una nube y caele encima. ¡Salí de las columnas que se iluminan!',
   'game.bossHint.4':
     'Rebotá en el interruptor: se le apaga el escudo y se cierra el puente. ¡Cruzalo y caele en la cabeza!',
+  'game.bossHint.5':
+    '¿Te atrapó? ¡Sacudite a izquierda y derecha para soltarte! Después rebotá alto y caele en la cabeza.',
   'overlay.toBoss': 'Enfrentar al jefe',
   'overlay.bossDown': '¡Jefe derrotado!',
   'overlay.bossDownText': 'Se abrió el mundo {n}.',

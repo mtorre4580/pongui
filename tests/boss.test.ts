@@ -5,6 +5,7 @@ import { arena } from '../src/bosses/types';
 import type { Serpent } from '../src/bosses/w2-serpstone';
 import type { Bird } from '../src/bosses/w3-squall';
 import { SWITCH, type Robot } from '../src/bosses/w4-sprocket';
+import type { Octopus } from '../src/bosses/w5-inkwell';
 import { BossFight, MIN_WARN, seeded, type BossBrain, type BossDef } from '../src/game/boss';
 import { BALL_R, COLS, STEP, TILE, V_LOW } from '../src/game/constants';
 import { World, type InputState } from '../src/game/physics';
@@ -607,6 +608,167 @@ describe('Sprocket (world 4)', () => {
     expect(def.boltCount[3]).toBeGreaterThan(def.boltCount[0]);
     expect(def.gearCount[3]).toBeGreaterThan(def.gearCount[0]);
     expect(Math.min(def.boltWarn, def.gearWarn)).toBeGreaterThanOrEqual(MIN_WARN);
+  });
+});
+
+describe('Inkwell (world 5)', () => {
+  const { def } = BOSSES[5];
+  const brain = (f: BossFight) => f.brain as Octopus;
+  /** Runs with the ink held back until the octopus is in `mode`. */
+  const until = (f: BossFight, mode: Octopus['mode'], input: InputState = idle, seconds = 12) => {
+    const all = [];
+    for (
+      let i = 0;
+      i < seconds / STEP && brain(f).mode !== mode && f.world.s.status === 'playing';
+      i++
+    ) {
+      brain(f).ink = 9;
+      all.push(...f.step(STEP, input).boss);
+    }
+    return all;
+  };
+
+  it('guards its head with its arms: a landing there bounces off', () => {
+    const { f, s } = fightOf(5);
+    expect(f.boss.armor).toBe(true);
+    Object.assign(s, { x: f.boss.x, y: f.box[1] - BALL_R - 1, vy: 200 });
+    expect(f.step(STEP, idle).boss).toContainEqual({ type: 'boss-bonk' });
+    expect(f.boss.hp).toBe(def.hp);
+    // And it is taller than a low bounce climbs under water
+    let top = Infinity;
+    Object.assign(s, { x: 100, y: def.floorY - BALL_R - 1, vy: 100 });
+    for (let i = 0; i < 2 / STEP; i++) {
+      brain(f).ink = 9;
+      brain(f).t = 9;
+      f.step(STEP, idle);
+      top = Math.min(top, s.y + BALL_R);
+    }
+    expect(top).toBeGreaterThan(f.box[1] + 8);
+  });
+
+  it('announces its reach, catches a ball on that side and drags it to its mouth', () => {
+    const { f, s } = fightOf(5);
+    const warned = until(f, 'reach');
+    expect(warned).toContainEqual(expect.objectContaining({ type: 'boss-warn', kind: 'reach' }));
+    const t0 = s.time;
+    const caught = until(f, 'drag');
+    expect(s.time - t0).toBeGreaterThanOrEqual(def.reachWarn[0] - STEP);
+    expect(caught).toContainEqual({ type: 'boss-grab' });
+    // Doing nothing (or holding one side), the ball is pulled in and lost
+    const x0 = s.x;
+    for (let i = 0; i < (def.squeeze + 1) / STEP; i++) f.step(STEP, { ...idle, left: true });
+    expect(s.x).toBeGreaterThan(x0 + def.drag[0] * 0.5);
+    for (let i = 0; i < 10 / STEP && s.status === 'playing'; i++)
+      f.step(STEP, { ...idle, left: true });
+    expect(s.status).toBe('dead');
+    expect(f.boss.hp).toBe(def.hp);
+  });
+
+  it('lets go of a ball that shakes left and right, and then its head is open', () => {
+    const { f, s } = fightOf(5);
+    until(f, 'drag');
+    const events = [];
+    let shakes = 0;
+    for (let i = 0; f.grab && i < 5 / STEP; i++) {
+      // A change of direction every tenth of a second
+      const right = Math.floor(i / 12) % 2 === 1;
+      if (i % 12 === 0) shakes++;
+      events.push(...f.step(STEP, { ...idle, left: !right, right }).boss);
+    }
+    expect(f.grab).toBeNull();
+    expect(events).toContainEqual({ type: 'boss-release' });
+    expect(shakes).toBeGreaterThanOrEqual(def.shakes[0]);
+    expect(shakes).toBeLessThanOrEqual(def.shakes[0] + 2);
+    expect(brain(f).mode).toBe('open');
+    expect(f.boss.armor).toBe(false);
+    expect(s.status).toBe('playing');
+    // Open for a while, then its arms are back over its head
+    const t0 = s.time;
+    for (let i = 0; i < 8 / STEP && !f.boss.armor; i++) {
+      Object.assign(s, { x: 80, y: 300, vx: 0, vy: 0 });
+      brain(f).ink = 9;
+      f.step(STEP, idle);
+    }
+    expect(f.boss.armor).toBe(true);
+    expect(s.time - t0).toBeGreaterThan(def.open[0] - 0.1);
+  });
+
+  it('misses a ball above its reach or on its other side, and opens up all the same', () => {
+    // High over the sand when the arms arrive
+    const high = fightOf(5);
+    until(high.f, 'reach');
+    for (let i = 0; i < 3 / STEP && brain(high.f).mode === 'reach'; i++) {
+      Object.assign(high.s, { y: def.floorY - def.reachHeight - 30, vy: 0 });
+      high.f.step(STEP, idle);
+    }
+    expect(high.f.grab).toBeNull();
+    expect(brain(high.f).mode).toBe('open');
+    // Through the portal to the other side while the warning lasts
+    const far = fightOf(5);
+    until(far.f, 'reach');
+    const side = Math.sign(far.s.x - far.f.boss.x);
+    Object.assign(far.s, { x: 80, y: 5 * TILE + 16, vx: -100, vy: 0 });
+    const events = until(far.f, 'open', { ...idle, left: true });
+    expect(far.s.x * side).toBeLessThan(far.f.boss.x * side);
+    expect(events).not.toContainEqual({ type: 'boss-grab' });
+    expect(far.s.status).toBe('playing');
+  });
+
+  it('is hit by a high bounce from the sand while its head is open', () => {
+    const { f, s } = fightOf(5);
+    until(f, 'reach');
+    for (let i = 0; i < 3 / STEP && brain(f).mode === 'reach'; i++) {
+      Object.assign(s, { y: 100, vy: 0 });
+      f.step(STEP, idle);
+    }
+    expect(brain(f).mode).toBe('open');
+    Object.assign(s, { x: f.box[0] - 30, y: def.floorY - BALL_R - 1, vx: 0, vy: 100 });
+    let hit = false;
+    for (let i = 0; i < def.open[0] / STEP && !hit && s.status === 'playing'; i++) {
+      const over = s.y + BALL_R < f.box[1] - 2;
+      hit = f
+        .step(STEP, { ...idle, jump: true, right: over && s.x < f.boss.x })
+        .boss.some((e) => e.type === 'boss-hit');
+    }
+    expect(hit).toBe(true);
+    expect(f.boss.armor).toBe(true);
+  });
+
+  it('sends ink up from the sand under the ball: announced, deadly, and gone after a while', () => {
+    const still = fightOf(5);
+    const events = [];
+    for (let i = 0; i < 8 / STEP && still.s.status === 'playing'; i++) {
+      brain(still.f).t = 9;
+      events.push(...still.f.step(STEP, idle).boss);
+    }
+    expect(events).toContainEqual(expect.objectContaining({ type: 'boss-warn', kind: 'ink' }));
+    expect(still.s.status).toBe('dead');
+    // Stepping aside when the mark shows; the bubble pops on its own
+    const moved = fightOf(5);
+    const x0 = moved.s.x;
+    let popped = false;
+    for (let i = 0; i < 12 / STEP && !popped && moved.s.status === 'playing'; i++) {
+      brain(moved.f).t = 9;
+      const goal = moved.f.warns.length || moved.f.shots.length ? x0 - 44 : x0;
+      popped = moved.f
+        .step(STEP, { ...idle, left: moved.s.x > goal + 3, right: moved.s.x < goal - 3 })
+        .boss.some((e) => e.type === 'boss-shot-end' && e.why === 'time');
+    }
+    expect(popped).toBe(true);
+    expect(moved.s.status).toBe('playing');
+  });
+
+  it('asks for more shakes, drags faster and leaves less time with each phase', () => {
+    for (const up of [def.shakes, def.drag, def.inkCount])
+      expect([...up]).toEqual([...up].sort((a, b) => a - b));
+    for (const down of [def.rest, def.reachWarn, def.open, def.inkEvery])
+      expect([...down]).toEqual([...down].sort((a, b) => b - a));
+    expect(Math.min(...def.reachWarn, def.inkWarn)).toBeGreaterThanOrEqual(MIN_WARN);
+    // At four changes of direction a second, a ball caught a tile and a half away gets loose
+    // in every phase
+    def.shakes.forEach((n, phase) =>
+      expect(n / 4).toBeLessThan(def.squeeze + (1.5 * TILE) / def.drag[phase]),
+    );
   });
 });
 

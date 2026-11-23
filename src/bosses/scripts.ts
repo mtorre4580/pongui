@@ -150,9 +150,30 @@ const sprocket: BossScript = () => (f) => {
   return { jump: true, ...steer(s.x, 150) };
 };
 
+/**
+ * Inkwell: keep to its left, away from the ink coming up. Caught, shake left and right until
+ * the ball is loose; then, while its head is open, bounce high next to it and come down on it.
+ */
+const inkwell: BossScript = () => {
+  return (f) => {
+    const s = f.world.s;
+    const { boss } = f;
+    // Shaking: a change of direction five times a second
+    const beat = Math.floor(s.time * 5) % 2 === 0;
+    if (f.grab) return { jump: false, left: beat, right: !beat };
+    const [left, top] = f.box;
+    const open = !boss.armor && !f.dazed;
+    if (open && s.y + BALL_R < top - 2) return { jump: false, ...steer(s.x, boss.x) };
+    // Open: from the sand right beside it, as high as a bounce goes. Guarded: further away
+    const goal = open ? left - 30 : Math.min(left - 24, around(f, ['ink'], left - 110, 26));
+    return { jump: open, ...steer(s.x, goal) };
+  };
+};
+
 export const SCRIPTS: Record<number, BossScript> = {
   1: grumble,
   2: serpstone,
   3: squall,
   4: sprocket,
+  5: inkwell,
 };
