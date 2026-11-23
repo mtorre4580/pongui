@@ -22,7 +22,6 @@ export const T = {
   PORTAL_1: 20, // portals come in pairs: entering one moves the ball to the other
   PORTAL_2: 21,
   PORTAL_3: 22,
-  WATER: 23, // lower gravity and a slower fall while the ball's center is inside
 } as const;
 
 export type TileCode = (typeof T)[keyof typeof T];
@@ -49,7 +48,6 @@ export const CHAR_TO_TILE: Record<string, TileCode> = {
   '1': T.PORTAL_1,
   '2': T.PORTAL_2,
   '3': T.PORTAL_3,
-  '~': T.WATER,
 };
 
 export function isPortal(t: number): boolean {

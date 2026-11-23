@@ -338,4 +338,17 @@ describe('bounce physics', () => {
     expect(h).toBeGreaterThan(H_LOW * 1.8);
     expect(h).toBeLessThan(H_LOW * 2.2);
   });
+
+  it('things placed in a pool are under water too, air cells stay dry', () => {
+    const lv = level({
+      8: '#~~~~~~.~~~~~~~~~~~#',
+      9: '#~~g~~~~~~~~~~~~~~~#',
+      10: '#~P~~~~~~~~~~~~~~~~#',
+    });
+    const at = (c: number, r: number) => lv.water[r * 20 + c];
+    expect(at(3, 9)).toBe(1); // the gem
+    expect(at(2, 10)).toBe(1); // the start
+    expect(at(7, 8)).toBe(0); // an air pocket drawn with '.'
+    expect(at(5, 7)).toBe(0); // above the surface
+  });
 });

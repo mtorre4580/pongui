@@ -161,7 +161,7 @@ export class World {
 
   /** Whether the ball passes through tile `t` at `idx` right now (air, wind, open blocks). */
   isOpen(t: number, idx: number): boolean {
-    if (t === T.EMPTY || t === T.UPDRAFT || t === T.WATER || isPortal(t)) return true;
+    if (t === T.EMPTY || t === T.UPDRAFT || isPortal(t)) return true;
     if (isToggle(t)) return idx < 0 || this.s.hits[idx] > 0 || !this.toggleSolid(t);
     return false;
   }
@@ -440,7 +440,9 @@ export class World {
       s.wind = wind;
       ev.push({ type: 'wind', inside: wind });
     }
-    const water = here === T.WATER;
+    const cc = Math.floor(s.x / TILE);
+    const water =
+      r >= 0 && r < ROWS && cc >= 0 && cc < COLS && this.level.water[r * COLS + cc] === 1;
     if (water !== s.water) {
       s.water = water;
       ev.push({ type: 'water', inside: water });
