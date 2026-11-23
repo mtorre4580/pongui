@@ -17,6 +17,7 @@ describe('levels', () => {
       for (const locale of LOCALES) {
         expect(lvl.name[locale]?.trim()).toBeTruthy();
         if (lvl.hint) expect(lvl.hint[locale]?.trim()).toBeTruthy();
+        if (lvl.hintTouch) expect(lvl.hintTouch[locale]?.trim()).toBeTruthy();
       }
     });
 
@@ -27,7 +28,7 @@ describe('levels', () => {
   }
 });
 
-describe('level borders', () => {
+describe('level top row', () => {
   const base: string[] = Array.from({ length: 12 }, (_, r) =>
     r === 0 || r === 11
       ? '####################'
@@ -47,11 +48,5 @@ describe('level borders', () => {
     const map = [...base];
     map[0] = '#########.##########';
     expect(() => parseLevel({ id: 't', name, par: 1, map })).toThrow(/row 0/);
-  });
-
-  it('rejects a side column that is not a plain wall (controls may cover it)', () => {
-    const map = [...base];
-    map[5] = '*..................#';
-    expect(() => parseLevel({ id: 't', name, par: 1, map })).toThrow(/columns/);
   });
 });

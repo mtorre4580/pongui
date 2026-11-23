@@ -10,6 +10,11 @@
     "es": "Mantené SALTAR cuando tocás el piso para rebotar mucho más alto.",
     "pt-BR": "Segure PULAR ao tocar o chão para quicar bem mais alto."
   },
+  "hintTouch": {
+    "en": "Double tap, or rest a second finger on the screen, to bounce much higher.",
+    "es": "Tocá dos veces, o apoyá un segundo dedo en la pantalla, para rebotar mucho más alto.",
+    "pt-BR": "Toque duas vezes, ou apoie um segundo dedo na tela, para quicar bem mais alto."
+  },
   "par": 18,
   "map": [
     "####################",
