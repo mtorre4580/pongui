@@ -80,6 +80,10 @@ come from `assets/` (`pnpm icons` then `pnpm native:assets`).
   every gem, and remixes everything for the finale.
 - **Solvable by construction**: an automatic solver plays every level with the real physics in CI,
   so no level ships without a proven solution.
+- **Level editor** (on a computer): paint levels with every tile of the ten worlds, test them, and
+  share them once both the solver and you have beaten them. A shared level travels inside its
+  link (no server): copy it, send it by WhatsApp or scan its QR code with a phone to play it there.
+  "My levels" keeps your levels and the ones shared with you, on any device.
 - **Keyboard, touch gestures and gamepad**, with menus you can drive from any of them.
 - **Three languages**: English, Spanish and Brazilian Portuguese, picked from the browser and
   switchable in the menu.
@@ -89,7 +93,8 @@ come from `assets/` (`pnpm icons` then `pnpm native:assets`).
 
 ## Built with
 
-TypeScript, Phaser 3 (Canvas renderer), Vite and vite-plugin-pwa. Tests with Vitest, Playwright
+TypeScript, Phaser 3 (Canvas renderer), Vite and vite-plugin-pwa; QR codes with
+qrcode-generator. Tests with Vitest, Playwright
 and axe; Lighthouse CI scores 100 in performance, accessibility, best practices and SEO.
 
 ## Development

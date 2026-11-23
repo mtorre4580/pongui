@@ -58,6 +58,10 @@ A level with `"dark": true` only shows a circle of light around the ball; gems, 
 glow. Row 0 must be plain walls (`#`): the HUD covers it. The floor row is free for hazards. If a hint
 names keys or buttons, add a `hintTouch` with the touch-gesture version (see levels 1 and 2).
 
+A new map character must also be appended (never inserted) to `SYMBOLS` in `src/game/custom.ts`:
+shared links store each cell as its position there. Add it to the editor's palette too
+(`PALETTE` in `src/scenes/Editor.ts`, with a `tile.*` name in the three languages).
+
 Reach, for design: a normal bounce climbs 1 block and travels about 2; a high bounce climbs 3 and
 travels about 3; a spring climbs 6.
 
