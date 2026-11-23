@@ -37,6 +37,9 @@ Thanks for helping! New levels, mechanics, translations and fixes are all welcom
 | `m` | moss: always a low bounce, even with jump held |
 | `-` | cloud: one-way platform, you pass through it from below and the sides |
 | `\|` | updraft: rising air that lifts the ball while its center is inside |
+| `o` | switch: bouncing on it or bonking it from below flips every A and B block |
+| `A` `B` | toggle blocks: `A` is solid while the switches are on, `B` while they are off (off at the start) |
+| `(` `)` | pusher: catches the ball and throws it left / right in a low, fast hop |
 | `g` `d` `h` `l` `k` | gem, water drop, hammer, extra life, key |
 | `P` `E` | start and exit |
 | `.` | empty |
