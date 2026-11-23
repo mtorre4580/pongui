@@ -152,6 +152,7 @@ const DEF: SerpentDef = {
   hp: 3,
   floorY: 11 * TILE,
   stun: 0.6,
+  shove: 140,
   seed: 2,
   // Between the stones first, then by either wall
   spots: [320, 112, 528],

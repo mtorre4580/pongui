@@ -197,6 +197,7 @@ const DEF: RobotDef = {
   hp: 4,
   floorY: 11 * TILE,
   stun: 0.6,
+  shove: 140,
   seed: 4,
   // Never further from the end of the bridge than a bounce off its head carries the ball back
   minX: 444,

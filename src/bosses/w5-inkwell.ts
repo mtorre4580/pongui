@@ -172,6 +172,7 @@ const DEF: OctopusDef = {
   hp: 4,
   floorY: 11 * TILE,
   stun: 0.7,
+  shove: 140,
   seed: 5,
   x: 320,
   rest: [3.2, 2.9, 2.6, 2.3],

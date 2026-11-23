@@ -19,6 +19,12 @@ export interface BossDef {
   floorY: number;
   /** Seconds it stays dazed, and harmless, after a hit (longer if the ball has not landed). */
   stun: number;
+  /**
+   * Sideways speed (px/s) a bounce off its head gives the ball when it does no damage (dazed or
+   * shielded), away from its middle and until the ball lands: nobody stays up there. Unset,
+   * the ball goes straight up.
+   */
+  shove?: number;
   /** Seed of its random numbers: the fight is the same every time. */
   seed?: number;
   /** Its behavior: a new brain for every fight. */
@@ -481,6 +487,10 @@ export class BossFight {
       s.y = top - BALL_R;
       s.vy = -V_HIGH;
       if (this.dazed || boss.armor) {
+        if (this.def.shove) {
+          s.lockVx = (s.x >= boss.x ? 1 : -1) * this.def.shove;
+          s.vx = s.lockVx;
+        }
         this.emit({ type: 'boss-bonk' });
         return;
       }

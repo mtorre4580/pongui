@@ -232,6 +232,7 @@ const DEF: GiantDef = {
   hp: 4,
   floorY: 11 * TILE,
   stun: 0.6,
+  shove: 140,
   seed: 6,
   minX: 60,
   maxX: 580,
