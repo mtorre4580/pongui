@@ -18,3 +18,6 @@ dist-native
 
 # Vertical videos for social networks (`pnpm media:social`): large, regenerated on demand
 docs/social
+
+# Raw recordings while `pnpm media` runs
+docs/media/.video

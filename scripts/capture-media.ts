@@ -368,27 +368,8 @@ async function social(browser: Browser) {
   console.log(`Social videos written to ${SOCIAL}/`);
 }
 
-// `pnpm media editor` records only the editor clip (handy while changing it) and
-// `pnpm media social` only the vertical videos
-const only = process.argv[2];
-
-const server = await createServer({ server: { port: PORT, strictPort: true }, logLevel: 'error' });
-await server.listen();
-mkdirSync(DOCS, { recursive: true });
-mkdirSync(LANDING, { recursive: true });
-mkdirSync(TMP, { recursive: true });
-const browser = await chromium.launch();
-
-try {
-  if (only === 'social') {
-    await social(browser);
-    process.exit(0);
-  }
-  if (only === 'editor') {
-    const editor = await recordEditor(browser);
-    clip(editor.raw, editor.from, editor.to, join(LANDING, 'editor'), 960);
-    process.exit(0);
-  }
+/** The whole set: README media, landing clips and screenshots, and the social image. */
+async function everything(browser: Browser) {
   // --- README screenshots (the game canvas is 1280×832) ---
   const desktop = await browser.newContext({ viewport: { width: 1280, height: 832 } });
   const page = await desktop.newPage();
@@ -487,6 +468,26 @@ try {
 
   rmSync(TMP, { recursive: true, force: true });
   console.log(`Media written to ${DOCS}/, ${LANDING}/ and public/og-image.jpg`);
+}
+
+// `pnpm media editor` records only the editor clip (handy while changing it) and
+// `pnpm media social` only the vertical videos
+const only = process.argv[2];
+
+const server = await createServer({ server: { port: PORT, strictPort: true }, logLevel: 'error' });
+await server.listen();
+mkdirSync(DOCS, { recursive: true });
+mkdirSync(LANDING, { recursive: true });
+mkdirSync(TMP, { recursive: true });
+const browser = await chromium.launch();
+
+try {
+  if (only === 'social') await social(browser);
+  else if (only === 'editor') {
+    const editor = await recordEditor(browser);
+    clip(editor.raw, editor.from, editor.to, join(LANDING, 'editor'), 960);
+    rmSync(TMP, { recursive: true, force: true });
+  } else await everything(browser);
 } finally {
   await browser.close();
   await server.close();
