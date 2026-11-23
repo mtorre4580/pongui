@@ -11,6 +11,8 @@ jump for high bounces, collects every gem to open the exit and avoids hazards. I
 game in the genre of the late-80s bouncing-ball puzzlers: its own name, character, art, sounds
 and levels. Never copy names, art, music or level layouts from an existing game.
 
+It also ships as native iOS and Android apps through Capacitor (see Native apps).
+
 The repository is **private** for now. The CodeQL, Dependency Review and Pages deploy workflows
 skip themselves while it is private and switch on when it becomes public.
 
@@ -48,19 +50,26 @@ pnpm check:bundle       # gzip budget per chunk (after pnpm build)
 pnpm test:e2e           # Playwright + axe on desktop and phone (after pnpm build)
 pnpm lhci               # Lighthouse CI on the built game
 pnpm media              # README media, landing videos/screenshots and og-image (needs ffmpeg)
-pnpm icons              # regenerate public/icons
+pnpm icons              # regenerate public/icons and the native sources in assets/
+pnpm build:native       # game-only build in dist-native/ + `cap sync` into ios/ and android/
+pnpm native:assets      # every iOS/Android icon and splash size from assets/
+pnpm ios / pnpm android # open the native project in Xcode / Android Studio
 ```
 
 ## Structure
 
 ```
 index.html             # landing page (English texts inline, see Landing page)
+capacitor.config.ts    # native app id, name, start page and plugin settings
+ios/  android/         # native projects (Capacitor); generated web files are git-ignored
+assets/                # sources for native icons and splash screens
 play/index.html        # the game page
 public/landing/        # landing videos and screenshots, recorded by `pnpm media`
 src/
   main.ts              # Phaser config, scenes, font loading, resize observer
   landing/             # landing page script, styles and messages/{en,es,pt-BR}.ts
   dev.ts               # dev-only console helpers: replay(i), demo(i), tick(n)
+  native.ts            # Capacitor integration (storage, haptics, splash, status bar)
   game/                # pure game logic, no Phaser
     constants.ts       # grid, physics constants
     tiles.ts           # tile codes and map characters
@@ -123,6 +132,28 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
 - `VITE_SITE_URL` in `.env` feeds the canonical link, Open Graph tags and the `VideoGame` JSON-LD.
 - The service worker is registered from `src/pwa.ts` with a URL resolved from the bundle, so both
   pages register `/sw.js` with the root scope. Landing media is excluded from the precache.
+
+## Native apps
+
+- Capacitor 8 wraps the game for iOS (Swift Package Manager, no CocoaPods) and Android. App id
+  `io.github.mtorre4580.boinky` (cannot change after the first store upload).
+- `vite build --mode native` builds only the game into `dist-native/` (no PWA plugin, no public/
+  folder) plus a root `index.html` fallback that Capacitor requires. The app starts at
+  `play/index.html` (`server.appStartPath`): a bare `play/` gets the root page and loops.
+- `src/native.ts` is the only place that touches Capacitor. `IS_NATIVE` is a build-time constant,
+  so the web build contains no Capacitor code (check: `grep -l Capacitor dist/assets/*.js`).
+  Plugins are imported dynamically inside `IS_NATIVE` branches.
+- Saves and the locale are mirrored to `@capacitor/preferences` (iOS can purge a web view's
+  localStorage) and restored before the game starts. Haptics: high bounce, springs, ramps,
+  walls, death and win. The splash hides once the first scene draws.
+- Native config: landscape only, status bar hidden, `UIRequiresFullScreen` on iPad,
+  `ITSAppUsesNonExemptEncryption = false`; Android `sensorLandscape` and immersive mode in
+  `MainActivity`.
+- Inside the app there is no service worker, install button, fullscreen button or iOS install
+  hint (`isStandalone()` is true).
+- Test in the simulator: `pnpm build:native`, then build the `App` scheme in Xcode (or
+  `xcodebuild -project ios/App/App.xcodeproj -scheme App -sdk iphonesimulator`). JavaScript
+  console output shows up as `⚡️ [log]` lines in the app's stdout.
 
 ## Design
 
@@ -206,4 +237,6 @@ its legend entry in `CONTRIBUTING.md`, and a level that introduces it.
 - [x] Project setup — CI, hooks, browser tests, Lighthouse, docs
 - [x] Landing page
 - [ ] World 2 and beyond
+- [x] Native apps — Capacitor iOS and Android projects (iOS verified in the simulator)
+- [ ] Store release (developer accounts, signing, store listings, privacy policy)
 - [ ] Public release (license, Pages deploy, CodeQL)

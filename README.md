@@ -49,6 +49,22 @@ install instructions, the level list and an FAQ, in the same three languages. Th
 small script (~15 KB gzip on first load); videos load only when they scroll into view and can
 always be paused.
 
+## iOS and Android apps
+
+The same game ships as native apps through [Capacitor](https://capacitorjs.com): the build is
+packaged inside an iOS (Xcode) and an Android (Android Studio) project, so the app works offline
+from the first launch and needs no website. Inside the app the game opens directly, saves
+progress in native storage, hides the system bars, locks landscape and adds haptic feedback.
+
+```bash
+pnpm build:native   # build the game for the apps and sync it into ios/ and android/
+pnpm ios            # open the iOS project in Xcode
+pnpm android        # open the Android project in Android Studio
+```
+
+Requires Xcode for iOS and Android Studio (with its JDK) for Android. Icons and splash screens
+come from `assets/` (`pnpm icons` then `pnpm native:assets`).
+
 ## Features
 
 - **10 levels** in World 1, each teaching one idea: high bounces, fragile floors, ramps, springs,
@@ -88,7 +104,9 @@ pnpm dev
 | `pnpm test:e2e` | Playwright + axe on desktop and phone (after `pnpm build`) |
 | `pnpm lhci` | Lighthouse CI on the built game |
 | `pnpm media` | Regenerates the README media, the landing page videos and screenshots, and the social image (needs ffmpeg) |
-| `pnpm icons` | Regenerates the app icons in `public/icons` |
+| `pnpm icons` | Regenerates the web app icons in `public/icons` and the native sources in `assets/` |
+| `pnpm build:native` | Builds the game for the iOS/Android apps and syncs it into `ios/` and `android/` |
+| `pnpm native:assets` | Generates every iOS and Android icon and splash size from `assets/` |
 
 In development, the browser console has `await replay(3)` (fast-forwards the solver's solution for
 level 4) and `demo(3)` (plays it in real time).
