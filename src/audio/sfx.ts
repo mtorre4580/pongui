@@ -82,10 +82,15 @@ function noise(
 }
 
 export const sfx = {
-  bounce: (kind: 'low' | 'high' | 'spring' | 'ramp') => {
+  bounce: (kind: 'low' | 'high' | 'spring' | 'ramp' | 'push') => {
     if (kind === 'low') tone(260, 140, 0.09, 'sine', 0.22);
     else if (kind === 'high') tone(320, 520, 0.14, 'triangle', 0.22);
     else if (kind === 'ramp') tone(300, 700, 0.16, 'triangle', 0.2);
+    else if (kind === 'push') {
+      // A pneumatic puff and a quick rising whistle
+      noise(0.12, 0.3, 1400, 1.2);
+      tone(420, 980, 0.12, 'square', 0.07);
+    }
     else {
       tone(200, 900, 0.28, 'square', 0.1);
       tone(400, 1400, 0.22, 'sine', 0.15, 0.02);

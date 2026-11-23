@@ -28,6 +28,7 @@ export const AIR_ACCEL = 2400;
 export const AIR_DECEL = 2400;
 export const MAX_VX = 160;
 export const RAMP_VX = 220;
+export const PUSH_VX = 280; // pushers: a low bounce at this fixed sideways speed
 
 // Updrafts replace gravity with a lift up to a top speed (px/s², px/s)
 export const UPDRAFT_LIFT = 2200;
