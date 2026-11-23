@@ -60,7 +60,7 @@ function key(s: WorldState, cycle: number): string {
 /**
  * A plan step lasts until the next bounce, until the ball enters or leaves an updraft, water or
  * a low-gravity zone (so the plan can steer out at an updraft's top or change course as it
- * sinks), until it comes out of a portal or off a bumper, or until it breaks through thin ice (so it can let go of jump before the
+ * sinks), until it comes out of a portal or off a bumper, when phase blocks swap, or until it breaks through thin ice (so it can let go of jump before the
  * next landing). Replays must split steps the same way.
  */
 export const endsStep = (ev: WorldEvent[]) =>
@@ -71,6 +71,7 @@ export const endsStep = (ev: WorldEvent[]) =>
       e.type === 'water' ||
       e.type === 'zone' ||
       e.type === 'bump' ||
+      e.type === 'phase' ||
       e.type === 'portal' ||
       (e.type === 'break' && e.tile === T.THIN_ICE),
   );
@@ -97,7 +98,7 @@ export function solve(level: ParsedLevel, maxNodes = 400000, start?: WorldState)
   if (start) world.s = cloneState(start);
   const seen = new Set<string>();
   const cycle = timedCycle(level);
-  type Node = { s: WorldState; parent: Node | null; d: Decision | null };
+  type Node = { s: WorldState; parent: Node | null; d: Decision | null; done?: boolean };
   // Best-first search: states with more collected items are expanded first, and among those
   // the ones nearest to something still to collect (or to the exit once nothing is left)
   const taken = (s: WorldState) => s.items.reduce((n, i) => n + (i.taken ? 1 : 0), 0);
@@ -117,21 +118,21 @@ export function solve(level: ParsedLevel, maxNodes = 400000, start?: WorldState)
   // plans. With them, the phase multiplies the states, so the nearest target goes first.
   const guided = cycle > 0;
   // Untimed levels: one FIFO queue per item count (breadth-first inside each, the fastest
-  // plans). Timed levels: a binary heap on the guided score.
+  // plans). Timed levels take turns between that queue and a binary heap on the guided score:
+  // the heap heads for the targets, the queue keeps the search from tunnelling into one spot.
   const buckets: Node[][] = [];
   const heads: number[] = [];
   const heap: { n: Node; score: number; order: number }[] = [];
   let order = 0;
+  let turn = 0;
   const above = (a: number, b: number) =>
     heap[a].score > heap[b].score ||
     (heap[a].score === heap[b].score && heap[a].order < heap[b].order);
   const push = (n: Node) => {
-    if (!guided) {
-      const b = taken(n.s);
-      (buckets[b] ??= []).push(n);
-      heads[b] ??= 0;
-      return;
-    }
+    const b = taken(n.s);
+    (buckets[b] ??= []).push(n);
+    heads[b] ??= 0;
+    if (!guided) return;
     heap.push({ n, score: score(n.s), order: order++ });
     for (let i = heap.length - 1; i > 0;) {
       const p = (i - 1) >> 1;
@@ -140,31 +141,41 @@ export function solve(level: ParsedLevel, maxNodes = 400000, start?: WorldState)
       i = p;
     }
   };
+  const popQueue = (): Node | null => {
+    for (let b = buckets.length - 1; b >= 0; b--) {
+      const q = buckets[b];
+      while (q && heads[b] < q.length) {
+        const n = q[heads[b]++];
+        if (!n.done) return n;
+      }
+    }
+    return null;
+  };
+  const popHeap = (): Node | null => {
+    while (heap.length) {
+      const top = heap[0].n;
+      const last = heap.pop()!;
+      if (heap.length) {
+        heap[0] = last;
+        for (let i = 0; ;) {
+          const l = 2 * i + 1;
+          const r = l + 1;
+          let m = i;
+          if (l < heap.length && above(l, m)) m = l;
+          if (r < heap.length && above(r, m)) m = r;
+          if (m === i) break;
+          [heap[i], heap[m]] = [heap[m], heap[i]];
+          i = m;
+        }
+      }
+      if (!top.done) return top;
+    }
+    return null;
+  };
   const pop = (): Node | null => {
-    if (!guided) {
-      for (let b = buckets.length - 1; b >= 0; b--) {
-        const q = buckets[b];
-        if (q && heads[b] < q.length) return q[heads[b]++];
-      }
-      return null;
-    }
-    if (!heap.length) return null;
-    const top = heap[0].n;
-    const last = heap.pop()!;
-    if (heap.length) {
-      heap[0] = last;
-      for (let i = 0; ;) {
-        const l = 2 * i + 1;
-        const r = l + 1;
-        let m = i;
-        if (l < heap.length && above(l, m)) m = l;
-        if (r < heap.length && above(r, m)) m = r;
-        if (m === i) break;
-        [heap[i], heap[m]] = [heap[m], heap[i]];
-        i = m;
-      }
-    }
-    return top;
+    const n = guided && turn++ % 2 === 0 ? (popHeap() ?? popQueue()) : (popQueue() ?? popHeap());
+    if (n) n.done = true;
+    return n;
   };
   const planOf = (n: Node | null, last: Decision): Decision[] => {
     const out = [last];
