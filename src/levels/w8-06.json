@@ -1,0 +1,28 @@
+{
+  "id": "w8-06",
+  "name": {
+    "en": "Moon key",
+    "es": "Llave lunar",
+    "pt-BR": "Chave lunar"
+  },
+  "hint": {
+    "en": "Float up to the key, then float down to the lock without touching the spikes.",
+    "es": "Flotá hasta la llave y bajá flotando hasta el candado sin tocar los pinches.",
+    "pt-BR": "Flutue até a chave e desça flutuando até o cadeado sem tocar nos espinhos."
+  },
+  "par": 18,
+  "map": [
+    "####################",
+    "#..................#",
+    "#..zzzzzzzzzzzzz...#",
+    "#..zzzzzzzzzzzzz...#",
+    "#..zzzz*****zzzz...#",
+    "#..zzzzzzzzzkzzz.g.#",
+    "#..zzzzzzzzzzzzz...#",
+    "#..zzzzzzzzzzzzz####",
+    "#..zzzzzzzzzzzzzL..#",
+    "#..zzzzzzzzzzzzzL.E#",
+    "#.P.zzzzzzzzzzzzL..#",
+    "####################"
+  ]
+}

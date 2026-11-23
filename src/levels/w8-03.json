@@ -1,0 +1,28 @@
+{
+  "id": "w8-03",
+  "name": {
+    "en": "Float over",
+    "es": "Flotando",
+    "pt-BR": "Flutuando"
+  },
+  "hint": {
+    "en": "Jump into the zone and float over the spikes to the far side.",
+    "es": "Saltá a la zona y flotá sobre los pinches hasta el otro lado.",
+    "pt-BR": "Pule na zona e flutue sobre os espinhos até o outro lado."
+  },
+  "par": 15,
+  "map": [
+    "####################",
+    "#..................#",
+    "#..................#",
+    "#....zzzzzzzzzz....#",
+    "#....zzzzgzzzzz....#",
+    "#....zzzzzzzzzz....#",
+    "#....zzzzzzzzgz....#",
+    "#....zzzzzzzzzz....#",
+    "#....zzzzzzzzzz....#",
+    "#....zzzzzzzzzz....#",
+    "#.P..zzzz##zzzz..E.#",
+    "#####**********#####"
+  ]
+}

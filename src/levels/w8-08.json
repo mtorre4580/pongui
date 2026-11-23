@@ -1,0 +1,28 @@
+{
+  "id": "w8-08",
+  "name": {
+    "en": "Wormhole",
+    "es": "Agujero de gusano",
+    "pt-BR": "Buraco de minhoca"
+  },
+  "hint": {
+    "en": "A portal drops you into low gravity, far from where you started.",
+    "es": "Un portal te deja en baja gravedad, lejos de donde empezaste.",
+    "pt-BR": "Um portal deixa você em baixa gravidade, longe de onde começou."
+  },
+  "par": 24,
+  "map": [
+    "####################",
+    "#zzzzzzzzz#........#",
+    "#zzz1zzzzz#........#",
+    "#zzzzzzzzz#...g....#",
+    "#zzzzzzzzz#........#",
+    "#zzzzzgzzz#........#",
+    "#zzzzzzzzz#####....#",
+    "#zzzzzzzzz#........#",
+    "#zzzzzzzzz#........#",
+    "#zzzzzzzzz######..##",
+    "#zzzzEzzzz#P......1#",
+    "####################"
+  ]
+}

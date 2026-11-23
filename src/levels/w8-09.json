@@ -1,0 +1,28 @@
+{
+  "id": "w8-09",
+  "name": {
+    "en": "Space vents",
+    "es": "Respiraderos espaciales",
+    "pt-BR": "Respiradouros espaciais"
+  },
+  "hint": {
+    "en": "You float slowly here: jump for the vents as soon as they go dark.",
+    "es": "Acá flotás despacio: saltá hacia los respiraderos apenas se apaguen.",
+    "pt-BR": "Aqui você flutua devagar: pule para os respiradouros assim que apagarem."
+  },
+  "par": 25,
+  "map": [
+    "####################",
+    "#####zzzzzzz.......#",
+    "#####zzzzzzz....E..#",
+    "#####zzzzzzz########",
+    "#####zzzz!!z########",
+    "#####zzzzzzz########",
+    "#####zzgzzzz########",
+    "#####z##zzzz########",
+    "#####zzzzzzz########",
+    "#####zzzzzzz########",
+    "#.P.........########",
+    "####################"
+  ]
+}

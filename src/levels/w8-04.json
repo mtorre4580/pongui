@@ -1,0 +1,28 @@
+{
+  "id": "w8-04",
+  "name": {
+    "en": "Bumper vault",
+    "es": "Bóveda",
+    "pt-BR": "Cofre"
+  },
+  "hint": {
+    "en": "Ricochet up to the key, then come back down to the lock.",
+    "es": "Rebotá hacia arriba hasta la llave y bajá de nuevo al candado.",
+    "pt-BR": "Ricocheteie até a chave e desça de novo até o cadeado."
+  },
+  "par": 15,
+  "map": [
+    "####################",
+    "#......b...........#",
+    "#......b.....k.....#",
+    "#......b...........#",
+    "#......b..b###.....#",
+    "#......b..b#.......#",
+    "#......b..b#.......#",
+    "#......b..b#.......#",
+    "#......b..b#....LLL#",
+    "#..g..#b..b#....L.E#",
+    "#.P.......b#....L..#",
+    "####################"
+  ]
+}
