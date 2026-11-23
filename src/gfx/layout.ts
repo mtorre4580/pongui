@@ -30,8 +30,26 @@ function readInsets(): Insets {
   };
 }
 
-/** Zooms and centers the camera so the whole world fits in the free area of the screen. */
-export function placeCamera(scene: Phaser.Scene) {
+export interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+export interface Placement {
+  /**
+   * World rectangle that must be fully visible in the free area (default: the whole world). A
+   * function is evaluated on every placement, so it can depend on the touch controls being shown.
+   */
+  fit?: Rect | (() => Rect);
+  /** With spare height, stick the rectangle to the top of the free area instead of centering. */
+  alignTop?: boolean;
+}
+
+/** Zooms and places the camera so `fit` fills as much of the free area as possible. */
+export function placeCamera(scene: Phaser.Scene, { fit, alignTop = false }: Placement = {}) {
+  const area = (typeof fit === 'function' ? fit() : fit) ?? { x: 0, y: 0, w: GAME_W, h: GAME_H };
   const cam = scene.cameras.main;
   const { width, height } = scene.scale.gameSize;
   // Game pixels per CSS pixel (the canvas is drawn at a higher resolution than CSS px)
@@ -41,19 +59,23 @@ export function placeCamera(scene: Phaser.Scene) {
   const right = ins.right * k;
   const top = ins.top * k;
   const bottom = ins.bottom * k;
-  const zoom = Math.max(
-    0.1,
-    Math.min((width - left - right) / GAME_W, (height - top - bottom) / GAME_H),
-  );
+  const freeW = width - left - right;
+  const freeH = height - top - bottom;
+  const zoom = Math.max(0.1, Math.min(freeW / area.w, freeH / area.h));
   cam.setSize(width, height);
   cam.setZoom(zoom);
-  // Put the world's center at the center of the free area, not of the screen
-  cam.centerOn(GAME_W / 2 - (left - right) / 2 / zoom, GAME_H / 2 - (top - bottom) / 2 / zoom);
+  // Screen point where the rectangle's center must land
+  const sx = left + freeW / 2;
+  const sy = alignTop ? top + (area.h * zoom) / 2 : top + freeH / 2;
+  cam.centerOn(
+    area.x + area.w / 2 - (sx - width / 2) / zoom,
+    area.y + area.h / 2 - (sy - height / 2) / zoom,
+  );
 }
 
 /** Places the camera now and again whenever the screen or the touch controls change. */
-export function keepCameraPlaced(scene: Phaser.Scene) {
-  const place = () => placeCamera(scene);
+export function keepCameraPlaced(scene: Phaser.Scene, placement: Placement = {}) {
+  const place = () => placeCamera(scene, placement);
   place();
   scene.scale.on('resize', place);
   window.addEventListener(LAYOUT_EVENT, place);

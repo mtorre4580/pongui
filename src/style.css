@@ -5,11 +5,19 @@
   --btn-on: rgba(255, 209, 102, 0.45);
   --edge: rgba(255, 255, 255, 0.28);
   /* touch control sizes and the side strips reserved for them */
-  --b: clamp(54px, 16vmin, 110px);
-  --j: clamp(66px, 20vmin, 140px);
+  /* Buttons stay above Apple's 44pt minimum while leaving the level as much width as possible */
+  --b: clamp(50px, 14vmin, 110px);
+  --j: clamp(60px, 18vmin, 140px);
   --gap: clamp(8px, 2.5vmin, 18px);
-  --lz: calc(env(safe-area-inset-left) + var(--b) * 2 + var(--gap) * 3);
-  --rz: calc(env(safe-area-inset-right) + var(--j) + var(--gap) * 2);
+  /*
+   * Distance from the screen edge to the buttons. The safe areas (≈62px on each side of an
+   * iPhone in landscape) mostly protect the middle of the edge, where the Dynamic Island is;
+   * the buttons sit low, so they only need to clear the rounded corners.
+   */
+  --edge-l: max(var(--gap), calc(env(safe-area-inset-left) - 34px));
+  --edge-r: max(var(--gap), calc(env(safe-area-inset-right) - 34px));
+  --lz: calc(var(--edge-l) + var(--b) * 2 + var(--gap) * 2);
+  --rz: calc(var(--edge-r) + var(--j) + var(--gap));
 }
 * {
   box-sizing: border-box;
@@ -43,12 +51,13 @@ body {
   inset: 0;
   visibility: hidden;
   pointer-events: none;
-  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
-    env(safe-area-inset-left);
+  /* No bottom inset: the level's floor may run under the home indicator */
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left);
 }
+/* The larger of the safe area and the control strip, never both added together */
 body.touch-ui #layout-probe {
-  padding-left: var(--lz);
-  padding-right: var(--rz);
+  padding-left: max(env(safe-area-inset-left), var(--lz));
+  padding-right: max(env(safe-area-inset-right), var(--rz));
 }
 #game canvas {
   display: block;
@@ -113,15 +122,15 @@ body.touch-ui #layout-probe {
   bottom: 0;
 }
 #tc-l {
-  left: calc(env(safe-area-inset-left) + var(--gap));
+  left: var(--edge-l);
   bottom: calc(env(safe-area-inset-bottom) + var(--gap) * 1.5);
 }
 #tc-r {
-  left: calc(env(safe-area-inset-left) + var(--gap) * 2 + var(--b));
+  left: calc(var(--edge-l) + var(--gap) + var(--b));
   bottom: calc(env(safe-area-inset-bottom) + var(--gap) * 1.5);
 }
 .tc-jump {
-  right: calc(env(safe-area-inset-right) + var(--gap));
+  right: var(--edge-r);
   bottom: calc(env(safe-area-inset-bottom) + var(--gap) * 2);
   width: var(--j);
   height: var(--j);

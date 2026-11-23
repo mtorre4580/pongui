@@ -29,7 +29,17 @@ export interface GameData {
   takenLives?: number[];
 }
 
-const OY = HUD_H;
+// The level starts at the top of the world: the HUD sits over its first row, which is always a
+// solid wall (parseLevel enforces it), so it costs no screen space
+const OY = 0;
+
+// What must stay visible: every row (the HUD lives on row 0, hazards can sit on the floor row)
+// and every column. With touch controls on screen the two outer wall columns may slip under
+// them, which lets the level grow on phones; HUD items stay inside the inner columns.
+const LEVEL_FIT = () =>
+  document.body.classList.contains('touch-ui')
+    ? { x: TILE, y: 0, w: (COLS - 2) * TILE, h: ROWS * TILE }
+    : { x: 0, y: 0, w: COLS * TILE, h: ROWS * TILE };
 const ITEM_TEX = { gem: 'gem', drop: 'drop', hammer: 'hammer', life: 'life' } as const;
 const TILE_TEX: Record<number, string> = {
   [T.FRAGILE]: 'fragile',
@@ -112,7 +122,7 @@ export class Game extends Phaser.Scene {
   }
 
   create() {
-    setupCamera(this);
+    setupCamera(this, { fit: LEVEL_FIT, alignTop: true });
     this.cameras.main.fadeIn(180, 13, 16, 36);
     controls.clearEdges();
     controls.reserveTouchLayout(true);
@@ -249,11 +259,18 @@ export class Game extends Phaser.Scene {
 
   private buildHud() {
     const g = this.add.graphics().setDepth(10);
-    // The bar spans the whole screen width and reaches the top edge, past the world's edges
-    // (see gfx/layout.ts), so no strip of background shows above it
-    g.fillStyle(0x0b0e22, 0.85).fillRect(-GAME_W, -GAME_H, GAME_W * 3, GAME_H + HUD_H);
+    // A translucent band over the top wall row, as wide as the screen (see gfx/layout.ts)
+    g.fillStyle(0x0b0e22, 0.82).fillRect(-GAME_W, -GAME_H, GAME_W * 3, GAME_H + HUD_H);
     g.fillStyle(C.uiLight, 0.6).fillRect(-GAME_W, HUD_H - 1, GAME_W * 3, 1);
-    text(this, 10, HUD_H / 2, `${this.index + 1}. ${localized(this.level.name)}`, 14, '#ffffff')
+    // HUD items stay inside LEVEL_FIT so the touch controls never cover them
+    text(
+      this,
+      TILE + 6,
+      HUD_H / 2,
+      `${this.index + 1}. ${localized(this.level.name)}`,
+      14,
+      '#ffffff',
+    )
       .setOrigin(0, 0.5)
       .setDepth(11);
 
@@ -282,12 +299,12 @@ export class Game extends Phaser.Scene {
         .setDepth(11);
     }
 
-    this.hudTime = text(this, 500, HUD_H / 2, '0.0', 14, '#a9b8ff')
+    this.hudTime = text(this, GAME_W - TILE - 100, HUD_H / 2, '0.0', 14, '#a9b8ff')
       .setOrigin(1, 0.5)
       .setDepth(11);
     this.refreshHearts();
 
-    const pause = this.add.container(GAME_W - 18, HUD_H / 2).setDepth(11);
+    const pause = this.add.container(GAME_W - TILE - 14, HUD_H / 2).setDepth(11);
     const pg = this.add.graphics();
     pg.fillStyle(C.uiLight, 1).fillCircle(0, 0, 11);
     pg.fillStyle(0xffffff, 1)
@@ -307,7 +324,7 @@ export class Game extends Phaser.Scene {
     for (let i = 0; i < n; i++) {
       this.hudHearts.push(
         this.add
-          .image(560 - i * 16, HUD_H / 2, 'life')
+          .image(GAME_W - TILE - 42 - i * 16, HUD_H / 2, 'life')
           .setScale(0.36)
           .setDepth(11),
       );
