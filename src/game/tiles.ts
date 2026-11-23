@@ -29,6 +29,7 @@ export const T = {
   BUMPER: 27, // a side hit throws the ball back at a fixed speed; from above it is a block
   PHASE_A: 28, // phase blocks take turns: `%` is solid first, then `&`, every 1.2 s
   PHASE_B: 29,
+  BRIDGE: 30, // rainbow bridge: not there until every gem is taken, then solid
 } as const;
 
 export type TileCode = (typeof T)[keyof typeof T];
@@ -62,6 +63,7 @@ export const CHAR_TO_TILE: Record<string, TileCode> = {
   b: T.BUMPER,
   '%': T.PHASE_A,
   '&': T.PHASE_B,
+  '=': T.BRIDGE,
 };
 
 export function isPortal(t: number): boolean {
@@ -80,5 +82,5 @@ export function isStatic(t: number): boolean {
 
 /** Blocks whose solidity changes during play (they wait for the ball to leave before closing). */
 export function isToggle(t: number): boolean {
-  return t === T.BLOCK_A || t === T.BLOCK_B || t === T.PHASE_A || t === T.PHASE_B;
+  return t === T.BLOCK_A || t === T.BLOCK_B || t === T.PHASE_A || t === T.PHASE_B || t === T.BRIDGE;
 }

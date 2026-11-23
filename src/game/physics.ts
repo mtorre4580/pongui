@@ -236,6 +236,7 @@ export class World {
     if (t === T.BLOCK_B) return !this.s.switchOn;
     if (t === T.PHASE_A) return !this.phaseB;
     if (t === T.PHASE_B) return this.phaseB;
+    if (t === T.BRIDGE) return this.exitOpen;
     return true;
   }
 
@@ -640,7 +641,11 @@ export class World {
       else if (it.kind === 'hammer') s.hammers++;
       else if (it.kind === 'key') s.keys++;
       ev.push({ type: 'collect', item: i, kind: it.kind });
-      if (it.kind === 'gem' && s.gemsTaken === s.gemsTotal) ev.push({ type: 'exitOpen' });
+      if (it.kind === 'gem' && s.gemsTaken === s.gemsTotal) {
+        // Rainbow bridges appear (around the ball, they wait until it leaves them)
+        this.holdOpen();
+        ev.push({ type: 'exitOpen' });
+      }
     }
 
     // Exit

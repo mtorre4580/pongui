@@ -505,4 +505,28 @@ describe('bounce physics', () => {
     expect(parseLevel({ id: 't', name, par: 1, map, dark: true }).dark).toBe(true);
     expect(parseLevel({ id: 't', name, par: 1, map }).dark).toBe(false);
   });
+
+  it('a rainbow bridge appears once every gem is taken', () => {
+    // The gem sits over the start; the bridge spans the pit to its right
+    const lv = level({
+      1: empty,
+      9: '#.g................#',
+      10: '#.P.......E........#',
+      11: '###=================',
+    });
+    const w = new World(lv);
+    expect(w.isOpen(T.BRIDGE, 11 * 20 + 5)).toBe(true);
+    for (let i = 0; i < 120 && w.s.gemsTaken === 0; i++) w.step(STEP, idle);
+    expect(w.s.gemsTaken).toBe(1);
+    expect(w.isOpen(T.BRIDGE, 11 * 20 + 5)).toBe(false);
+    // Rolling right over the pit, the ball stays on the bridge
+    let lowest = 0;
+    for (let i = 0; i < 300; i++) {
+      w.step(STEP, { ...idle, right: true });
+      lowest = Math.max(lowest, w.s.y);
+    }
+    expect(w.s.x).toBeGreaterThan(12 * TILE);
+    expect(lowest).toBeLessThan(11 * TILE);
+    expect(w.s.status).not.toBe('dead');
+  });
 });
