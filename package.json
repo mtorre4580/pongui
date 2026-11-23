@@ -17,9 +17,9 @@
   "homepage": "https://pongui.com/",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mtorre4580/boinky.git"
+    "url": "git+https://github.com/mtorre4580/pongui.git"
   },
-  "license": "MIT",
+  "license": "UNLICENSED",
   "type": "module",
   "packageManager": "pnpm@12.18.0",
   "engines": {

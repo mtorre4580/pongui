@@ -2,6 +2,11 @@
 
 Thanks for helping! New levels, mechanics, translations and fixes are all welcome.
 
+Pongui is not open source: the code is public, but all rights are reserved (see
+[`LICENSE`](./LICENSE)). By sending a pull request you agree that your contribution becomes part
+of Pongui and can be used, changed and published with the game; you remain free to use your own
+contribution elsewhere.
+
 ## Before you start
 
 - Requires Node 24 (`.nvmrc`) and **pnpm** (never npm or yarn).

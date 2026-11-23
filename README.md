@@ -4,7 +4,7 @@
 steer it, time your high bounces, collect every gem and reach the exit. Free, no sign-up, in
 English, Spanish and Portuguese. Installs as an app and plays offline.
 
-[![CI](https://github.com/mtorre4580/boinky/actions/workflows/ci.yml/badge.svg)](https://github.com/mtorre4580/boinky/actions/workflows/ci.yml)
+[![CI](https://github.com/mtorre4580/pongui/actions/workflows/ci.yml/badge.svg)](https://github.com/mtorre4580/pongui/actions/workflows/ci.yml)
 
 ![Pongui gameplay: the ball rides two ramps over spike pits, then clears the grand finale with fire, a spring and a hammer](docs/media/demo.gif)
 
@@ -159,4 +159,6 @@ full technical context and conventions.
 
 ## License
 
-All rights reserved. This is a private project for now.
+All rights reserved: see [`LICENSE`](./LICENSE). The code is public to be read and improved, not
+to be reused: you may study it and send pull requests, but not publish the game, a modified
+version of it, or its code, levels, art, sounds or name elsewhere.

@@ -1,0 +1,32 @@
+Pongui
+Copyright (c) 2026 Matias Daniel Torre. All rights reserved.
+
+This repository is public so that people can read the code, learn from it, report problems and
+propose improvements. It is not open source: no license to use the work is granted, beyond what
+is written here.
+
+You may:
+
+- read the source code and run it on your own computer to study it or to prepare a contribution;
+- fork the repository on GitHub, as GitHub's Terms of Service allow, to send pull requests to
+  this project.
+
+You may not, without written permission from the copyright holder:
+
+- publish, distribute or host the game or any modified version of it, anywhere;
+- use the code, the levels, the graphics, the sounds, the texts or the name "Pongui" in another
+  game, product or service, whether commercial or not;
+- sell it, sublicense it, or include it in an app store, a games portal or a collection.
+
+Contributions: by submitting a pull request, an issue or any other contribution to this
+repository, you agree that the copyright holder may use, modify, publish and distribute it as
+part of Pongui, under any terms, with no obligation to you. You keep the right to use your own
+contribution elsewhere.
+
+The software is provided "as is", without warranty of any kind, express or implied. In no event
+shall the copyright holder be liable for any claim, damages or other liability arising from the
+software or its use.
+
+Third-party software used by this project (see package.json) remains under its own licenses.
+
+For permissions: hello@pongui.com
