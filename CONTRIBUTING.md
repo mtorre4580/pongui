@@ -12,7 +12,7 @@ Thanks for helping! New levels, mechanics, translations and fixes are all welcom
 
 ## Good first contributions
 
-- **A new level.** Add `src/levels/w<world>-<nn>.json` (files load in alphabetical order) with
+- **A new level.** Add `src/levels/w<world>-<nn>.json` (ten per world, loaded in numeric order) with
   `id`, `name` and `hint` in `en`, `es` and `pt-BR`, a `par` time in seconds and a 20×12 `map`.
   Run `pnpm validate:levels`: it fails if the map does not parse, a language is missing, the
   solver cannot beat it or the par time is lower than the bot's. Then play it by hand.
@@ -33,7 +33,9 @@ Thanks for helping! New levels, mechanics, translations and fixes are all welcom
 | `<` `>` | ramp: catches the ball and always launches it the same way (~5 blocks) |
 | `w` | brick wall: a hammer breaks the whole connected wall |
 | `*` | spikes |
-| `g` `d` `h` `l` | gem, water drop, hammer, extra life |
+| `L` | lock block: a key opens the whole connected group (from any side) |
+| `m` | moss: always a low bounce, even with jump held |
+| `g` `d` `h` `l` `k` | gem, water drop, hammer, extra life, key |
 | `P` `E` | start and exit |
 | `.` | empty |
 

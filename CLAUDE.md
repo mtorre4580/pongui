@@ -77,11 +77,11 @@ src/
     physics.ts         # World: step(dt, input) → events
     solver.ts          # best-first search between bounces (level validation, demos)
   scenes/              # Boot, Menu, LevelSelect, Game, Overlay (pause / complete / game over)
-  gfx/                 # textures.ts (vector textures, baked layers), ui.ts (text, buttons, nav)
+  gfx/                 # textures.ts (vector textures, baked layers), themes.ts (world colors), ui.ts
   input/controls.ts    # keyboard + touch (HTML buttons) + gamepad, one API
   audio/sfx.ts         # synthesized sound effects
   i18n/                # t(), localized(), locale detection, messages/{en,es,pt-BR}.ts
-  levels/              # w<world>-<nn>.json, loaded in alphabetical order
+  levels/              # w<world>-<nn>.json (numeric order), index.ts (LEVELS, WORLDS), worlds.ts
   save.ts              # progress in localStorage (`boinky:save`)
   pwa.ts               # install prompt, iOS detection, fullscreen
 tests/                 # Vitest: physics, levels, i18n
@@ -106,6 +106,14 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
 
 ## Levels
 
+- The game has worlds of **exactly 10 levels**, with ids `w<world>-<nn>` (numeric order: `w2` before
+  `w10`). Each world has a name (`world.N` in i18n), colors (`gfx/themes.ts`) and two new
+  mechanics introduced in its first levels. The plan is 10 worlds (100 levels); `WORLD_COUNT` in
+  `src/levels/worlds.ts` says how many exist (the landing page reads it without the maps).
+- Progress: a level is open when the previous one has a record, so a new world opens for players
+  who already finished the last one. The level select shows one world per page (◀ ▶, or
+  left/right at the edge of a row) and `?level=` accepts `12` or `2-3`.
+- Level maps load in their own `levels.js` chunk (play.js is mostly Phaser and near its budget).
 - JSON in `src/levels/`: `id`, `name` and `hint` as `{ en, es, pt-BR }`, `par` (seconds for the
   time star) and `map` (12 strings of 20 characters). The legend is in `CONTRIBUTING.md`.
 - Every level teaches or tests one idea, introduced in its hint the first time it appears.
@@ -117,6 +125,9 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
   gems over pits placed on the ramp's launch path, no soft locks (a restart always works).
 - Play every new level by hand, and simulate naive play when in doubt (hold right, hold jump,
   different start timings): the solver only proves a level is possible, not that it is fair.
+  `solve(level, maxNodes, state)` searches from any state: perturb each step of the bot's plan
+  and check the level is still winnable from where the ball ends up (mistakes must be
+  recoverable or kill you, rarely leave you stuck).
 
 ## Landing page
 
@@ -227,6 +238,9 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
 **A level**: create `src/levels/w<world>-<nn>.json` (see Levels), run `pnpm validate:levels`,
 play it, and update the README level count if it changes.
 
+**A world**: ten levels `w<N>-01…10`, `WORLD_COUNT` in `src/levels/worlds.ts`, `world.N` in the
+three message files, its colors in `gfx/themes.ts`, and the README, landing and Status counts.
+
 **A tile or item**: add its code in `tiles.ts` (and map character), its behavior in
 `physics.ts` with unit tests, its texture in `gfx/textures.ts`, its rendering in `scenes/Game.ts`,
 its legend entry in `CONTRIBUTING.md`, and a level that introduces it.
@@ -250,7 +264,10 @@ its legend entry in `CONTRIBUTING.md`, and a level that introduces it.
 - [x] World 1 — 10 levels, desktop/touch/gamepad controls, PWA, three languages
 - [x] Project setup — CI, hooks, browser tests, Lighthouse, docs
 - [x] Landing page
-- [ ] World 2 and beyond
+- [x] World 2 — Crystal Caves: keys and lock blocks, moss
+- [ ] Worlds 3–10 (planned: clouds and updrafts, switches and pushers, portals and water, ice,
+      crumbling blocks and vents, low gravity and bumpers, dark rooms and phase blocks, rainbow
+      bridges)
 - [x] Native apps — Capacitor iOS and Android projects (iOS verified in the simulator)
 - [ ] Store release (developer accounts, signing, store listings, privacy policy)
 - [ ] Public release (license, Pages deploy, CodeQL)
