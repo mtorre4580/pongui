@@ -252,11 +252,12 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
 
 ## Bosses
 
-- A world can end with a boss (`BOSS_WORLDS` in `levels/worlds.ts`): a special fight, apart from
+- Every world ends with a boss (`BOSS_WORLDS` in `levels/worlds.ts`): a special fight, apart from
   the ten levels, that opens once they are all beaten. **The next world opens when the boss is
   beaten**, not when level 10 is (`bossGate`, `isUnlocked` and `recordWin` in `save.ts`).
-  Whoever had a world open before its boss existed keeps it (`unlocked` in the save). Worlds
-  without a boss open the next one the old way.
+  Whoever had a world open before its boss existed keeps it (`unlocked` in the save). A world
+  left out of `BOSS_WORLDS` would open the next one the old way. Beating the last boss opens
+  nothing: the panel says the game is finished.
 - Bosses are made by hand and are not levels: they are not in `src/levels`, the solver never
   plays them, there is no "watch the bot", no stars, no sharing, and they are not in the editor.
   What keeps one winnable is `tests/boss.test.ts`, which plays it with a simple scripted
@@ -311,7 +312,7 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
   bouncing on it while it is open to it; each boss harder than the one before (3 hits in the
   first worlds, 5 in the last, shorter warnings, more at once); from world 4 on, no spot where
   one can wait forever.
-- The bosses so far (what each asks of the player):
+- The ten bosses (what each asks of the player):
   1. **Grumble** (3 hits): walks, faster after each hit, hops from the second phase. Drop on it
      from a ledge or with a high bounce.
   2. **Serpstone** (3 hits): comes up through the moss where a burrow shakes (deadly while it
@@ -361,6 +362,13 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
      px/s. Over each of its four spots is a `%` platform at the height of its head: a ball
      waiting on it drops on the specter when the platform opens. From its second phase the
      light is out (`setDark`). It throws nothing.
+  10. **King Prism** (5 hits): the last one. He floats in the middle (low bounces pass under
+      him; his crown is over a high bounce from the floor) and each phase is a wave of three
+      or four volleys from the earlier bosses: fire from above; lightning with gusts; fire
+      with the floor opening (holes close after 3.5 s); fire and lightning in the dark; and
+      in the last, arms that catch a ball near the floor, then everything by turns. When a
+      wave is over and nothing is left in the air, the rainbow bridge appears on both sides
+      of him for 6.5 to 5 s: from it a high bounce lands on his crown.
 - To add one: `src/bosses/wN-name.ts` (brain, `BossDef`, arena, theme) and its entry in
   `BOSSES`; its world in `BOSS_WORLDS`; its art in `gfx/bossArt.ts` and sounds in `sfx.ts`;
   `boss.N` and `game.bossHint.N` in the three languages; its script in `bosses/scripts.ts`;
@@ -615,7 +623,7 @@ characters must stay unique across the game.
 - [x] Native apps — Capacitor iOS and Android projects (iOS verified in the simulator)
 - [x] Level editor (computers) and sharing by link, WhatsApp and QR code, with "My levels"
 - [x] Balls opened with stars, level of the day, "watch the bot"
-- [ ] Bosses — world 1 has one (pilot); worlds 2 to 10 to come
+- [x] Bosses — one at the end of each of the ten worlds, on a shared engine (see Bosses)
 - [ ] Publishing player levels to a shared catalog (accounts, database, moderation)
 - [ ] Store release (developer accounts, signing, store listings, privacy policy)
 - [x] Public launch — pongui.com on Cloudflare Pages, Search Console, Instagram, YouTube, itch.io
