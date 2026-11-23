@@ -9,6 +9,7 @@
  * Usage: pnpm media          everything above
  *        pnpm media editor   only the landing's editor clip
  *        pnpm media banner   only the YouTube channel banner in docs/social/
+ *        pnpm media itch     cover and screenshots for itch.io in docs/social/itch/
  *        pnpm media:social   vertical videos for social networks in docs/social/ (not committed)
  */
 import { execFileSync } from 'node:child_process';
@@ -448,6 +449,82 @@ async function drawBanner(browser: Browser, out: string, site: string, tagline: 
   await context.close();
 }
 
+/**
+ * Images for the game's page on itch.io, in docs/social/itch/: the cover (630×500, drawn at
+ * twice that) over a real moment of the game, and one screenshot from each of five worlds.
+ */
+async function itchMedia(browser: Browser) {
+  const out = join(SOCIAL, 'itch');
+  mkdirSync(out, { recursive: true });
+  const context = await browser.newContext({ viewport: { width: 1280, height: 832 } });
+  const page = await context.newPage();
+  await prepare(page);
+  await page.goto(`${GAME}?level=1`);
+  await waitScene(page, 'Game');
+  const shots: string[] = [];
+  for (const world of [1, 3, 5, 8, 10]) {
+    // Part of the solver's solution of the world's last level: the ball in the middle of it
+    await page.evaluate(
+      (i) => (window as unknown as { replay(i: number, n: number): Promise<unknown> }).replay(i, 5),
+      finale(world),
+    );
+    // The level's title banner would cover the middle of the picture
+    await page.evaluate(() =>
+      (
+        window as unknown as {
+          game: { scene: { getScene(key: string): { hideBanner(): void } } };
+        }
+      ).game.scene
+        .getScene('Game')
+        .hideBanner(),
+    );
+    await page.waitForTimeout(300);
+    const file = join(out, `screenshot-world-${String(world).padStart(2, '0')}.png`);
+    await page.screenshot({ path: file });
+    shots.push(file);
+  }
+  await context.close();
+
+  const { en } = await import('../src/landing/messages/en');
+  const cover = await browser.newContext({
+    viewport: { width: 630, height: 500 },
+    deviceScaleFactor: 2,
+  });
+  const card = await cover.newPage();
+  const font = (weight: number) =>
+    `url(data:font/woff2;base64,${readFileSync(
+      `node_modules/@fontsource/fredoka/files/fredoka-latin-${weight}-normal.woff2`,
+    ).toString('base64')})`;
+  // The lagoon: the most colorful of the five
+  const backdrop = `url(data:image/png;base64,${readFileSync(shots[2]).toString('base64')})`;
+  await card.setContent(`<!doctype html><meta charset="utf-8"><style>
+    @font-face { font-family: Fredoka; font-weight: 700; src: ${font(700)}; }
+    @font-face { font-family: Fredoka; font-weight: 500; src: ${font(500)}; }
+    * { margin: 0; box-sizing: border-box; }
+    body { width: 630px; height: 500px; overflow: hidden; color: #f1f2ff; text-align: center;
+      font-family: Fredoka, sans-serif; background: ${backdrop} center / cover; }
+    .veil { position: absolute; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 10px;
+      background: linear-gradient(#0d1024d9, #0d1024a6 55%, #0d1024e6); }
+    .brand { display: flex; align-items: center; gap: 18px; font: 700 96px/1 Fredoka;
+      text-shadow: 0 6px 0 #0d1024; }
+    .ball { width: 96px; height: 96px; border-radius: 50%; background: #ff6b6b;
+      position: relative; box-shadow: 0 6px 0 #0d1024; }
+    .ball::before, .ball::after { content: ''; position: absolute; top: 27px; width: 23px;
+      height: 30px; border-radius: 50%; background: #fff; box-shadow: inset 6px 5px 0 6px #161a33; }
+    .ball::before { left: 20px; } .ball::after { right: 20px; }
+    p { font: 500 30px/1.2 Fredoka; color: #dfe2ff; }
+    .tag { margin-top: 14px; padding: 10px 26px; border-radius: 999px; background: #ff6b6b;
+      color: #161a33; font: 700 26px Fredoka; }
+  </style>
+  <div class="veil"><div class="brand"><span class="ball"></span>Pongui</div>
+    <p>${escapeHtml(en['hero.kicker'])}</p><div class="tag">100 levels · Level editor</div></div>`);
+  await card.evaluate(() => document.fonts.ready);
+  await card.screenshot({ path: join(out, 'cover.png') });
+  await cover.close();
+  console.log(`itch.io images written to ${out}/`);
+}
+
 async function social(browser: Browser) {
   const { loadEnv } = await import('vite');
   const site = new URL(loadEnv('production', process.cwd()).VITE_SITE_URL).hostname;
@@ -633,6 +710,7 @@ const browser = await chromium.launch({ args: ['--autoplay-policy=no-user-gestur
 
 try {
   if (only === 'social') await social(browser);
+  else if (only === 'itch') await itchMedia(browser);
   else if (only === 'banner') {
     mkdirSync(SOCIAL, { recursive: true });
     const { loadEnv } = await import('vite');
