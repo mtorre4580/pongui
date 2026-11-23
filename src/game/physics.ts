@@ -182,9 +182,9 @@ export class World {
   /** Advances timed tiles: crumbling blocks count down and vents light up or go out. */
   private tick(ev: WorldEvent[]) {
     const s = this.s;
-    const wasLit = this.ventLit;
     s.ticks++;
-    if (this.ventLit !== wasLit && this.hasVents) ev.push({ type: 'vent', lit: this.ventLit });
+    if (this.hasVents && s.ticks % (VENT_CYCLE / 2) === 0)
+      ev.push({ type: 'vent', lit: this.ventLit });
     if (s.crumbling === 0) return;
     const gone: number[] = [];
     for (let idx = 0; idx < s.tiles.length; idx++) {
@@ -217,8 +217,8 @@ export class World {
     return true;
   }
 
-  /** Every map cell the ball's box covers. */
-  private box(): Cell[] {
+  /** Every map cell the ball's box covers (only the ones it collides with, if `solid`). */
+  private box(solid = false): Cell[] {
     const { x, y } = this.s;
     const c0 = Math.floor((x - BALL_R) / TILE);
     const c1 = Math.ceil((x + BALL_R) / TILE) - 1;
@@ -227,15 +227,19 @@ export class World {
     const out: Cell[] = [];
     for (let r = r0; r <= r1; r++) {
       for (let c = c0; c <= c1; c++) {
-        const inside = c >= 0 && c < COLS && r >= 0 && r < ROWS;
-        out.push({ c, r, idx: inside ? r * COLS + c : -1, t: this.tileAt(c, r) });
+        const t = this.tileAt(c, r);
+        // The physics' hottest loop: skip air before building a cell
+        if (solid && t === T.EMPTY) continue;
+        const idx = c >= 0 && c < COLS && r >= 0 && r < ROWS ? r * COLS + c : -1;
+        if (solid && this.isOpen(t, idx)) continue;
+        out.push({ c, r, idx, t });
       }
     }
     return out;
   }
 
   private overlaps(): Cell[] {
-    return this.box().filter((c) => !this.isOpen(c.t, c.idx));
+    return this.box(true);
   }
 
   /** A toggle block that turns solid around the ball stays open until the ball leaves it. */
@@ -574,7 +578,7 @@ export class World {
       return ev;
     }
     this.settle();
-    this.portals(ev);
+    if (this.partner.size) this.portals(ev);
 
     // Items
     for (let i = 0; i < s.items.length; i++) {

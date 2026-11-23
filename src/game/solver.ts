@@ -114,13 +114,23 @@ export function solve(level: ParsedLevel, maxNodes = 400000, start?: WorldState)
   // Without timed tiles, plain breadth-first order inside each item count finds the fastest
   // plans. With them, the phase multiplies the states, so the nearest target goes first.
   const guided = cycle > 0;
+  // Untimed levels: one FIFO queue per item count (breadth-first inside each, the fastest
+  // plans). Timed levels: a binary heap on the guided score.
+  const buckets: Node[][] = [];
+  const heads: number[] = [];
   const heap: { n: Node; score: number; order: number }[] = [];
   let order = 0;
   const above = (a: number, b: number) =>
     heap[a].score > heap[b].score ||
     (heap[a].score === heap[b].score && heap[a].order < heap[b].order);
   const push = (n: Node) => {
-    heap.push({ n, score: guided ? score(n.s) : taken(n.s) * 100000, order: order++ });
+    if (!guided) {
+      const b = taken(n.s);
+      (buckets[b] ??= []).push(n);
+      heads[b] ??= 0;
+      return;
+    }
+    heap.push({ n, score: score(n.s), order: order++ });
     for (let i = heap.length - 1; i > 0;) {
       const p = (i - 1) >> 1;
       if (!above(i, p)) break;
@@ -129,6 +139,13 @@ export function solve(level: ParsedLevel, maxNodes = 400000, start?: WorldState)
     }
   };
   const pop = (): Node | null => {
+    if (!guided) {
+      for (let b = buckets.length - 1; b >= 0; b--) {
+        const q = buckets[b];
+        if (q && heads[b] < q.length) return q[heads[b]++];
+      }
+      return null;
+    }
     if (!heap.length) return null;
     const top = heap[0].n;
     const last = heap.pop()!;
