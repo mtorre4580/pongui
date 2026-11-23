@@ -1,6 +1,6 @@
 // App install (PWA) and fullscreen.
 import { track } from './analytics';
-import { IS_NATIVE } from './native';
+import { OFF_SITE } from './build';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -38,9 +38,12 @@ export async function promptInstall() {
   notify();
 }
 
-/** True when running as an installed app: a PWA window or the native iOS/Android app. */
+/**
+ * True when there is nothing to install: an installed PWA window, the native iOS/Android app or
+ * a portal's page (which also brings its own fullscreen button).
+ */
 export const isStandalone = () =>
-  IS_NATIVE ||
+  OFF_SITE ||
   window.matchMedia('(display-mode: standalone)').matches ||
   window.matchMedia('(display-mode: fullscreen)').matches ||
   (navigator as unknown as { standalone?: boolean }).standalone === true;
@@ -116,8 +119,9 @@ async function healStalePrecache(registration: ServiceWorkerRegistration) {
  * to the site root from any page (/, /play/) and under any base folder.
  */
 export function registerServiceWorker() {
-  // The native app ships every file inside the package: no service worker needed
-  if (!import.meta.env.PROD || IS_NATIVE || !('serviceWorker' in navigator)) return;
+  // The native app ships every file inside the package, and a portal serves its own copy: no
+  // service worker in either
+  if (!import.meta.env.PROD || OFF_SITE || !('serviceWorker' in navigator)) return;
   // Resolved at runtime on purpose (it is the site root, not a file to bundle)
   const root = new URL(/* @vite-ignore */ '../', import.meta.url);
   window.addEventListener('load', () => {

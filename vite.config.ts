@@ -76,6 +76,21 @@ const siteFiles = (site: string): Plugin => ({
   },
 });
 
+/**
+ * Games portals (itch.io) open the index.html at the root of the uploaded zip, from a folder of
+ * their own: a relative redirect to the game page, which lives in play/ like on the site.
+ */
+const portalEntry = (): Plugin => ({
+  name: 'portal-entry',
+  apply: 'build',
+  writeBundle(options) {
+    writeFileSync(
+      join(options.dir!, 'index.html'),
+      '<!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=play/index.html"><title>Pongui</title>\n',
+    );
+  },
+});
+
 /** The web build: landing page + game + PWA. */
 const pwa = () =>
   VitePWA({
@@ -124,9 +139,12 @@ export default defineConfig(({ mode }) => {
   // `vite build --mode native`: only the game, for the iOS/Android apps (Capacitor). No PWA (the
   // app ships every file) and no public/ folder (landing media and web icons are not needed).
   const native = mode === 'native';
+  // `vite build --mode portal`: only the game too, as a folder to zip and upload to a portal
+  const portal = mode === 'portal';
+  const gameOnly = native || portal;
   const site = loadEnv(mode, process.cwd()).VITE_SITE_URL ?? '/';
   // Web: the landing page at / and the game at /play/. Native: the game only
-  const input: Record<string, string> = native
+  const input: Record<string, string> = gameOnly
     ? { play: page('./play/index.html') }
     : {
         main: page('./index.html'),
@@ -135,10 +153,14 @@ export default defineConfig(({ mode }) => {
       };
   return {
     base: './',
-    publicDir: native ? false : 'public',
-    plugins: native ? [nativeEntry()] : [pwa(), rootManifestLink(), siteFiles(site)],
+    publicDir: gameOnly ? false : 'public',
+    plugins: native
+      ? [nativeEntry()]
+      : portal
+        ? [portalEntry()]
+        : [pwa(), rootManifestLink(), siteFiles(site)],
     build: {
-      outDir: native ? 'dist-native' : 'dist',
+      outDir: native ? 'dist-native' : portal ? 'dist-itch' : 'dist',
       chunkSizeWarningLimit: 2000,
       rollupOptions: {
         input,

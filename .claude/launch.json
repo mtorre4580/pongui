@@ -12,6 +12,23 @@
       "runtimeExecutable": "env",
       "runtimeArgs": ["BROWSER=none", "pnpm", "preview", "--port", "4173", "--strictPort"],
       "port": 4173
+    },
+    {
+      "name": "itch",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "BROWSER=none",
+        "pnpm",
+        "exec",
+        "vite",
+        "preview",
+        "--outDir",
+        "dist-itch",
+        "--port",
+        "4174",
+        "--strictPort"
+      ],
+      "port": 4174
     }
   ]
 }

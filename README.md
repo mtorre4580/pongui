@@ -121,6 +121,7 @@ pnpm dev
 | `pnpm media:social` | Records vertical videos for Instagram, TikTok and YouTube Shorts into `docs/social/` (not committed) |
 | `pnpm icons` | Regenerates the web app icons in `public/icons` and the native sources in `assets/` |
 | `pnpm build:native` | Builds the game for the iOS/Android apps and syncs it into `ios/` and `android/` |
+| `pnpm build:itch` | Builds the game alone into `dist-itch/` and zips it as `pongui-itch.zip`, ready to upload to itch.io as an HTML game |
 | `pnpm native:assets` | Generates every iOS and Android icon and splash size from `assets/` |
 
 In development, the browser console has `await replay(3)` (fast-forwards the solver's solution for

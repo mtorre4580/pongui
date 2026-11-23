@@ -8,6 +8,7 @@ export default tseslint.config(
     ignores: [
       'dist',
       'dist-native',
+      'dist-itch',
       'dev-dist',
       'coverage',
       'playwright-report',

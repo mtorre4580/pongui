@@ -43,6 +43,7 @@
     "media:social": "tsx scripts/capture-media.ts social",
     "icons": "node scripts/make-icons.mjs",
     "prepare": "husky",
+    "build:itch": "tsc --noEmit && vite build --mode portal && cd dist-itch && zip -qr ../pongui-itch.zip .",
     "build:native": "tsc --noEmit && vite build --mode native && cap sync",
     "ios": "cap open ios",
     "android": "cap open android",
