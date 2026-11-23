@@ -1,6 +1,3 @@
-import '@fontsource/fredoka/latin-600.css';
-import '@fontsource/fredoka/latin-700.css';
-import './style.css';
 import { registerServiceWorker } from './pwa';
 import Phaser from 'phaser';
 import { CANVAS_H, CANVAS_W } from './game/constants';
