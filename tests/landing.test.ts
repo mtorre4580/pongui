@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { en, type LandingKey } from '../src/landing/messages/en';
 import { es } from '../src/landing/messages/es';
 import { ptBR } from '../src/landing/messages/pt-BR';
+import { en as game } from '../src/i18n/messages/en';
+import { WORLD_COUNT } from '../src/levels/worlds';
 
 const html = readFileSync('index.html', 'utf8');
 const squash = (s: string) => s.replace(/\s+/g, ' ').trim();
@@ -35,6 +37,17 @@ describe('landing page texts', () => {
   it('every data-i18n-attr key in index.html exists', () => {
     for (const [, pairs] of html.matchAll(/data-i18n-attr="([^"]+)"/g)) {
       for (const pair of pairs.split(',')) expect(en).toHaveProperty([pair.split(':')[1].trim()]);
+    }
+  });
+
+  it('index.html has one card per world, named like the game names it', () => {
+    const worlds = [...html.matchAll(/data-world="(\d+)"\s*>([^<]+)</g)];
+    expect(worlds.map(([, n]) => Number(n))).toEqual(
+      Array.from({ length: WORLD_COUNT }, (_, i) => i + 1),
+    );
+    for (const [, n, name] of worlds) {
+      expect(squash(name)).toBe(game[`world.${n}` as keyof typeof game]);
+      expect(html).toContain(`href="./play/?level=${n}-1"`);
     }
   });
 });

@@ -254,8 +254,11 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
 - Videos use `data-src` and load only when they scroll into view; they play only while visible,
   never autoplay with `prefers-reduced-motion`, and every clip has a pause button (WCAG 2.2.2).
   `data-src` paths are resolved relative to the page so the site works under any base folder.
-- Media is recorded, never drawn by hand: `pnpm media` plays each mechanic's level with the solver
-  (`demo(i, { banner: false })`) and encodes small MP4 clips with JPEG posters.
+- Media is recorded, never drawn by hand: `pnpm media` plays each world's last level with the
+  solver (`demo(i, { banner: false })`), drives the editor with the keyboard for the "create"
+  clip, and encodes small MP4 clips with JPEG posters (`pnpm media editor` records only that one).
+- World cards are static HTML (`data-world="N"`); their names come from the game's dictionary
+  (`world.N`) and `tests/landing.test.ts` checks there is one card per world.
 - `VITE_SITE_URL` in `.env` feeds the canonical link, Open Graph tags and the `VideoGame` JSON-LD.
 - The service worker is registered from `src/pwa.ts` with a URL resolved from the bundle, so both
   pages register `/sw.js` with the root scope. Landing media is excluded from the precache.

@@ -7,7 +7,7 @@
     <meta
       name="description"
       data-i18n-attr="content:meta.description"
-      content="Pongui is a free bouncing-ball puzzle game: collect every gem, dodge the spikes and find the exit. Plays in your browser on computer, tablet and phone, installs like an app and works offline."
+      content="Pongui is a free bouncing-ball puzzle game with 100 levels in 10 worlds: collect every gem, dodge the spikes and find the exit. Plays in your browser on computer, tablet and phone, installs like an app, works offline and lets you make your own levels."
     />
     <meta name="theme-color" content="#0d1024" />
     <link rel="canonical" href="%VITE_SITE_URL%" />
@@ -61,7 +61,8 @@
         <nav aria-label="Main" data-i18n-attr="aria-label:nav.label">
           <ul class="nav-links">
             <li><a href="#how" data-i18n="nav.how">How to play</a></li>
-            <li><a href="#mechanics" data-i18n="nav.mechanics">Mechanics</a></li>
+            <li><a href="#worlds" data-i18n="nav.worlds">Worlds</a></li>
+            <li><a href="#create" data-i18n="nav.create">Create</a></li>
             <li><a href="#devices" data-i18n="nav.devices">Devices</a></li>
             <li><a href="#faq" data-i18n="nav.faq">FAQ</a></li>
           </ul>
@@ -89,8 +90,9 @@
               The ball never stops bouncing. You decide where it lands.
             </h1>
             <p class="lead" data-i18n="hero.text">
-              Steer a bouncy ball through hand-made puzzle levels: collect every gem, dodge spikes,
-              put out fires and find the exit. Free, in your browser, on any device.
+              Steer a bouncy ball through 100 hand-made puzzle levels in 10 worlds: collect every
+              gem, dodge spikes, ride the wind, jump through portals and find the exit. Free, in
+              your browser, on any device.
             </p>
             <div class="cta-row">
               <a class="btn btn-primary" href="./play/" data-i18n="hero.play"
@@ -107,7 +109,7 @@
               </button>
             </div>
             <p class="meta" data-i18n="hero.meta">
-              No sign-up · Works offline · English, Español, Português
+              No sign-up · 100 levels · Works offline · English, Español, Português
             </p>
           </div>
           <div class="hero-media">
@@ -123,7 +125,7 @@
                 loop
                 playsinline
                 preload="none"
-                aria-label="Pongui playing the grand finale: a ramp, fire put out with a water drop, a spring and a brick wall knocked down with a hammer"
+                aria-label="Pongui playing the last level of the game, Rainbow Summit: gems, a key, vents, crumbling blocks and a rainbow bridge to the exit"
                 data-i18n-attr="aria-label:hero.video"
               ></video>
               <button class="clip-toggle" type="button">
@@ -170,19 +172,22 @@
         </div>
       </section>
 
-      <section class="section section-alt" id="mechanics" aria-labelledby="mech-title">
+      <section class="section section-alt" id="worlds" aria-labelledby="worlds-title">
         <div class="wrap">
-          <h2 id="mech-title" data-i18n="mech.title">Every level teaches a new trick</h2>
-          <p class="section-lead" data-i18n="mech.text">
-            Each mechanic gets its own level before they all meet in the grand finale.
+          <h2 id="worlds-title" data-i18n="worlds.title">
+            10 worlds, 100 levels, a new trick every time
+          </h2>
+          <p class="section-lead" data-i18n="worlds.text">
+            Every world has its own look and two new mechanics, taught one level at a time. Pick a
+            world to start playing.
           </p>
-          <ul class="cards">
+          <ol class="cards">
             <li class="card">
               <figure class="screen screen-small">
                 <video
                   class="clip"
-                  data-src="/landing/high-bounce.mp4"
-                  poster="/landing/high-bounce.jpg"
+                  data-src="/landing/world-1.mp4"
+                  poster="/landing/world-1.jpg"
                   width="640"
                   height="416"
                   muted
@@ -192,35 +197,22 @@
                   aria-hidden="true"
                 ></video>
               </figure>
-              <h3 data-i18n="mech.highBounce.title">High bounce</h3>
-              <p data-i18n="mech.highBounce.text">Time your jump to reach the high ledges.</p>
-            </li>
-            <li class="card">
-              <figure class="screen screen-small">
-                <video
-                  class="clip"
-                  data-src="/landing/fragile.mp4"
-                  poster="/landing/fragile.jpg"
-                  width="640"
-                  height="416"
-                  muted
-                  loop
-                  playsinline
-                  preload="none"
-                  aria-hidden="true"
-                ></video>
-              </figure>
-              <h3 data-i18n="mech.fragile.title">Fragile floors</h3>
-              <p data-i18n="mech.fragile.text">
-                Yellow blocks crumble after one bounce. Keep moving!
+              <h3>
+                <a href="./play/?level=1-1"
+                  ><span class="level-num" aria-hidden="true">1</span
+                  ><span data-world="1">Bouncy Valley</span></a
+                >
+              </h3>
+              <p data-i18n="world.1.text">
+                Ramps, springs, fragile floors, fire to put out and walls to knock down.
               </p>
             </li>
             <li class="card">
               <figure class="screen screen-small">
                 <video
                   class="clip"
-                  data-src="/landing/ramps.mp4"
-                  poster="/landing/ramps.jpg"
+                  data-src="/landing/world-2.mp4"
+                  poster="/landing/world-2.jpg"
                   width="640"
                   height="416"
                   muted
@@ -230,17 +222,22 @@
                   aria-hidden="true"
                 ></video>
               </figure>
-              <h3 data-i18n="mech.ramps.title">Ramps</h3>
-              <p data-i18n="mech.ramps.text">
-                Blue ramps catch you and launch you over the spikes.
+              <h3>
+                <a href="./play/?level=2-1"
+                  ><span class="level-num" aria-hidden="true">2</span
+                  ><span data-world="2">Crystal Caves</span></a
+                >
+              </h3>
+              <p data-i18n="world.2.text">
+                Find the key to open the locks, and land softly on moss.
               </p>
             </li>
             <li class="card">
               <figure class="screen screen-small">
                 <video
                   class="clip"
-                  data-src="/landing/springs.mp4"
-                  poster="/landing/springs.jpg"
+                  data-src="/landing/world-3.mp4"
+                  poster="/landing/world-3.jpg"
                   width="640"
                   height="416"
                   muted
@@ -250,15 +247,20 @@
                   aria-hidden="true"
                 ></video>
               </figure>
-              <h3 data-i18n="mech.springs.title">Springs</h3>
-              <p data-i18n="mech.springs.text">Purple springs send you all the way up.</p>
+              <h3>
+                <a href="./play/?level=3-1"
+                  ><span class="level-num" aria-hidden="true">3</span
+                  ><span data-world="3">Cloud Peaks</span></a
+                >
+              </h3>
+              <p data-i18n="world.3.text">Jump up through the clouds and ride the updrafts.</p>
             </li>
             <li class="card">
               <figure class="screen screen-small">
                 <video
                   class="clip"
-                  data-src="/landing/fire.mp4"
-                  poster="/landing/fire.jpg"
+                  data-src="/landing/world-4.mp4"
+                  poster="/landing/world-4.jpg"
                   width="640"
                   height="416"
                   muted
@@ -268,52 +270,213 @@
                   aria-hidden="true"
                 ></video>
               </figure>
-              <h3 data-i18n="mech.fire.title">Fire and water</h3>
-              <p data-i18n="mech.fire.text">Grab a water drop to put the flames out.</p>
-            </li>
-            <li class="card">
-              <figure class="screen screen-small">
-                <video
-                  class="clip"
-                  data-src="/landing/hammer.mp4"
-                  poster="/landing/hammer.jpg"
-                  width="640"
-                  height="416"
-                  muted
-                  loop
-                  playsinline
-                  preload="none"
-                  aria-hidden="true"
-                ></video>
-              </figure>
-              <h3 data-i18n="mech.hammer.title">Hammer</h3>
-              <p data-i18n="mech.hammer.text">One hammer knocks down a whole brick wall.</p>
-            </li>
-            <li class="card">
-              <figure class="screen screen-small">
-                <video
-                  class="clip"
-                  data-src="/landing/spikes.mp4"
-                  poster="/landing/spikes.jpg"
-                  width="640"
-                  height="416"
-                  muted
-                  loop
-                  playsinline
-                  preload="none"
-                  aria-hidden="true"
-                ></video>
-              </figure>
-              <h3 data-i18n="mech.spikes.title">Spikes</h3>
-              <p data-i18n="mech.spikes.text">
-                Land with precision: the ball rests where its center is.
+              <h3>
+                <a href="./play/?level=4-1"
+                  ><span class="level-num" aria-hidden="true">4</span
+                  ><span data-world="4">Gear Works</span></a
+                >
+              </h3>
+              <p data-i18n="world.4.text">
+                Flip switches to move blocks and let pushers launch you sideways.
               </p>
             </li>
-          </ul>
+            <li class="card">
+              <figure class="screen screen-small">
+                <video
+                  class="clip"
+                  data-src="/landing/world-5.mp4"
+                  poster="/landing/world-5.jpg"
+                  width="640"
+                  height="416"
+                  muted
+                  loop
+                  playsinline
+                  preload="none"
+                  aria-hidden="true"
+                ></video>
+              </figure>
+              <h3>
+                <a href="./play/?level=5-1"
+                  ><span class="level-num" aria-hidden="true">5</span
+                  ><span data-world="5">Coral Lagoon</span></a
+                >
+              </h3>
+              <p data-i18n="world.5.text">Dive underwater and travel through portals.</p>
+            </li>
+            <li class="card">
+              <figure class="screen screen-small">
+                <video
+                  class="clip"
+                  data-src="/landing/world-6.mp4"
+                  poster="/landing/world-6.jpg"
+                  width="640"
+                  height="416"
+                  muted
+                  loop
+                  playsinline
+                  preload="none"
+                  aria-hidden="true"
+                ></video>
+              </figure>
+              <h3>
+                <a href="./play/?level=6-1"
+                  ><span class="level-num" aria-hidden="true">6</span
+                  ><span data-world="6">Frost Peaks</span></a
+                >
+              </h3>
+              <p data-i18n="world.6.text">Slide on ice, and watch out: thin ice breaks.</p>
+            </li>
+            <li class="card">
+              <figure class="screen screen-small">
+                <video
+                  class="clip"
+                  data-src="/landing/world-7.mp4"
+                  poster="/landing/world-7.jpg"
+                  width="640"
+                  height="416"
+                  muted
+                  loop
+                  playsinline
+                  preload="none"
+                  aria-hidden="true"
+                ></video>
+              </figure>
+              <h3>
+                <a href="./play/?level=7-1"
+                  ><span class="level-num" aria-hidden="true">7</span
+                  ><span data-world="7">Ember Core</span></a
+                >
+              </h3>
+              <p data-i18n="world.7.text">
+                Blocks crumble under you and vents light up on a rhythm.
+              </p>
+            </li>
+            <li class="card">
+              <figure class="screen screen-small">
+                <video
+                  class="clip"
+                  data-src="/landing/world-8.mp4"
+                  poster="/landing/world-8.jpg"
+                  width="640"
+                  height="416"
+                  muted
+                  loop
+                  playsinline
+                  preload="none"
+                  aria-hidden="true"
+                ></video>
+              </figure>
+              <h3>
+                <a href="./play/?level=8-1"
+                  ><span class="level-num" aria-hidden="true">8</span
+                  ><span data-world="8">Star Station</span></a
+                >
+              </h3>
+              <p data-i18n="world.8.text">Float in low gravity and ricochet off bumpers.</p>
+            </li>
+            <li class="card">
+              <figure class="screen screen-small">
+                <video
+                  class="clip"
+                  data-src="/landing/world-9.mp4"
+                  poster="/landing/world-9.jpg"
+                  width="640"
+                  height="416"
+                  muted
+                  loop
+                  playsinline
+                  preload="none"
+                  aria-hidden="true"
+                ></video>
+              </figure>
+              <h3>
+                <a href="./play/?level=9-1"
+                  ><span class="level-num" aria-hidden="true">9</span
+                  ><span data-world="9">Shadow Keep</span></a
+                >
+              </h3>
+              <p data-i18n="world.9.text">Play in the dark while blocks fade in and out.</p>
+            </li>
+            <li class="card">
+              <figure class="screen screen-small">
+                <video
+                  class="clip"
+                  data-src="/landing/world-10.mp4"
+                  poster="/landing/world-10.jpg"
+                  width="640"
+                  height="416"
+                  muted
+                  loop
+                  playsinline
+                  preload="none"
+                  aria-hidden="true"
+                ></video>
+              </figure>
+              <h3>
+                <a href="./play/?level=10-1"
+                  ><span class="level-num" aria-hidden="true">10</span
+                  ><span data-world="10">Rainbow Summit</span></a
+                >
+              </h3>
+              <p data-i18n="world.10.text">
+                Collect every gem to light the rainbow bridge. Every trick, one last time.
+              </p>
+            </li>
+          </ol>
         </div>
       </section>
 
-      <section class="section" id="devices" aria-labelledby="devices-title">
+      <section class="section" id="create" aria-labelledby="create-title">
+        <div class="wrap create-grid">
+          <div>
+            <h2 id="create-title" data-i18n="create.title">Build your own levels</h2>
+            <p class="section-lead" data-i18n="create.text">
+              The level editor has every tile from the ten worlds. Paint a level, beat it and send
+              it to your friends.
+            </p>
+            <ol class="create-steps">
+              <li>
+                <h3 data-i18n="create.1.title">Paint</h3>
+                <p data-i18n="create.1.text">
+                  Pick a tile and draw. Every change is saved at once.
+                </p>
+              </li>
+              <li>
+                <h3 data-i18n="create.2.title">Prove it</h3>
+                <p data-i18n="create.2.text">
+                  A bot checks that your level can be beaten. Then you beat it too.
+                </p>
+              </li>
+              <li>
+                <h3 data-i18n="create.3.title">Share</h3>
+                <p data-i18n="create.3.text">
+                  Send it as a link, by WhatsApp or as a QR code. No account needed.
+                </p>
+              </li>
+            </ol>
+            <p class="meta" data-i18n="create.note">
+              The editor works on a computer. The levels you receive open on any device.
+            </p>
+          </div>
+          <figure class="screen">
+            <video
+              class="clip"
+              data-src="/landing/editor.mp4"
+              poster="/landing/editor.jpg"
+              width="960"
+              height="624"
+              muted
+              loop
+              playsinline
+              preload="none"
+              aria-label="The level editor: painting blocks and gems, testing the level and sharing it with a QR code"
+              data-i18n-attr="aria-label:create.video"
+            ></video>
+          </figure>
+        </div>
+      </section>
+
+      <section class="section section-alt" id="devices" aria-labelledby="devices-title">
         <div class="wrap devices-grid">
           <div>
             <h2 id="devices-title" data-i18n="devices.title">One game, every screen</h2>
@@ -326,8 +489,14 @@
               <li data-i18n="feat.install">Installs from the browser, no app store</li>
               <li data-i18n="feat.controls">Keyboard, touch gestures and gamepad</li>
               <li data-i18n="feat.languages">English, Spanish and Portuguese</li>
+              <li data-i18n="feat.editor">Level editor, with sharing by link and QR code</li>
               <li data-i18n="feat.privacy">No account: your progress stays on your device</li>
             </ul>
+            <p class="notice" data-i18n="devices.native">
+              The iPhone and Android apps are still in development. Meanwhile, play in your browser
+              on any computer, tablet or phone, or install the game from the browser: it works just
+              like an app.
+            </p>
           </div>
           <div class="devices">
             <figure class="device device-laptop">
@@ -367,15 +536,16 @@
         </div>
       </section>
 
-      <section class="section section-alt" id="install-help" aria-labelledby="install-title">
+      <section class="section" id="install-help" aria-labelledby="install-title">
         <div class="wrap">
           <h2 id="install-title" data-i18n="install.title">Install it in a few taps</h2>
           <ul class="install">
             <li>
               <h3 data-i18n="install.desktop.title">Computer</h3>
               <p data-i18n="install.desktop.text">
-                In Chrome or Edge, press “Install app” in the game menu or the install icon in the
-                address bar. On a Mac with Safari: File → Add to Dock.
+                On Windows, Mac or Linux, open the game in Chrome or Edge and press “Install app” in
+                the game menu or the install icon in the address bar. On a Mac with Safari: File →
+                Add to Dock.
               </p>
             </li>
             <li>
@@ -394,17 +564,6 @@
         </div>
       </section>
 
-      <section class="section" id="levels" aria-labelledby="levels-title">
-        <div class="wrap">
-          <h2 id="levels-title" data-i18n="levels.title">Worlds</h2>
-          <p class="section-lead" data-i18n="levels.text">
-            Ten hand-made levels per world, and every world brings new tricks.
-          </p>
-          <ol class="levels" id="level-list"></ol>
-          <p class="soon" data-i18n="levels.soon">More worlds are on the way.</p>
-        </div>
-      </section>
-
       <section class="section section-alt" id="faq" aria-labelledby="faq-title">
         <div class="wrap faq-wrap">
           <h2 id="faq-title" data-i18n="faq.title">Questions</h2>
@@ -412,6 +571,22 @@
             <summary data-i18n="faq.free.q">Is Pongui free?</summary>
             <p data-i18n="faq.free.a">
               Yes. Play it in your browser at no cost, without an account.
+            </p>
+          </details>
+          <details>
+            <summary data-i18n="faq.stores.q">
+              Is there an app in the App Store or Google Play?
+            </summary>
+            <p data-i18n="faq.stores.a">
+              Not yet: the iPhone and Android apps are in development. Until then, install the game
+              from your browser. It works the same, even offline.
+            </p>
+          </details>
+          <details>
+            <summary data-i18n="faq.create.q">Can I make my own levels?</summary>
+            <p data-i18n="faq.create.a">
+              Yes. On a computer, open “My levels” in the game menu and create one. Once you beat it
+              you can share it as a link or a QR code, and anyone can play it on any device.
             </p>
           </details>
           <details>

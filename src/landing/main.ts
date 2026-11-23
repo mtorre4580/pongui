@@ -1,7 +1,5 @@
-// Landing page: plain DOM, no game engine. Texts, videos, level list and install button.
+// Landing page: plain DOM, no game engine. Texts, videos, world names and install button.
 import { getLocale, LOCALES, setLocale, t, type Locale, type MessageKey } from '../i18n';
-// Only the world count: the level maps stay out of the landing page's bundle
-import { PLANNED_WORLDS, WORLD_COUNT } from '../levels/worlds';
 import {
   canInstall,
   isIOS,
@@ -29,32 +27,15 @@ function translate() {
       el.setAttribute(attr.trim(), lt(key.trim() as LandingKey));
     }
   });
-  renderLevels();
+  renderWorlds();
   videos.forEach((v) => v.refreshLabel());
 }
 
-function renderLevels() {
-  // Every planned world is out: stop promising more
-  document.querySelector('.soon')?.toggleAttribute('hidden', WORLD_COUNT >= PLANNED_WORLDS);
-  const list = document.getElementById('level-list');
-  if (!list) return;
-  list.replaceChildren(
-    ...Array.from({ length: WORLD_COUNT }, (_, i) => {
-      const li = document.createElement('li');
-      const link = document.createElement('a');
-      // Opens the world's first level
-      link.href = `./play/?level=${i + 1}-1`;
-      const num = document.createElement('span');
-      num.className = 'level-num';
-      num.textContent = String(i + 1);
-      num.setAttribute('aria-hidden', 'true');
-      const name = document.createElement('span');
-      name.textContent = t(`world.${i + 1}` as MessageKey);
-      link.append(num, name);
-      li.append(link);
-      return li;
-    }),
-  );
+/** World names come from the game's own dictionary, so both always agree. */
+function renderWorlds() {
+  document.querySelectorAll<HTMLElement>('[data-world]').forEach((el) => {
+    el.textContent = t(`world.${el.dataset.world}` as MessageKey);
+  });
 }
 
 // --- Videos: load when visible, play only while on screen, always pausable (WCAG 2.2.2) ---
