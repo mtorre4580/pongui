@@ -121,3 +121,140 @@ body {
     display: flex;
   }
 }
+
+/* Dialogs over the game (custom/dialogs.ts): level names, shared links and QR codes */
+.ui-dialog {
+  width: min(560px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+  padding: 22px 24px 20px;
+  border: 2px solid #5a63c9;
+  border-radius: 22px;
+  background: #1d2147;
+  color: #ffffff;
+  font-family: Fredoka, system-ui, sans-serif;
+  font-weight: 600;
+  touch-action: manipulation;
+  -webkit-user-select: text;
+  user-select: text;
+}
+.ui-dialog::backdrop {
+  background: rgba(5, 6, 15, 0.65);
+}
+.ui-dialog h2 {
+  margin: 0 0 14px;
+  font-size: 22px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.ui-dialog p {
+  margin: 0 0 12px;
+  color: #c9cff7;
+  font-size: 15px;
+  line-height: 1.4;
+}
+.ui-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+  color: #c9cff7;
+  font-size: 14px;
+}
+.ui-dialog input,
+.ui-dialog textarea {
+  width: 100%;
+  min-width: 0;
+  padding: 9px 12px;
+  border: 2px solid #5a63c9;
+  border-radius: 12px;
+  background: #0d1024;
+  color: #ffffff;
+  font: inherit;
+  font-size: 16px;
+}
+.ui-dialog textarea {
+  resize: vertical;
+  word-break: break-all;
+}
+.ui-dialog :focus-visible {
+  outline: 3px solid #ffd166;
+  outline-offset: 2px;
+}
+.ui-dialog button,
+.ui-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 8px 16px;
+  border: 0;
+  border-radius: 20px;
+  background: #3a4190;
+  color: #ffffff;
+  font: inherit;
+  font-size: 15px;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.ui-dialog button:hover,
+.ui-button:hover {
+  filter: brightness(1.15);
+}
+.ui-dialog button.primary {
+  background: #c43c5c;
+}
+.ui-button.whatsapp {
+  background: #12805c;
+}
+.ui-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 6px;
+}
+.ui-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.ui-row input {
+  flex: 1;
+}
+.ui-share {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+.ui-share-side {
+  flex: 1;
+  min-width: 0;
+}
+.ui-qr {
+  width: 200px;
+  height: 200px;
+  flex: none;
+  border-radius: 12px;
+  image-rendering: pixelated;
+}
+.ui-error {
+  color: #ff8fa3 !important;
+}
+.ui-note {
+  font-size: 13px !important;
+  color: #ffd166 !important;
+}
+.ui-soon {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #262b5e;
+  font-size: 14px !important;
+}
+@media (max-width: 560px) {
+  .ui-share {
+    flex-direction: column;
+    align-items: center;
+  }
+}

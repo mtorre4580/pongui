@@ -11,6 +11,7 @@ import { Boot } from './scenes/Boot';
 import { Game } from './scenes/Game';
 import { LevelSelect } from './scenes/LevelSelect';
 import { Menu } from './scenes/Menu';
+import { MyLevels } from './scenes/MyLevels';
 import { Overlay } from './scenes/Overlay';
 
 registerServiceWorker();
@@ -39,7 +40,8 @@ async function start() {
     input: { activePointers: 4 },
     render: { antialias: true, roundPixels: false },
     disableContextMenu: true,
-    scene: [Boot, Menu, LevelSelect, Game, Overlay],
+    // The level editor is added on first use (custom/run.ts): phones never load it
+    scene: [Boot, Menu, LevelSelect, MyLevels, Game, Overlay],
   });
   document.getElementById('loading')?.classList.add('done');
   // Refit when the container resizes (rotation, browser bars, window size)

@@ -47,12 +47,39 @@ export interface ParsedLevel {
   gems: number;
 }
 
+/**
+ * Water and low-gravity zones of a map. Anything placed in one (a gem, the start, a portal,
+ * spikes…) is in it too: it takes the field of the cell above it or of a side neighbor.
+ */
+export function fieldsOf(map: string[]): Uint8Array {
+  const field = new Uint8Array(ROWS * COLS);
+  for (let row = 0; row < ROWS; row++) {
+    for (let col = 0; col < COLS; col++) {
+      const ch = map[row]?.[col];
+      if (ch === undefined || ch === '.' || ch === ' ' || ch === '#') continue;
+      const idx = row * COLS + col;
+      if (ch in FIELD_CHARS) {
+        field[idx] = FIELD_CHARS[ch];
+        continue;
+      }
+      // Cells already read (above, or to the left) use the result, the rest their character
+      const fieldAt = (c: number, r: number): number => {
+        if (c < 0 || c >= COLS || r < 0) return 0;
+        if (r < row || c < col) return field[r * COLS + c];
+        return FIELD_CHARS[map[r]?.[c] ?? ''] ?? 0;
+      };
+      field[idx] = fieldAt(col, row - 1) || fieldAt(col - 1, row) || fieldAt(col + 1, row);
+    }
+  }
+  return field;
+}
+
 export function parseLevel(data: LevelData): ParsedLevel {
   const { map } = data;
   if (map.length !== ROWS)
     throw new Error(`${data.id}: the map has ${map.length} rows (expected ${ROWS})`);
   const tiles = new Uint8Array(ROWS * COLS);
-  const field = new Uint8Array(ROWS * COLS);
+  const field = fieldsOf(map);
   const items: ParsedLevel['items'] = [];
   let start: ParsedLevel['start'] | null = null;
   let exit: ParsedLevel['exit'] | null = null;
@@ -64,21 +91,8 @@ export function parseLevel(data: LevelData): ParsedLevel {
       const ch = line[col];
       const idx = row * COLS + col;
       if (ch === '.' || ch === ' ') continue;
-      // Water and low-gravity zones are layers, not tiles. Anything placed in one (a gem, the
-      // start, a portal, spikes…) is in it too: it takes the field of the cell above it or of a
-      // side neighbor.
-      const fieldAt = (c: number, r: number): number => {
-        if (c < 0 || c >= COLS || r < 0) return 0;
-        // Cells already read (above, or to the left) use the result, the rest their character
-        if (r < row || c < col) return field[r * COLS + c];
-        return FIELD_CHARS[map[r][c]] ?? 0;
-      };
-      if (ch in FIELD_CHARS) {
-        field[idx] = FIELD_CHARS[ch];
-        continue;
-      }
-      if (ch !== '#')
-        field[idx] = fieldAt(col, row - 1) || fieldAt(col - 1, row) || fieldAt(col + 1, row);
+      // Water and low-gravity zones are layers (see fieldsOf), not tiles
+      if (ch in FIELD_CHARS) continue;
       if (ch === 'P') {
         if (start) throw new Error(`${data.id}: more than one start (P)`);
         start = { col, row };

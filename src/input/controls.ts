@@ -54,6 +54,8 @@ class Controls {
     window.addEventListener('keydown', (e) => {
       const acts = KEYMAP[e.code];
       if (!acts) return;
+      // Typing in a dialog (a level name, a pasted link) is not playing
+      if (e.target instanceof Element && e.target.closest('dialog, input, textarea')) return;
       e.preventDefault();
       this.touchMode = false;
       if (e.repeat) return;

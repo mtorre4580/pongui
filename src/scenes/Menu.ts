@@ -72,7 +72,15 @@ export class Menu extends Phaser.Scene {
         size: 20,
       }),
     );
-    y += 52;
+    y += 48;
+    // Player-made levels: the editor (computers) and levels shared by link
+    buttons.push(
+      button(this, GAME_W / 2, y, t('menu.myLevels'), () => goTo(this, 'MyLevels'), {
+        w: 200,
+        color: 0x2a9d8f,
+      }),
+    );
+    y += 48;
     // Sound and language share a row
     const soundLabel = () => t(soundEnabled() ? 'menu.soundOn' : 'menu.soundOff');
     const sound = button(
@@ -98,25 +106,35 @@ export class Menu extends Phaser.Scene {
       { w: 180 },
     );
     buttons.push(sound, language);
-    if (canFullscreen()) {
-      y += 46;
-      buttons.push(
-        button(this, GAME_W / 2, y, t('menu.fullscreen'), () => void toggleFullscreen()),
-      );
-    }
+    // Fullscreen and install share the last row (each one alone is centered)
     y += 46;
+    const fullscreen = canFullscreen()
+      ? button(this, GAME_W / 2, y, t('menu.fullscreen'), () => void toggleFullscreen())
+      : null;
+    if (fullscreen) buttons.push(fullscreen);
     const install = button(this, GAME_W / 2, y, t('menu.install'), () => void promptInstall(), {
       color: 0x2a9d8f,
     });
     buttons.push(install);
 
-    const iosHint = text(this, GAME_W / 2, y, t('menu.iosHint'), 12, '#a9b8ff');
+    // Under the fullscreen button when it shows (iPad), in the install button's place otherwise
+    const iosHint = text(
+      this,
+      GAME_W / 2,
+      fullscreen ? y + 26 : y,
+      t('menu.iosHint'),
+      12,
+      '#a9b8ff',
+    );
     const refreshInstall = () => {
       const show = canInstall() && !isStandalone();
       install.setVisible(show);
       install.disableInteractive();
       if (show) install.setInteractive({ useHandCursor: true });
       iosHint.setVisible(!show && isIOS() && !isStandalone());
+      // Side by side when both show
+      fullscreen?.setX(show ? GAME_W / 2 - 96 : GAME_W / 2);
+      install.setX(fullscreen ? GAME_W / 2 + 96 : GAME_W / 2);
       this.group.setButtons(buttons.filter((b) => b.visible));
     };
     this.group = new ButtonGroup(buttons);

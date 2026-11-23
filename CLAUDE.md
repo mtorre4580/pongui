@@ -29,6 +29,7 @@ skip themselves while it is private and switch on when it becomes public.
 | Graphics | Vector textures generated at start-up | No image assets besides the app icons |
 | Audio | Web Audio synthesis (`src/audio/sfx.ts`) | No audio files |
 | i18n | Custom typed dictionaries in `src/i18n` | en (default), es, pt-BR; no dependencies |
+| QR codes | qrcode-generator | Only in the share dialog's lazy chunk |
 | Tests | Vitest (unit), Playwright + `@axe-core/playwright` (browser), Lighthouse CI | |
 | Lint / format | ESLint (typescript-eslint, type-aware) + Prettier | `@typescript-eslint/no-deprecated` is an error |
 | Git hooks | husky + commitlint (`@commitlint/config-conventional`) | `pre-push` runs `pnpm lint` and `pnpm test:run` |
@@ -38,7 +39,8 @@ skip themselves while it is private and switch on when it becomes public.
 
 ```bash
 pnpm install
-pnpm dev                # development server: landing at /, game at /play/ (?level=N opens a level)
+pnpm dev                # development server: landing at /, game at /play/ (?level=N opens a level,
+                        # ?c=CODE a shared level, ?editor=1 forces the editor on)
 pnpm build              # typecheck + production build with the service worker
 pnpm preview            # serve the build
 pnpm test               # Vitest in watch mode
@@ -77,7 +79,11 @@ src/
     level.ts           # level JSON → ParsedLevel
     physics.ts         # World: step(dt, input) → events
     solver.ts          # best-first search between bounces (level validation, demos)
-  scenes/              # Boot, Menu, LevelSelect, Game, Overlay (pause / complete / game over)
+    custom.ts          # player levels: draft checks, auto par, link codes (encode/decode)
+  custom/              # player levels in the browser: store.ts (`boinky:custom`), bot.ts +
+                       # bot.worker.ts (solver in a Web Worker), dialogs.ts (HTML dialogs), run.ts
+  scenes/              # Boot, Menu, LevelSelect, MyLevels, Game, Overlay (pause / complete /
+                       # game over), Editor (lazy chunk)
   gfx/                 # textures.ts (vector textures, baked layers), themes.ts (world colors), ui.ts
   input/controls.ts    # keyboard + touch (HTML buttons) + gamepad, one API
   audio/sfx.ts         # synthesized sound effects
@@ -211,6 +217,31 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
   under a low ceiling.
 - Switches flip on every bounce: a switch you must cross mid-route should sit between solid
   tiles so people can stop on them, and the lamp shows which color is solid.
+
+## Player levels (editor and sharing)
+
+- **Editor** (`scenes/Editor.ts`): computers only (`canCreate()`: fine pointer, 900 px wide, not
+  native; `?editor=1` forces it). It is a lazy chunk added to Phaser on first use (`openEditor`),
+  so phones never load it. Every tile of the ten worlds is in `PALETTE`; row 0 stays walls and
+  `paint()` keeps one start and one exit. Changes save at once (`boinky:custom`, mirrored to
+  native storage) with undo/redo.
+- **Verified** = the bot (the solver in a Web Worker, rerun 0.45 s after each change; a new run
+  replaces the old worker) beat this exact map *and* its creator beat it with "Test". Both are
+  keyed by `mapHash` (map + dark), so any edit clears them. The par comes from the bot
+  (`autoPar`, the official rule). Only verified levels can be shared by their creator.
+- **Sharing needs no server**: `encodeLevel` packs a level (version byte, theme, dark, par, name,
+  run-length map of rows 1–11, checksum) into base64url, ~100–300 characters. Links are
+  `play/?c=CODE` (the public `VITE_SITE_URL` in the native apps); the share dialog offers copy,
+  WhatsApp (`wa.me`), the system share sheet, and a QR code (also downloadable). `SYMBOLS` fixes
+  each map character's code: only append to it.
+- **Opening a link**: Boot decodes `?c=` (anything invalid is rejected: links come from anyone),
+  removes it from the address, keeps the level as "received" (deduplicated) and opens it in
+  "My levels", where the bot checks it again on that device. "Open a link" pastes a link or code
+  (the native apps cannot receive links yet: that needs universal / app links).
+- Text typed in dialogs never reaches the game: `controls` ignores keys from inputs and dialogs.
+  Phaser ignores key events whose default was prevented, so the editor listens on `window`.
+- Next step (not built): publishing to a shared catalog needs accounts, a database and moderation
+  (store rules for user content: report, block, filter).
 
 ## Landing page
 
@@ -347,7 +378,9 @@ play it, and update the README level count if it changes.
 
 **A tile or item**: add its code in `tiles.ts` (and map character), its behavior in
 `physics.ts` with unit tests, its texture in `gfx/textures.ts`, its rendering in `scenes/Game.ts`,
-its legend entry in `CONTRIBUTING.md`, and a level that introduces it.
+its legend entry in `CONTRIBUTING.md`, and a level that introduces it. For the editor: append its
+character to `SYMBOLS` (`game/custom.ts`), add it to `PALETTE` (`scenes/Editor.ts`) with a
+`tile.*` name in the three languages, and give it a color in `gfx/thumbnail.ts`.
 
 **A text**: add the key to `en.ts`, `es.ts` and `pt-BR.ts`, then use `t('key')`.
 
@@ -396,5 +429,7 @@ characters must stay unique across the game.
 - [x] World 9 — Shadow Keep: dark levels, phase blocks
 - [x] World 10 — Rainbow Summit: rainbow bridges and a remix of every mechanic
 - [x] Native apps — Capacitor iOS and Android projects (iOS verified in the simulator)
+- [x] Level editor (computers) and sharing by link, WhatsApp and QR code, with "My levels"
+- [ ] Publishing player levels to a shared catalog (accounts, database, moderation)
 - [ ] Store release (developer accounts, signing, store listings, privacy policy)
 - [ ] Public release (license, Pages deploy, CodeQL)
