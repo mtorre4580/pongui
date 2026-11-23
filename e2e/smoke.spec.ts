@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { BOSS_WORLDS } from '../src/levels/worlds';
 import { asReturningPlayer, expectScene, trackErrors } from './support';
 
 test('boots into the menu without errors', async ({ page }) => {
@@ -249,3 +250,51 @@ test('?boss= opens a boss the player has reached, and nothing else', async ({ pa
   await expectScene(page, 'Menu');
   expect(errors).toEqual([]);
 });
+
+// The way to each later boss: its world's page in the level list, then the boss button
+for (const world of BOSS_WORLDS.filter((n) => n > 1)) {
+  test(`the boss of world ${world} opens after its ten levels and guards the next world`, async ({
+    page,
+    isMobile,
+  }) => {
+    test.skip(isMobile, 'keyboard flow');
+    test.setTimeout(120_000);
+    const errors = trackErrors(page);
+    // Every level up to the end of this world beaten, and every boss before this one
+    await page.addInitScript((n) => {
+      const ids = Array.from(
+        { length: n * 10 },
+        (_, i) => `w${Math.floor(i / 10) + 1}-${String((i % 10) + 1).padStart(2, '0')}`,
+      );
+      const levels = Object.fromEntries(ids.map((id) => [id, { stars: 1, bestTime: 9 }]));
+      const bosses = Array.from({ length: n - 1 }, (_, i) => i + 1);
+      localStorage.setItem(
+        'pongui:save',
+        JSON.stringify({ unlocked: n * 10 - 1, levels, bosses, sound: false }),
+      );
+    }, world);
+    await page.goto('./play/');
+    await expectScene(page, 'Menu');
+    for (const key of ['Enter', 'Enter']) {
+      await page.keyboard.press(key);
+      await page.waitForTimeout(150);
+    }
+    await expectScene(page, 'LevelSelect');
+    // The list opens on the last world reached. From its first card: down a row, down to
+    // "back", right to the boss
+    for (const key of ['Enter', 'ArrowDown', 'ArrowDown', 'ArrowRight', 'Enter']) {
+      await page.keyboard.press(key);
+      await page.waitForTimeout(150);
+    }
+    await expectScene(page, 'Game');
+    await expect(page.locator('#game')).toHaveAttribute('aria-label', /.+/);
+    // Doing nothing: the boss wins, three times over
+    await expect(page.locator('body')).toHaveAttribute('data-scene', 'Overlay', {
+      timeout: 100_000,
+    });
+    const save = await page.evaluate(() => JSON.parse(localStorage.getItem('pongui:save')!));
+    expect(save.bosses).not.toContain(world);
+    expect(save.unlocked).toBe(world * 10 - 1);
+    expect(errors).toEqual([]);
+  });
+}
