@@ -14,6 +14,8 @@ import {
   RAMP_VX,
   ROWS,
   TILE,
+  UPDRAFT_LIFT,
+  UPDRAFT_VMAX,
   V_HIGH,
   V_LOW,
   V_SPRING,
@@ -40,6 +42,7 @@ export type WorldEvent =
   | { type: 'extinguish'; idxs: number[] }
   | { type: 'collect'; item: number; kind: ItemKind }
   | { type: 'exitOpen' }
+  | { type: 'wind'; inside: boolean }
   | { type: 'die'; cause: DeathCause }
   | { type: 'win' };
 
@@ -70,6 +73,8 @@ export interface WorldState {
   jumpBuffer: number;
   grace: number;
   surfaceY: number;
+  /** The ball's center is inside an updraft. */
+  wind: boolean;
 }
 
 interface Cell {
@@ -115,6 +120,7 @@ export class World {
       jumpBuffer: 0,
       grace: 0,
       surfaceY: 0,
+      wind: false,
     };
   }
 
@@ -138,7 +144,7 @@ export class World {
     for (let r = r0; r <= r1; r++) {
       for (let c = c0; c <= c1; c++) {
         const t = this.tileAt(c, r);
-        if (t === T.EMPTY) continue;
+        if (t === T.EMPTY || t === T.UPDRAFT) continue;
         const inside = c >= 0 && c < COLS && r >= 0 && r < ROWS;
         out.push({ c, r, idx: inside ? r * COLS + c : -1, t });
       }
@@ -319,12 +325,20 @@ export class World {
         s.vx = Math.abs(s.vx) <= d ? 0 : s.vx - Math.sign(s.vx) * d;
       }
     }
-    s.vy = Math.min(s.vy + GRAVITY * dt, MAX_FALL);
+    const r = Math.floor(s.y / TILE);
+    const wind = r >= 0 && this.tileAt(Math.floor(s.x / TILE), r) === T.UPDRAFT;
+    if (wind !== s.wind) {
+      s.wind = wind;
+      ev.push({ type: 'wind', inside: wind });
+    }
+    if (wind) s.vy = Math.max(s.vy - UPDRAFT_LIFT * dt, -UPDRAFT_VMAX);
+    else s.vy = Math.min(s.vy + GRAVITY * dt, MAX_FALL);
 
     // X axis
+    // Clouds never block sideways or from below
     if (s.vx !== 0) {
       s.x += s.vx * dt;
-      const cells = this.overlaps();
+      const cells = this.overlaps().filter((c) => c.t !== T.CLOUD);
       if (cells.length) {
         const blocking = this.resolveContacts(cells, false, ev);
         if (!blocking) return ev;
@@ -338,8 +352,12 @@ export class World {
     }
 
     // Y axis
+    const prevBottom = s.y + BALL_R;
     s.y += s.vy * dt;
-    const cells = this.overlaps();
+    // A cloud only catches the ball if it was above the cloud's top before this step
+    const cells = this.overlaps().filter(
+      (c) => c.t !== T.CLOUD || (s.vy > 0 && prevBottom <= c.r * TILE + 0.01),
+    );
     if (cells.length) {
       if (s.vy > 0) {
         const row = Math.min(...cells.map((c) => c.r));
