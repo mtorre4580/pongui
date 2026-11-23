@@ -7,6 +7,7 @@ import type { Bird } from '../src/bosses/w3-squall';
 import { SWITCH, type Robot } from '../src/bosses/w4-sprocket';
 import type { Octopus } from '../src/bosses/w5-inkwell';
 import { LEDGES, type Giant } from '../src/bosses/w6-flurry';
+import type { Dragon } from '../src/bosses/w7-cinder';
 import { BossFight, MIN_WARN, seeded, type BossBrain, type BossDef } from '../src/game/boss';
 import { BALL_R, COLS, STEP, TILE, V_LOW } from '../src/game/constants';
 import { World, type InputState } from '../src/game/physics';
@@ -901,6 +902,135 @@ describe('Flurry (world 6)', () => {
   });
 });
 
+describe('Cinder (world 7)', () => {
+  const { def } = BOSSES[7];
+  const brain = (f: BossFight) => f.brain as Dragon;
+  const FLOOR_ROW = 11 * COLS;
+  const LEDGE_TOP = 8 * TILE;
+
+  it('lets the ball pass under it with low bounces, and burns one that bounces high there', () => {
+    const low = fightOf(7);
+    // Kept right under it for three seconds, with its fire held back
+    for (let i = 0; i < 3 / STEP; i++) {
+      // (over plain rock, away from the vents)
+      low.f.boss.x = 250;
+      low.s.x = 250;
+      brain(low.f).turns = -9;
+      low.f.step(STEP, idle);
+    }
+    expect(low.s.status).toBe('playing');
+    const high = fightOf(7);
+    for (let i = 0; i < 3 / STEP && high.s.status === 'playing'; i++) {
+      high.f.boss.x = 250;
+      high.s.x = 250;
+      brain(high.f).turns = -9;
+      high.f.step(STEP, { ...idle, jump: true });
+    }
+    expect(high.s.status).toBe('dead');
+    expect(high.f.boss.hp).toBe(def.hp);
+  });
+
+  it('is hit by a high bounce from a ledge, and then flies away fast', () => {
+    const { f, s } = fightOf(7);
+    f.boss.x = 230;
+    f.boss.dir = -1;
+    Object.assign(s, { x: 122, y: LEDGE_TOP - BALL_R - 1, vx: 0, vy: 100 });
+    let hit = false;
+    for (let i = 0; i < 2 / STEP && !hit && s.status === 'playing'; i++) {
+      brain(f).turns = -9;
+      const over = s.y + BALL_R < f.box[1] - 2;
+      hit = f
+        .step(STEP, { ...idle, jump: true, right: over && s.x < f.boss.x })
+        .boss.some((e) => e.type === 'boss-hit');
+    }
+    expect(hit).toBe(true);
+    // The ball lands; the dragon wakes and leaves at well over its speed
+    for (let i = 0; i < 3 / STEP && f.dazed; i++) f.step(STEP, { ...idle, left: s.x > 100 });
+    expect(f.dazed).toBe(false);
+    const x0 = f.boss.x;
+    for (let i = 0; i < 0.5 / STEP; i++) {
+      brain(f).turns = -9;
+      f.step(STEP, { ...idle, left: s.x > 100 });
+    }
+    expect(f.boss.x - x0).toBeGreaterThan(def.speeds[1] * 0.5 * 2);
+  });
+
+  it('spits fire as the vents go dark: announced, deadly, and it cracks the rock it lands on', () => {
+    const still = fightOf(7);
+    const col = Math.floor(still.s.x / TILE);
+    const events = still.run(12, () => still.f.shots.length > 0);
+    expect(events).toContainEqual(expect.objectContaining({ type: 'boss-warn', kind: 'fire' }));
+    // The warning came as the vents went dark
+    expect(still.f.warns).toHaveLength(0);
+    expect(still.s.ticks % 360).toBe(Math.round(def.fireWarn / STEP));
+    still.run(3);
+    expect(still.s.status).toBe('dead');
+    // Stepping two tiles away: the fire lands, and the tile it hit is cracked
+    const moved = fightOf(7);
+    const x0 = moved.s.x;
+    let landed = false;
+    for (let i = 0; i < 12 / STEP && !landed && moved.s.status === 'playing'; i++) {
+      const goal = moved.f.warns.length || moved.f.shots.length ? x0 + 64 : x0;
+      landed = moved.f
+        .step(STEP, { ...idle, left: moved.s.x > goal + 3, right: moved.s.x < goal - 3 })
+        .boss.some((e) => e.type === 'boss-shot-end');
+    }
+    expect(landed).toBe(true);
+    expect(moved.s.status).toBe('playing');
+    expect(moved.s.tiles[FLOOR_ROW + col]).toBe(T.CRUMBLE);
+  });
+
+  it('leaves rock that holds one more bounce and then is gone for good', () => {
+    const { f, s } = fightOf(7);
+    const idx = FLOOR_ROW + 3;
+    f.setTile(idx, T.CRUMBLE);
+    Object.assign(s, { x: 3 * TILE + 16, y: def.floorY - BALL_R - 1, vx: 0, vy: 100 });
+    for (let i = 0; i < 0.3 / STEP; i++) {
+      brain(f).turns = -9;
+      f.step(STEP, idle);
+    }
+    // It held the bounce and is on its way out
+    expect(s.status).toBe('playing');
+    expect(s.tiles[idx]).toBe(T.CRUMBLE);
+    for (let i = 0; i < 2 / STEP && s.status === 'playing'; i++) {
+      brain(f).turns = -9;
+      f.step(STEP, idle);
+    }
+    expect(s.tiles[idx]).toBe(T.EMPTY);
+    expect(s.status).toBe('dead');
+  });
+
+  it('never cracks the vents, and aims no fire over a hole', () => {
+    const { f, s, run } = fightOf(7);
+    // The ball over a vent: the fire lands on it and leaves it as it was
+    const vent = FLOOR_ROW + 6;
+    expect(s.tiles[vent]).toBe(T.VENT);
+    f.grab = { x: 6 * TILE + 16, y: 200, need: Infinity, wiggles: 0, last: 0 };
+    let ends = 0;
+    for (let i = 0; i < 14 / STEP && ends < 1; i++)
+      ends += f.step(STEP, idle).boss.filter((e) => e.type === 'boss-shot-end').length;
+    expect(ends).toBe(1);
+    expect(s.tiles[vent]).toBe(T.VENT);
+    // The ball held over a hole: nothing to aim at
+    f.grab = null;
+    f.setTile(FLOOR_ROW + 8, T.EMPTY);
+    const events = run(13, undefined, { x: 8 * TILE + 16, y: 200 });
+    expect(events.some((e) => e.type === 'boss-warn')).toBe(false);
+  });
+
+  it('flies faster and spits more with each phase', () => {
+    expect([...def.speeds]).toEqual([...def.speeds].sort((a, b) => a - b));
+    expect([...def.fireCount]).toEqual([...def.fireCount].sort((a, b) => a - b));
+    expect(def.fireWarn).toBeGreaterThanOrEqual(MIN_WARN);
+    // Its head is over a high bounce from the floor and under one from a ledge
+    const head = def.fly + def.height;
+    expect(head).toBeGreaterThan(115 + 8);
+    expect(head).toBeLessThan(3 * TILE + 115);
+    // And its turns stop short of a ball standing on a ledge
+    expect(def.minX - def.width / 2).toBeGreaterThan(4 * TILE + BALL_R);
+  });
+});
+
 // The frame every boss shares, with a boss that does only what each test tells it to
 describe('boss engine', () => {
   const ROOM = [
@@ -1104,6 +1234,20 @@ describe('boss engine', () => {
     s.y = f.def.floorY - 30;
     run(f, 0.2);
     expect(s.status).toBe('dead');
+  });
+
+  it('shoves the ball off its head when a landing does no damage, if the boss says so', () => {
+    for (const shove of [undefined, 140]) {
+      const f = make({}, { shove });
+      const s = f.world.s;
+      f.boss.armor = true;
+      Object.assign(s, { x: f.boss.x + 5, y: f.box[1] - BALL_R - 1, vy: 400 });
+      expect(f.step(STEP, idle).boss).toEqual([{ type: 'boss-bonk' }]);
+      // Left alone, the ball comes down beside it instead of on its head again
+      for (let i = 0; i < 0.9 / STEP; i++) f.step(STEP, idle);
+      if (shove) expect(s.x).toBeGreaterThan(f.box[2] + BALL_R);
+      else expect(s.x).toBe(f.boss.x + 5);
+    }
   });
 
   it('clears shots and warnings on a hit and tells the brain', () => {

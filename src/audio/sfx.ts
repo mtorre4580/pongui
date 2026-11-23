@@ -272,4 +272,12 @@ const BOSS_FX: Record<string, (() => void) | undefined> = {
     noise(0.3, 0.4, 4200, 0.8, 0, 'highpass');
     noise(0.2, 0.4, 120, 0.8);
   },
+  // Cinder: fire spat up, whistling down and landing, and rock cracking under it
+  spit: () => {
+    noise(0.3, 0.35, 900, 0.7);
+    tone(200, 500, 0.3, 'sawtooth', 0.1);
+  },
+  'shot-fire': () => tone(1400, 500, 0.45, 'sine', 0.06),
+  'end-fire': () => noise(0.2, 0.35, 500, 0.8, 0, 'lowpass'),
+  crack: () => [0, 0.05, 0.11].forEach((d) => noise(0.04, 0.3, 2600, 3, d)),
 };

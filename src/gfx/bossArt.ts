@@ -324,6 +324,56 @@ const ART: Record<number, BossArt> = {
       }
     },
   },
+  // Cinder: a stout dragon of dark rock with glowing cracks, small wings and a jaw of embers
+  7: {
+    top: 20,
+    side: 34,
+    draw(g, W, H) {
+      const TOP = 20;
+      const rock = { body: 0x7a2e1d, dark: 0x4a1a12, glow: 0xff7b1c, hot: 0xffd166 };
+      // Wings, behind the body
+      g.fillStyle(rock.dark, 1);
+      g.fillTriangle(10, TOP + H * 0.25, -34, TOP - 10, -10, TOP + H * 0.7);
+      g.fillTriangle(W - 10, TOP + H * 0.25, W + 34, TOP - 10, W + 10, TOP + H * 0.7);
+      g.fillStyle(rock.glow, 1);
+      g.fillTriangle(6, TOP + H * 0.3, -22, TOP + 4, -6, TOP + H * 0.6);
+      g.fillTriangle(W - 6, TOP + H * 0.3, W + 22, TOP + 4, W + 6, TOP + H * 0.6);
+      // Horns
+      g.fillStyle(rock.hot, 1);
+      g.fillTriangle(W * 0.14, TOP + 10, W * 0.3, TOP + 10, W * 0.16, 0);
+      g.fillTriangle(W * 0.86, TOP + 10, W * 0.7, TOP + 10, W * 0.84, 0);
+      // Body
+      g.fillStyle(rock.dark, 1).fillRoundedRect(0, TOP, W, H, 34);
+      g.fillStyle(rock.body, 1).fillRoundedRect(0, TOP, W - 10, H - 10, 34);
+      // Glowing cracks
+      g.lineStyle(5, rock.glow, 1);
+      g.lineBetween(W * 0.1, TOP + H * 0.62, W * 0.26, TOP + H * 0.74);
+      g.lineBetween(W * 0.26, TOP + H * 0.74, W * 0.2, TOP + H * 0.9);
+      g.lineBetween(W * 0.82, TOP + H * 0.14, W * 0.7, TOP + H * 0.24);
+      // Belly
+      g.fillStyle(rock.hot, 1).fillEllipse(W * 0.48, TOP + H * 0.86, W * 0.5, H * 0.2);
+      // Eyes like coals under heavy brows
+      const eyeY = TOP + H * 0.34;
+      g.fillStyle(rock.hot, 1)
+        .fillEllipse(W * 0.3, eyeY, 30, 24)
+        .fillEllipse(W * 0.68, eyeY, 30, 24);
+      g.fillStyle(C.ink, 1)
+        .fillEllipse(W * 0.3, eyeY + 2, 8, 20)
+        .fillEllipse(W * 0.68, eyeY + 2, 8, 20);
+      g.fillStyle(rock.dark, 1);
+      g.fillTriangle(W * 0.12, eyeY - 22, W * 0.46, eyeY - 8, W * 0.14, eyeY - 8);
+      g.fillTriangle(W * 0.86, eyeY - 22, W * 0.52, eyeY - 8, W * 0.84, eyeY - 8);
+      // A jaw full of embers
+      const mouthY = TOP + H * 0.56;
+      g.fillStyle(C.ink, 1).fillRoundedRect(W * 0.16, mouthY, W * 0.66, 26, 10);
+      g.fillStyle(rock.glow, 1).fillRoundedRect(W * 0.22, mouthY + 12, W * 0.54, 12, 6);
+      g.fillStyle(C.white, 1);
+      for (let i = 0; i < 5; i++) {
+        const x = W * 0.2 + i * W * 0.12;
+        g.fillTriangle(x, mouthY, x + W * 0.1, mouthY, x + W * 0.05, mouthY + 11);
+      }
+    },
+  },
 };
 
 /** A round shot: a ball of one color with a lighter core. */
@@ -389,6 +439,14 @@ const SHOTS: Record<string, ShotArt> = {
     },
   },
   snow: orb(0xc7e3f7, 0xffffff),
+  // A drop of fire, point up
+  fire: {
+    draw(g, w, h) {
+      g.fillStyle(0xff7b1c, 1).fillEllipse(w / 2, h * 0.64, w, h * 0.72);
+      g.fillTriangle(w * 0.14, h * 0.5, w * 0.86, h * 0.5, w / 2, 0);
+      g.fillStyle(0xffd166, 1).fillEllipse(w / 2, h * 0.68, w * 0.5, h * 0.42);
+    },
+  },
 };
 
 /** The color (and shape) of each kind of warning. */
@@ -405,6 +463,7 @@ const WARNS: Record<string, WarnArt> = {
   snow: { color: 0xffffff, shape: 'spot' },
   charge: { color: 0xff5964 },
   stomp: { color: 0x7ad7f0 },
+  fire: { color: 0xff7b1c, shape: 'spot' },
   'gust-left': { color: 0xffffff, shape: 'wind', dir: -1, soft: true },
   'gust-right': { color: 0xffffff, shape: 'wind', dir: 1, soft: true },
   'blow-left': { color: 0xffffff, shape: 'wind', dir: -1 },

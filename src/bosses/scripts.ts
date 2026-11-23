@@ -203,6 +203,87 @@ const flurry: BossScript = () => (f) => {
   return { jump: false, ...steer(s.x, around(f, ['snow'], inner + out * 50, 28)) };
 };
 
+/**
+ * A player that plans one bounce at a time, like a person hopping over bad ground: at each
+ * bounce it picks where to come down next, within a low bounce's reach, and steers there for
+ * the whole flight. `cost` says how bad a landing spot is; nearer to `target` is better.
+ */
+function hopper(cost: (f: BossFight, x: number) => number) {
+  let spot: number | null = null;
+  let vy = 0;
+  return (f: BossFight, target: number) => {
+    const s = f.world.s;
+    const bounced = vy > 0 && s.vy < 0;
+    vy = s.vy;
+    if (spot === null || bounced) {
+      let best = Infinity;
+      for (const d of [0, -0.5, 0.5, -1, 1]) {
+        const x = s.x + d * 62;
+        const c = cost(f, x) + Math.abs(x - target);
+        if (c < best) [best, spot] = [c, x];
+      }
+    }
+    return steer(s.x, spot ?? s.x, 2);
+  };
+}
+
+/**
+ * Cinder: keep to one side of the dragon, hopping between whole tiles and away from where
+ * fire is about to land. When the dragon turns back towards that side, bounce high from the
+ * floor beside the ledge onto the ledge, and from the ledge onto its head as it comes within
+ * reach.
+ */
+const cinder: BossScript = () => {
+  // How bad it is to come down at x: holes, lit vents, cracked rock, fire on its way
+  const hop = hopper((f, x) => {
+    const s = f.world.s;
+    const idx = 11 * 20 + Math.floor(x / 32);
+    const tile = s.tiles[idx];
+    // Vents are lit during the second half of their 360 steps; the ball lands in about 60
+    const lit = (s.ticks + 60) % 360 >= 165;
+    // Cracked rock (25) holds one more bounce, unless it is already crumbling
+    const cracked = tile === 25 && s.hits[idx] === 0;
+    const ground = tile === 1 ? 0 : tile === 26 && !lit ? 60 : cracked ? 800 : 1e6;
+    const fire = [...f.warns, ...f.shots].some((w) => w.kind === 'fire' && Math.abs(w.x - x) < 28);
+    // The tiles beside the ledges are for bouncing up from: not for waiting on (fire follows
+    // the ball, and they would be the next to crack)
+    const col = Math.floor(x / 32);
+    const kept = !climbing && [4, 5, 14, 15].includes(col) ? 150 : 0;
+    return ground + kept + (fire ? 1e5 : 0);
+  });
+  let climbing = false;
+  return (f) => {
+    const s = f.world.s;
+    const { boss } = f;
+    if (!f.dazed && canStomp(f)) return { jump: false, ...steer(s.x, boss.x) };
+    // Everything below is worked out as if the ball were on the left side: `flip` mirrors it
+    const mirror = s.x > boss.x;
+    const flip = (x: number) => (mirror ? 640 - x : x);
+    const X = flip(s.x);
+    const bossX = flip(boss.x);
+    const towards = (mirror ? -boss.dir : boss.dir) < 0;
+    const top = 8 * 32; // the top of the ledge (its cells go from x = 64 to x = 128)
+    const bottom = s.y + BALL_R;
+    const whole = (col: number) => s.tiles[11 * 20 + (mirror ? 19 - col : col)] === 1;
+    if (bottom <= top + 1 && X > 54 && X < 138) {
+      // On the ledge: out from under fire first; then to its edge, and up when the dragon is
+      // within a high bounce of it
+      const reach = !f.dazed && bossX < 262;
+      const goal = around(f, ['fire'], flip(reach ? 124 : 104), 26);
+      return { jump: reach && goal === flip(124), ...steer(s.x, goal) };
+    }
+    // Up to the ledge while the dragon is still on its way: never a high bounce under its belly
+    const launch = whole(4) ? 148 : whole(5) ? 168 : 0;
+    climbing = !f.dazed && towards && bossX > 250 && launch > 0;
+    // Over the ledge's top: onto it
+    if (climbing && bottom < top - 2 && X < 190) return { jump: false, ...steer(s.x, flip(112)) };
+    // Hop to the floor beside the ledge (and bounce high there), or wait a few tiles away
+    // (with no floor left beside this ledge, under the dragon to the other side)
+    const keys = hop(f, flip(climbing ? launch : launch ? 250 : 420));
+    return { jump: climbing && Math.abs(X - launch) < 14, ...keys };
+  };
+};
+
 export const SCRIPTS: Record<number, BossScript> = {
   1: grumble,
   2: serpstone,
@@ -210,4 +291,5 @@ export const SCRIPTS: Record<number, BossScript> = {
   4: sprocket,
   5: inkwell,
   6: flurry,
+  7: cinder,
 };
