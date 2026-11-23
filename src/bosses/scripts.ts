@@ -5,6 +5,7 @@
 import type { BossFight } from '../game/boss';
 import { BALL_R, GRAVITY, MAX_VX } from '../game/constants';
 import type { Serpent } from './w2-serpstone';
+import type { Giant } from './w6-flurry';
 import type { InputState } from '../game/physics';
 
 /** What the script wants held right now (`jumpPressed` is left to whoever presses the keys). */
@@ -170,10 +171,43 @@ const inkwell: BossScript = () => {
   };
 };
 
+/**
+ * Flurry: stay on the floor near the ledge by the far wall, stepping away from the snowballs
+ * (they leave the ice it will slip on). After its last snowball, bounce high beside the ledge
+ * and land on it softly. When it has slid into the wall, walk off the ledge onto its head.
+ */
+const flurry: BossScript = () => (f) => {
+  const s = f.world.s;
+  const { boss } = f;
+  const giant = f.brain as Giant;
+  const top = 8 * 32; // the top of the ledges
+  // The ledge by the wall it will run to: its outer and inner edges
+  const left = boss.dir < 0;
+  const [outer, inner] = left ? [128, 224] : [512, 416];
+  const out = left ? 1 : -1; // from that ledge towards the middle of the arena
+  const onLedge = s.y + BALL_R <= top + 1 && (s.x - outer) * out > -8 && (s.x - inner) * out < 8;
+  if (giant.mode === 'sit' && !f.dazed) {
+    if (canStomp(f) || onLedge) return { jump: false, ...steer(s.x, boss.x) };
+    return { jump: true, ...steer(s.x, boss.x + out * 60) };
+  }
+  // On the ledge: wait in its middle (never holding jump: thin ice)
+  if (onLedge) return { jump: false, ...steer(s.x, (outer + inner) / 2) };
+  // Time to climb: no snowballs left to come
+  const climb = giant.mode !== 'throw' || giant.left === 0;
+  if (climb) {
+    // Over the ledge's top: onto it. Otherwise a high bounce from just past its inner edge
+    if (s.y + BALL_R < top - 2) return { jump: false, ...steer(s.x, inner - out * 30) };
+    return { jump: true, ...steer(s.x, inner + out * 16) };
+  }
+  // Snowballs: on the floor, a little further out
+  return { jump: false, ...steer(s.x, around(f, ['snow'], inner + out * 50, 28)) };
+};
+
 export const SCRIPTS: Record<number, BossScript> = {
   1: grumble,
   2: serpstone,
   3: squall,
   4: sprocket,
   5: inkwell,
+  6: flurry,
 };

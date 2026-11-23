@@ -49,6 +49,7 @@ export const en = {
   'boss.3': 'Squall',
   'boss.4': 'Sprocket',
   'boss.5': 'Inkwell',
+  'boss.6': 'Flurry',
   'select.boss': 'Boss: {name}',
   'select.bossLocked': 'Finish the ten levels to face the boss',
   'select.lockedBoss': 'Beat the boss of world {n} to open this one',
@@ -61,6 +62,8 @@ export const en = {
     'Bounce on the switch: its shield drops and the bridge closes. Cross it and land on its head!',
   'game.bossHint.5':
     'Caught? Shake left and right to get loose! Then bounce high and land on its head.',
+  'game.bossHint.6':
+    'Its snowballs leave ice. Wait on a ledge when it charges: if it slips, land on its head!',
   'overlay.toBoss': 'Face the boss',
   'overlay.bossDown': 'Boss defeated!',
   'overlay.bossDownText': 'World {n} is open.',

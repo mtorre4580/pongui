@@ -268,7 +268,71 @@ const ART: Record<number, BossArt> = {
       arm(W + 10, TOP + H * 0.42, -Math.PI * 0.58, -0.2, 11);
     },
   },
+  // Flurry: a giant of packed snow with icicles for a crown and a beard. 'run': teeth bared;
+  // 'slip': wide eyes; 'sit': dizzy rings for eyes
+  6: {
+    top: 22,
+    side: 12,
+    draw(g, W, H, pose) {
+      const TOP = 22;
+      const snow = { body: 0xeaf6ff, dark: 0x9cc4e4, shade: 0xc7e3f7, ice: 0x7ad7f0 };
+      // A crown of icicles
+      g.fillStyle(snow.ice, 1);
+      for (let i = 0; i < 4; i++) {
+        const x = W * 0.16 + i * W * 0.2;
+        g.fillTriangle(x, TOP + 8, x + W * 0.14, TOP + 8, x + W * 0.07, i % 2 ? 2 : 8);
+      }
+      // Arms
+      g.fillStyle(snow.dark, 1)
+        .fillCircle(-2, TOP + H * 0.56, 16)
+        .fillCircle(W + 2, TOP + H * 0.56, 16);
+      // Body: two heaps of snow
+      g.fillStyle(snow.dark, 1).fillRoundedRect(0, TOP, W, H, 26);
+      g.fillStyle(snow.body, 1).fillRoundedRect(0, TOP, W - 8, H - 8, 26);
+      g.fillStyle(snow.shade, 1).fillEllipse(W * 0.46, TOP + H * 0.86, W * 0.7, H * 0.2);
+      const eyeY = TOP + H * 0.3;
+      if (pose === 'sit') {
+        g.lineStyle(4, C.ink, 1)
+          .strokeCircle(W * 0.3, eyeY, 9)
+          .strokeCircle(W * 0.66, eyeY, 9);
+      } else {
+        const r = pose === 'slip' ? 11 : 8;
+        g.fillStyle(C.ink, 1)
+          .fillCircle(W * 0.3, eyeY, r)
+          .fillCircle(W * 0.66, eyeY, r);
+        g.fillStyle(C.white, 1)
+          .fillCircle(W * 0.32, eyeY - 3, 3)
+          .fillCircle(W * 0.68, eyeY - 3, 3);
+        if (pose !== 'slip') {
+          g.fillStyle(snow.dark, 1);
+          g.fillTriangle(W * 0.12, eyeY - 20, W * 0.44, eyeY - 8, W * 0.14, eyeY - 8);
+          g.fillTriangle(W * 0.84, eyeY - 20, W * 0.52, eyeY - 8, W * 0.82, eyeY - 8);
+        }
+      }
+      // Mouth, and a beard of icicles under it
+      const mouthY = TOP + H * 0.5;
+      const wide = pose === 'run' || pose === 'slip';
+      g.fillStyle(C.ink, 1).fillRoundedRect(W * 0.24, mouthY, W * 0.48, wide ? 18 : 8, 4);
+      if (pose === 'run') {
+        g.fillStyle(C.white, 1);
+        for (let i = 0; i < 4; i++) g.fillRect(W * 0.27 + i * W * 0.11, mouthY + 2, 7, 7);
+      }
+      g.fillStyle(snow.ice, 1);
+      for (let i = 0; i < 3; i++) {
+        const x = W * 0.24 + i * W * 0.16;
+        g.fillTriangle(x, mouthY + 22, x + W * 0.14, mouthY + 22, x + W * 0.07, mouthY + 40);
+      }
+    },
+  },
 };
+
+/** A round shot: a ball of one color with a lighter core. */
+const orb = (color: number, core: number): ShotArt => ({
+  draw(g, w, h) {
+    g.fillStyle(color, 1).fillEllipse(w / 2, h / 2, w, h);
+    g.fillStyle(core, 1).fillEllipse(w * 0.42, h * 0.4, w * 0.5, h * 0.5);
+  },
+});
 
 /** What bosses throw, by the shot's kind. */
 const SHOTS: Record<string, ShotArt> = {
@@ -324,6 +388,7 @@ const SHOTS: Record<string, ShotArt> = {
       g.fillStyle(0xcdb8ff, 0.9).fillEllipse(w * 0.36, h * 0.32, w * 0.22, h * 0.16);
     },
   },
+  snow: orb(0xc7e3f7, 0xffffff),
 };
 
 /** The color (and shape) of each kind of warning. */
@@ -337,19 +402,14 @@ const WARNS: Record<string, WarnArt> = {
   reach: { color: 0xd65db1 },
   grab: { color: 0x9b3d86 },
   ink: { color: 0x5a3e9b, shape: 'spot' },
+  snow: { color: 0xffffff, shape: 'spot' },
+  charge: { color: 0xff5964 },
+  stomp: { color: 0x7ad7f0 },
   'gust-left': { color: 0xffffff, shape: 'wind', dir: -1, soft: true },
   'gust-right': { color: 0xffffff, shape: 'wind', dir: 1, soft: true },
   'blow-left': { color: 0xffffff, shape: 'wind', dir: -1 },
   'blow-right': { color: 0xffffff, shape: 'wind', dir: 1 },
 };
-
-/** A round shot: a ball of one color with a lighter core. */
-export const orb = (color: number, core: number): ShotArt => ({
-  draw(g, w, h) {
-    g.fillStyle(color, 1).fillEllipse(w / 2, h / 2, w, h);
-    g.fillStyle(core, 1).fillEllipse(w * 0.42, h * 0.4, w * 0.5, h * 0.5);
-  },
-});
 
 export const artOf = (world: number): BossArt => ART[world] ?? ART[1];
 export const warnArt = (kind: string): WarnArt => WARNS[kind] ?? { color: 0xff5964 };
