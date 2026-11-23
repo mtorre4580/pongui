@@ -87,6 +87,10 @@ test('the privacy page is linked from the footer and has no WCAG 2.2 AA violatio
     'href',
     'https://www.youtube.com/@playpongui',
   );
+  await expect(page.getByRole('link', { name: 'TikTok' })).toHaveAttribute(
+    'href',
+    'https://www.tiktok.com/@playpongui',
+  );
   await expect(page.getByRole('link', { name: 'itch.io' })).toHaveAttribute(
     'href',
     'https://pongui.itch.io/pongui',
