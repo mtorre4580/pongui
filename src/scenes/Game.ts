@@ -13,7 +13,7 @@ import {
 } from '../game/constants';
 import type { ParsedLevel } from '../game/level';
 import { World, type WorldEvent } from '../game/physics';
-import { isStatic, T } from '../game/tiles';
+import { isStatic, isToggle, T } from '../game/tiles';
 import { bakeSolids, C, drawBackground, sparkTexture } from '../gfx/textures';
 import { themeOf, type Theme } from '../gfx/themes';
 import { setupCamera, text } from '../gfx/ui';
@@ -50,6 +50,11 @@ const TILE_TEX: Record<number, string> = {
   [T.MOSS]: 'moss',
   [T.CLOUD]: 'cloud',
   [T.UPDRAFT]: 'updraft',
+  [T.SWITCH]: 'switch-off',
+  [T.BLOCK_A]: 'blockA',
+  [T.BLOCK_B]: 'blockB',
+  [T.PUSH_L]: 'pushL',
+  [T.PUSH_R]: 'pushR',
 };
 // Particle colors per tile (solid blocks use the world's color)
 const TILE_COLOR: Record<number, number> = {
@@ -64,6 +69,11 @@ const TILE_COLOR: Record<number, number> = {
   [T.LOCK]: C.key,
   [T.MOSS]: C.mossTop,
   [T.CLOUD]: C.cloud,
+  [T.SWITCH]: C.gearTop,
+  [T.BLOCK_A]: C.blockA,
+  [T.BLOCK_B]: C.blockB,
+  [T.PUSH_L]: C.pusherLight,
+  [T.PUSH_R]: C.pusherLight,
 };
 
 export class Game extends Phaser.Scene {
@@ -86,6 +96,9 @@ export class Game extends Phaser.Scene {
   private solidsVersion = 0;
   private tileSprites = new Map<number, Phaser.GameObjects.Image>();
   private flames = new Map<number, Phaser.GameObjects.Image>();
+  /** Blocks that open and close during play: their solid texture key and sprite. */
+  private toggles: { idx: number; tex: string; img: Phaser.GameObjects.Image }[] = [];
+  private switches: Phaser.GameObjects.Image[] = [];
   private itemSprites: (Phaser.GameObjects.Image | null)[] = [];
   private exitSprite!: Phaser.GameObjects.Image;
   private ball!: Phaser.GameObjects.Container;
@@ -120,6 +133,8 @@ export class Game extends Phaser.Scene {
     this.solids = undefined as unknown as Phaser.GameObjects.Image;
     this.tileSprites.clear();
     this.flames.clear();
+    this.toggles = [];
+    this.switches = [];
     this.bursts.clear();
     this.itemSprites = [];
     this.hudHearts = [];
@@ -187,12 +202,16 @@ export class Game extends Phaser.Scene {
         if (above !== T.EMPTY && below === T.EMPTY) img.setFlipY(true);
       }
       if (t === T.SPRING) img.setOrigin(0.5, 1).setY((r + 1) * TILE + OY);
+      if (isToggle(t)) this.toggles.push({ idx, tex, img });
+      if (t === T.SWITCH) this.switches.push(img);
       this.tileSprites.set(idx, img);
       if (t === T.FIRE) {
         const fl = this.add
           .image(c * TILE + TILE / 2, r * TILE + OY + 6, 'flame')
           .setOrigin(0.5, 1)
-          .setScale(0.5, 0.5);
+          .setScale(0.5, 0.5)
+          // Behind the tiles: blocks that close over a fire pit hide its flames
+          .setDepth(-1);
         this.tweens.add({
           targets: fl,
           scaleY: { from: 0.42, to: 0.6 },
@@ -206,6 +225,19 @@ export class Game extends Phaser.Scene {
       }
     }
     this.buildWind();
+    this.syncToggles(false);
+  }
+
+  /** Shows each toggle block as solid or as an outline, following the world. */
+  private syncToggles(fx = true) {
+    for (const tg of this.toggles) {
+      const open = this.world.isOpen(this.world.s.tiles[tg.idx], tg.idx);
+      const key = open ? `${tg.tex}-open` : tg.tex;
+      if (tg.img.texture.key === key) continue;
+      tg.img.setTexture(key);
+      if (fx && !open)
+        this.tweens.add({ targets: tg.img, scale: { from: 0.42, to: 0.5 }, duration: 120 });
+    }
   }
 
   /** One particle emitter for every updraft tile: streaks of air rising through the columns. */
@@ -452,6 +484,7 @@ export class Game extends Phaser.Scene {
         if (ev.length) this.handle(ev);
         this.acc -= STEP;
       }
+      if (this.toggles.length) this.syncToggles();
       this.hudTime.setText(s.time.toFixed(1));
     }
     this.renderBall(deltaMs / 1000);
@@ -513,7 +546,7 @@ export class Game extends Phaser.Scene {
           controls.disarmJump();
           // Low bounces happen constantly: only the bigger ones vibrate on phones
           if (e.kind === 'spring' || e.kind === 'ramp') haptic('medium');
-          else if (e.kind === 'high') haptic('light');
+          else if (e.kind === 'high' || e.kind === 'push') haptic('light');
           const t = e.idx >= 0 ? this.level.tiles[e.idx] : T.SOLID;
           this.burst(
             TILE_COLOR[t] ?? this.theme.solidTop,
@@ -525,7 +558,7 @@ export class Game extends Phaser.Scene {
           const spr = this.tileSprites.get(e.idx);
           if (spr && e.kind === 'spring')
             this.tweens.add({ targets: spr, scaleY: 0.32, duration: 70, yoyo: true });
-          else if (spr && e.kind === 'ramp')
+          else if (spr && (e.kind === 'ramp' || e.kind === 'push'))
             this.tweens.add({ targets: spr, alpha: 0.6, duration: 80, yoyo: true });
           break;
         }
@@ -647,6 +680,15 @@ export class Game extends Phaser.Scene {
           break;
         case 'wind':
           if (e.inside) sfx.wind();
+          break;
+        case 'switch':
+          sfx.switch(e.on);
+          haptic('light');
+          for (const spr of this.switches) {
+            spr.setTexture(e.on ? 'switch-on' : 'switch-off');
+            this.tweens.add({ targets: spr, scaleY: 0.44, duration: 60, yoyo: true });
+          }
+          this.syncToggles();
           break;
         case 'die':
           haptic('error');
