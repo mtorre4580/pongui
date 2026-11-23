@@ -208,7 +208,8 @@ export class Game extends Phaser.Scene {
       const img = this.add.image(c * TILE + TILE / 2, r * TILE + TILE / 2 + OY, tex).setScale(0.5);
       if (t === T.SPIKE) {
         const above = r > 0 ? tiles[idx - COLS] : T.SOLID;
-        const below = r < ROWS - 1 ? tiles[idx + COLS] : T.EMPTY;
+        // Spikes on the bottom row always point up (there is nothing under them to hang from)
+        const below = r < ROWS - 1 ? tiles[idx + COLS] : T.SOLID;
         if (above !== T.EMPTY && below === T.EMPTY) img.setFlipY(true);
       }
       if (t === T.SPRING) img.setOrigin(0.5, 1).setY((r + 1) * TILE + OY);
