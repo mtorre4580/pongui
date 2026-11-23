@@ -1,8 +1,17 @@
 # Pongui
 
 **A bouncing-ball puzzle game for desktop, tablet and phone.** The ball never stops bouncing:
-steer it, time your high bounces, collect every gem and reach the exit. Free, no sign-up, in
-English, Spanish and Portuguese. Installs as an app and plays offline.
+steer it, time your high bounces, collect every gem and reach the exit. 100 levels in 10 worlds
+and a level editor. Free, no sign-up, in English, Spanish and Portuguese. Installs as an app and
+plays offline.
+
+### ▶ [Play it at pongui.com](https://pongui.com/?utm_source=github)
+
+| | |
+|---|---|
+| **Play** | [pongui.com](https://pongui.com/?utm_source=github) · [itch.io](https://pongui.itch.io/pongui) |
+| **Watch** | [YouTube](https://www.youtube.com/@playpongui) · [Instagram](https://www.instagram.com/playpongui/) |
+| **Contact** | hello@pongui.com |
 
 [![CI](https://github.com/mtorre4580/pongui/actions/workflows/ci.yml/badge.svg)](https://github.com/mtorre4580/pongui/actions/workflows/ci.yml)
 
