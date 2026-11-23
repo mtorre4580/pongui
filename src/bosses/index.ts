@@ -49,12 +49,15 @@ const W1: BossDef = {
   minX: 3 * TILE + 28,
   maxX: 17 * TILE - 28,
   floorY: 11 * TILE,
-  speeds: [70, 100, 125],
-  // It only hops in its last phase
-  hopEvery: [0, 0, 2.2],
-  hopSpeed: 300,
+  // Each hit makes it clearly faster: in the last phase it outruns the ball (160 px/s), so the
+  // floor is no place to wait
+  speeds: [95, 140, 185],
+  // It starts hopping after the first hit, and more often after the second. A hop reaches
+  // above the ledges, so their edges are not safe either
+  hopEvery: [0, 2.4, 1.5],
+  hopSpeed: 330,
   hopGravity: 1000,
-  stun: 0.9,
+  stun: 0.5,
 };
 
 export const BOSSES: Readonly<Record<number, Boss>> = {

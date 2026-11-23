@@ -11,19 +11,26 @@ const fight = (hp?: number) => {
   return new BossFight(new World(arena), def, hp);
 };
 
+const LEDGE_TOP = 8 * 32;
+const HOME = 56; // the middle of the left ledge
+
 /**
- * A simple way to play it: get above the boss and come down on its head; stay away from it
- * otherwise. Jump is held, so every landing on the floor is a high bounce.
+ * A way to play it that works at any speed: wait on the left ledge, drop on the boss's head
+ * when it comes close, and steer back to the ledge while it is dazed.
  */
 function play(f: BossFight, seconds: number) {
   const s = f.world.s;
   const hits: number[] = [];
   for (let i = 0; i < seconds / STEP && s.status === 'playing' && !f.won; i++) {
-    const [left, top, right] = f.box;
-    // Dazed, it cannot be hurt: back to the ground first
-    const above = !f.dazed && s.y + BALL_R < top - 4;
-    const target = above ? f.boss.x : s.x < f.boss.x ? left - 60 : right + 60;
-    const input = { ...idle, jump: true, left: s.x > target + 4, right: s.x < target - 4 };
+    const [left, top] = f.box;
+    const onLedge = s.x < 3 * 32 && s.y < LEDGE_TOP;
+    const above = s.y + BALL_R < top - 4;
+    // Go for it only from above, when it is awake, on the ground and within reach of the ledge
+    const reach = left < 5 * 32 && f.boss.lift === 0;
+    const attack = !f.dazed && above && (onLedge ? reach : s.x >= 3 * 32);
+    const target = attack ? f.boss.x : HOME;
+    // Back from the floor to the ledge: a high bounce, steering in
+    const input = { ...idle, jump: !onLedge, left: s.x > target + 3, right: s.x < target - 3 };
     for (const e of f.step(STEP, input).boss) if (e.type === 'boss-hit') hits.push(s.time);
   }
   return { status: s.status, won: f.won, hp: f.boss.hp, hits, time: s.time };
@@ -118,7 +125,7 @@ describe('boss fight', () => {
     expect(last.box[1]).toBeLessThanOrEqual(def.floorY - def.height);
   });
 
-  it('keeps the hits it took when the fight starts again after a death', () => {
+  it('can start at any number of hits left, within its own', () => {
     expect(fight(2).boss.hp).toBe(2);
     expect(fight(99).boss.hp).toBe(3);
     expect(fight(0).boss.hp).toBe(1);

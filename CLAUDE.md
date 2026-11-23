@@ -264,7 +264,8 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
   from above is a hit and a high bounce; touching it anywhere else kills. After a hit it is
   dazed (harmless, cannot be hurt) for `stun` seconds *and* until the ball has bounced on the
   ground again, so hits cannot be chained from head to head. Each hit starts the next phase
-  (faster, and hopping in the last). Hits survive the lives of one attempt (`bossHp`).
+  (clearly faster each time, and hopping from the second on). Losing a life starts the fight
+  over: the boss gets its hits back.
 - A boss must be taller than a low bounce climbs (51 px), or standing still would beat it.
 - `bosses/index.ts` holds each boss: its numbers and its arena, a level map whose exit cell is
   turned into rock (the fight ends when the boss does). `Game` runs it with `boss: <world>`;

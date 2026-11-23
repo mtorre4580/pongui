@@ -51,8 +51,6 @@ export interface GameData {
   daily?: boolean;
   /** A boss fight: the world whose boss it is (`index` is that world's last level). */
   boss?: number;
-  /** Hits the boss has left, kept between the lives of one attempt. */
-  bossHp?: number;
 }
 
 // The level starts at the top of the world: the HUD sits over its first row, which is always a
@@ -110,7 +108,6 @@ export class Game extends Phaser.Scene {
   private daily = false;
   /** World of the boss being fought, or undefined in a normal level. */
   private bossN: number | undefined;
-  private bossHp: number | undefined;
   private fight: BossFight | null = null;
   private bossView: BossView | null = null;
   /** The bot's solution being played back (null while it is still searching). */
@@ -169,7 +166,6 @@ export class Game extends Phaser.Scene {
     }
     const boss = data.custom ? undefined : BOSSES[data.boss ?? 0];
     this.bossN = boss?.world;
-    this.bossHp = data.bossHp;
     this.fight = null;
     this.bossView = null;
     if (boss) {
@@ -211,7 +207,8 @@ export class Game extends Phaser.Scene {
     if (!this.custom && !this.bot) trackLevelStart(this.level.id);
     this.world = new World(this.level, this.takenLives);
     const boss = BOSSES[this.bossN ?? 0];
-    if (boss) this.fight = new BossFight(this.world, boss.def, this.bossHp);
+    // Every life starts the fight over: the boss gets its hits back
+    if (boss) this.fight = new BossFight(this.world, boss.def);
 
     drawBackground(this, GAME_W, GAME_H, this.index + 11, this.theme);
     this.redrawSolids();
@@ -1120,7 +1117,6 @@ export class Game extends Phaser.Scene {
           custom: this.custom,
           daily: this.daily,
           boss: this.bossN,
-          bossHp: this.fight?.boss.hp,
           lives: this.lives,
           deaths: this.deaths,
           takenLives: [...this.takenLives],
@@ -1236,7 +1232,6 @@ export class Game extends Phaser.Scene {
       custom: this.custom,
       daily: this.daily,
       boss: this.bossN,
-      bossHp: this.fight?.boss.hp,
       lives: this.lives,
       deaths: this.deaths,
       takenLives: [...this.takenLives],
