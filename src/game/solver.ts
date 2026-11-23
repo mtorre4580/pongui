@@ -3,7 +3,14 @@
 import { STEP } from './constants';
 import type { ParsedLevel } from './level';
 import { T } from './tiles';
-import { cloneState, World, type InputState, type WorldEvent, type WorldState } from './physics';
+import {
+  cloneState,
+  timedCycle,
+  World,
+  type InputState,
+  type WorldEvent,
+  type WorldState,
+} from './physics';
 
 export interface Decision {
   dir: -1 | 0 | 1;
@@ -38,10 +45,13 @@ function hashTiles(s: WorldState): number {
   return h >>> 0;
 }
 
-function key(s: WorldState): string {
+// Timed tiles' phase goes into the key in buckets of this many steps (1/30 s)
+const PHASE_STEPS = 4;
+
+function key(s: WorldState, cycle: number): string {
   let mask = 0;
   for (let i = 0; i < s.items.length; i++) if (s.items[i].taken) mask |= 1 << i;
-  return `${Math.round(s.x / 2)}|${Math.round(s.y / 2)}|${Math.round(s.vx / 10)}|${Math.round(s.vy / 20)}|${s.lockVx ?? 'n'}|${s.drops}|${s.hammers}|${s.keys}|${mask}|${hashTiles(s)}|${s.switchOn ? 1 : 0}|${s.portalHold}`;
+  return `${Math.round(s.x / 2)}|${Math.round(s.y / 2)}|${Math.round(s.vx / 10)}|${Math.round(s.vy / 20)}|${s.lockVx ?? 'n'}|${s.drops}|${s.hammers}|${s.keys}|${mask}|${hashTiles(s)}|${s.switchOn ? 1 : 0}|${s.portalHold}|${cycle ? Math.floor((s.ticks % cycle) / PHASE_STEPS) : ''}`;
 }
 
 /**
@@ -81,6 +91,7 @@ export function solve(level: ParsedLevel, maxNodes = 400000, start?: WorldState)
   const world = new World(level);
   if (start) world.s = cloneState(start);
   const seen = new Set<string>();
+  const cycle = timedCycle(level);
   type Node = { s: WorldState; parent: Node | null; d: Decision | null };
   // Best-first search: states with more collected items are expanded first.
   const buckets: Node[][] = [];
@@ -111,7 +122,7 @@ export function solve(level: ParsedLevel, maxNodes = 400000, start?: WorldState)
   });
 
   push({ s: cloneState(world.s), parent: null, d: null });
-  seen.add(key(world.s));
+  seen.add(key(world.s, cycle));
   let nodes = 0;
   let best = world.s;
   for (let node = pop(); node && nodes < maxNodes; node = pop()) {
@@ -129,7 +140,7 @@ export function solve(level: ParsedLevel, maxNodes = 400000, start?: WorldState)
           best: summary(world.s),
         };
       if (out !== 'bounce') continue;
-      const k = key(world.s);
+      const k = key(world.s, cycle);
       if (seen.has(k)) continue;
       seen.add(k);
       if (taken(world.s) > taken(best)) best = world.s;
