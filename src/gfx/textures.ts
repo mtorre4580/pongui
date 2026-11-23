@@ -47,6 +47,9 @@ export const C = {
   moss: 0x40916c,
   mossTop: 0x95d5b2,
   mossDark: 0x1b4332,
+  cloud: 0xffffff,
+  cloudShade: 0xc9dcff,
+  wind: 0xd7ecff,
   hammerHandle: 0x9c6644,
   heart: 0xff4d6d,
   exit: 0x80ed99,
@@ -213,6 +216,28 @@ export function createTextures(scene: Phaser.Scene) {
       [24, 50],
     ])
       g.fillCircle(x, y, 3);
+  });
+
+  make(scene, 'cloud', S, S, (g) => {
+    // A puffy one-way platform: flat top, soft underside
+    g.fillStyle(C.cloudShade, 1);
+    g.fillCircle(14, 30, 14).fillCircle(34, 32, 16).fillCircle(52, 30, 13);
+    g.fillStyle(C.cloud, 1);
+    g.fillRoundedRect(0, 2, S, 20, 10);
+    g.fillCircle(14, 24, 13).fillCircle(33, 25, 15).fillCircle(51, 24, 12);
+    g.fillStyle(C.cloudShade, 0.6).fillRoundedRect(6, 4, S - 12, 4, 2);
+  });
+  make(scene, 'updraft', S, S, (g) => {
+    // Rising air: a faint column with chevrons pointing up
+    g.fillStyle(C.wind, 0.1).fillRect(4, 0, S - 8, S);
+    g.lineStyle(4, C.wind, 0.4);
+    for (const y of [14, 42]) {
+      g.beginPath()
+        .moveTo(18, y + 12)
+        .lineTo(32, y)
+        .lineTo(46, y + 12)
+        .strokePath();
+    }
   });
 
   // --- Ball ---
