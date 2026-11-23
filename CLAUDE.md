@@ -127,7 +127,9 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
   different start timings): the solver only proves a level is possible, not that it is fair.
   `solve(level, maxNodes, state)` searches from any state: perturb each step of the bot's plan
   and check the level is still winnable from where the ball ends up (mistakes must be
-  recoverable or kill you, rarely leave you stuck).
+  recoverable or kill you, rarely leave you stuck). Also try each key jump from rest, holding
+  the direction with a 0.1–0.2 s reaction delay: the bot carries momentum from earlier bounces
+  and can make jumps a person cannot (a gap of 3 tiles up 2 rows is out of reach from rest).
 
 ## Landing page
 

@@ -10,14 +10,14 @@
     "es": "Martillo, gota, llave y resorte: la última prueba de las cuevas.",
     "pt-BR": "Martelo, gota, chave e mola: o último teste das cavernas."
   },
-  "par": 35,
+  "par": 33,
   "map": [
     "####################",
     "#..............L...#",
     "#..g...........L.E.#",
-    "####...........L.g.#",
+    "######.........L.g.#",
     "#..............L...#",
-    "#......XXXX....L####",
+    "#.....XXXX.....L####",
     "#.....w............#",
     "#...g.w............#",
     "#.....w...k........#",
