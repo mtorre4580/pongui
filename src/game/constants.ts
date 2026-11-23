@@ -47,3 +47,8 @@ export const ITEM_RADIUS = 18;
 export const EXIT_RADIUS = 16;
 
 export const START_LIVES = 3;
+
+// Ember Core: a crumbling block lasts this many steps after the first touch (0.6 s), and vents
+// spend half of their cycle off (solid) and half lit (deadly), starting off
+export const CRUMBLE_STEPS = 72;
+export const VENT_CYCLE = 360; // steps (3 s)

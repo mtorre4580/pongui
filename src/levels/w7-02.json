@@ -1,0 +1,28 @@
+{
+  "id": "w7-02",
+  "name": {
+    "en": "Vents",
+    "es": "Respiraderos",
+    "pt-BR": "Respiradouros"
+  },
+  "hint": {
+    "en": "Vents blaze for a moment, then cool down. Cross while they are dark.",
+    "es": "Los respiraderos arden un rato y después se apagan. Cruzá mientras están oscuros.",
+    "pt-BR": "Os respiradouros ardem um pouco e depois apagam. Atravesse enquanto estão escuros."
+  },
+  "par": 16,
+  "map": [
+    "####################",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#.....g......g.....#",
+    "#.P..............E.#",
+    "#####!!!###!!!######"
+  ]
+}

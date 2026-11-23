@@ -1,0 +1,28 @@
+{
+  "id": "w7-05",
+  "name": {
+    "en": "Hot hop",
+    "es": "Salto caliente",
+    "pt-BR": "Pulo quente"
+  },
+  "hint": {
+    "en": "Pushers fly you over the vents, lit or not.",
+    "es": "Los empujadores te hacen volar sobre los respiraderos, prendidos o no.",
+    "pt-BR": "Os empurradores fazem você voar sobre os respiradouros, acesos ou não."
+  },
+  "par": 13,
+  "map": [
+    "####################",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#...##########.....#",
+    "#..................#",
+    "#.....g.....g......#",
+    "#.P..............E.#",
+    "####################"
+  ]
+}

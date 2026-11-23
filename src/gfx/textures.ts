@@ -68,6 +68,13 @@ export const C = {
   ice: 0x9bdcf5,
   iceLight: 0xe6f8ff,
   iceDark: 0x5aa7cf,
+  crumble: 0x8a5a44,
+  crumbleTop: 0xc08a6a,
+  crumbleDark: 0x4e3027,
+  ventRock: 0x3b3a42,
+  ventGrate: 0x1c1b22,
+  lava: 0xff6d00,
+  lavaLight: 0xffd166,
   water: 0x3fa7d6,
   waterLight: 0xb8f2ff,
   hammerHandle: 0x9c6644,
@@ -357,6 +364,34 @@ export function createTextures(scene: Phaser.Scene) {
     g.beginPath().moveTo(42, 20).lineTo(52, 8).strokePath();
   });
 
+  // --- Ember Core: crumbling blocks and vents ---
+  make(scene, 'crumble', S, S, (g) => {
+    block(g, C.crumble, C.crumbleTop, C.crumbleDark);
+    // Loose chunks and deep cracks
+    g.lineStyle(3, C.crumbleDark, 1);
+    g.beginPath().moveTo(8, 20).lineTo(22, 30).lineTo(16, 46).strokePath();
+    g.beginPath().moveTo(22, 30).lineTo(40, 26).lineTo(50, 40).lineTo(44, 56).strokePath();
+    g.beginPath().moveTo(40, 26).lineTo(46, 14).strokePath();
+    g.fillStyle(C.crumbleDark, 0.8).fillCircle(30, 48, 3).fillCircle(52, 22, 2.5);
+  });
+  // A vent is a grate in dark rock; lit, the grate glows with lava (its flame is drawn apart)
+  for (const lit of [false, true]) {
+    make(scene, lit ? 'vent-lit' : 'vent-off', S, S, (g) => {
+      g.fillStyle(C.ventGrate, 1).fillRoundedRect(0, 0, S, S, 10);
+      g.fillStyle(C.ventRock, 1).fillRoundedRect(0, 0, S, S - 6, 10);
+      g.fillStyle(lit ? C.lava : C.ventGrate, 1).fillRoundedRect(8, 4, S - 16, 18, 6);
+      g.fillStyle(lit ? C.lavaLight : C.ventRock, 1);
+      for (let x = 14; x < S - 10; x += 10) g.fillRect(x, 4, 4, 18);
+      g.fillStyle(lit ? C.lava : 0x55535e, lit ? 0.6 : 1);
+      for (const [x, y] of [
+        [14, 38],
+        [34, 46],
+        [50, 34],
+      ])
+        g.fillCircle(x, y, 3);
+    });
+  }
+
   // --- Ball ---
   const BR = BALL_R * TEX + 2;
   make(scene, 'ball', BR * 2, BR * 2, (g) => {
@@ -510,6 +545,21 @@ function drawSolids(
           x + (23 - seed) * k,
           y + (25 - (seed % 2) * 4) * k,
           1.2 * k,
+        );
+      } else if (theme.pattern === 'embers' && !isAsh) {
+        // Glowing cracks in dark basalt
+        g.lineStyle(1.2 * k, theme.speck, 0.7);
+        const ex = x + (7 + seed * 3) * k;
+        const ey = y + (16 + (seed % 3) * 3) * k;
+        g.beginPath()
+          .moveTo(ex, ey)
+          .lineTo(ex + 4 * k, ey + 3 * k)
+          .lineTo(ex + 3 * k, ey + 7 * k)
+          .strokePath();
+        g.fillStyle(theme.speck, 0.6).fillCircle(
+          x + (23 - seed) * k,
+          y + (25 - (seed % 2) * 4) * k,
+          1 * k,
         );
       } else if (theme.pattern === 'snow' && !isAsh) {
         // Snowflakes: small plus signs

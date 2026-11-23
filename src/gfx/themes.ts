@@ -11,7 +11,7 @@ export interface Theme {
   /** Small marks drawn on solid blocks (pebbles, crystals…). */
   speck: number;
   /** What the marks look like: round pebbles by default. */
-  pattern?: 'crystals' | 'rivets' | 'coral' | 'snow';
+  pattern?: 'crystals' | 'rivets' | 'coral' | 'snow' | 'embers';
 }
 
 export const THEMES: Record<number, Theme> = {
@@ -78,6 +78,17 @@ export const THEMES: Record<number, Theme> = {
     solidDark: 0x3d5675,
     speck: 0xdcecff,
     pattern: 'snow',
+  },
+  // 7 · Ember Core: dark basalt with glowing cracks inside a volcano
+  7: {
+    bgTop: 0x4a1418,
+    bgBottom: 0x120407,
+    bubbles: [0xff6b35, 0xffba08, 0x9d0208],
+    solidTop: 0x8e7f7a,
+    solid: 0x45393a,
+    solidDark: 0x261e1f,
+    speck: 0xff8c1a,
+    pattern: 'embers',
   },
 };
 

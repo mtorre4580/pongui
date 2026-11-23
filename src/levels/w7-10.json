@@ -1,0 +1,28 @@
+{
+  "id": "w7-10",
+  "name": {
+    "en": "Ember Core",
+    "es": "Núcleo de Brasas",
+    "pt-BR": "Núcleo de Brasas"
+  },
+  "hint": {
+    "en": "Crumbling rock, vents, a spring and a key: escape the volcano!",
+    "es": "Roca que se desmorona, respiraderos, un resorte y una llave: ¡escapá del volcán!",
+    "pt-BR": "Rocha que desmorona, respiradouros, uma mola e uma chave: fuja do vulcão!"
+  },
+  "par": 35,
+  "map": [
+    "####################",
+    "#...L..............#",
+    "#.E.L......g..k....#",
+    "##########.........#",
+    "##########!!!......#",
+    "##############.....#",
+    "##############.....#",
+    "##############...g.#",
+    "##############.....#",
+    "#.............s....#",
+    "#.P...cccc.........#",
+    "######****##########"
+  ]
+}

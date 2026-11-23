@@ -117,6 +117,13 @@ export const sfx = {
     [660, 880, 1175].forEach((f, i) => tone(f, f, 0.14, 'triangle', 0.15, 0.06 + i * 0.06));
   },
   wind: () => noise(0.4, 0.16, 650, 0.6),
+  /** Rock giving way. */
+  crumble: () => {
+    noise(0.35, 0.3, 300, 0.8, 0, 'lowpass');
+    tone(110, 60, 0.3, 'triangle', 0.1);
+  },
+  /** A vent lighting up: a low roar. */
+  vent: () => noise(0.5, 0.12, 500, 0.5, 0, 'lowpass'),
   /** A glassy clink on ice. */
   ice: () => {
     tone(2200, 2000, 0.07, 'sine', 0.08);

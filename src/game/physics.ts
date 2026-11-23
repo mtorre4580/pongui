@@ -2,6 +2,7 @@ import {
   AIR_ACCEL,
   AIR_DECEL,
   BALL_R,
+  CRUMBLE_STEPS,
   BOUNCE_GRACE,
   COLS,
   EXIT_RADIUS,
@@ -22,6 +23,7 @@ import {
   V_HIGH,
   V_LOW,
   V_SPRING,
+  VENT_CYCLE,
 } from './constants';
 import type { ItemKind, ParsedLevel } from './level';
 import { fragileMax, isPortal, isToggle, T } from './tiles';
@@ -34,7 +36,7 @@ export interface InputState {
 }
 
 export type BounceKind = 'low' | 'high' | 'spring' | 'ramp' | 'push';
-export type DeathCause = 'fall' | 'spike' | 'fire';
+export type DeathCause = 'fall' | 'spike' | 'fire' | 'vent';
 
 export type WorldEvent =
   | { type: 'bounce'; kind: BounceKind; x: number; y: number; idx: number }
@@ -49,6 +51,8 @@ export type WorldEvent =
   | { type: 'switch'; on: boolean }
   | { type: 'portal'; from: number; to: number }
   | { type: 'water'; inside: boolean }
+  | { type: 'crumble'; idx: number }
+  | { type: 'vent'; lit: boolean }
   | { type: 'die'; cause: DeathCause }
   | { type: 'win' };
 
@@ -89,6 +93,10 @@ export interface WorldState {
   portalHold: number;
   /** The ball's center is in water. */
   water: boolean;
+  /** Fixed steps since the start: timed tiles (vents) follow it. */
+  ticks: number;
+  /** Crumbling blocks counting down (their `hits` holds the steps left + 1). */
+  crumbling: number;
 }
 
 interface Cell {
@@ -96,6 +104,14 @@ interface Cell {
   r: number;
   idx: number; // -1 = outside the map
   t: number;
+}
+
+/**
+ * Steps after which every timed tile of the level repeats (0 if it has none). The solver keeps
+ * the phase in its state key: the same spot at a different phase is a different situation.
+ */
+export function timedCycle(level: ParsedLevel): number {
+  return level.tiles.some((t) => t === T.VENT) ? VENT_CYCLE : 0;
 }
 
 export function cloneState(s: WorldState): WorldState {
@@ -111,6 +127,7 @@ export class World {
   readonly level: ParsedLevel;
   s: WorldState;
   private readonly partner = new Map<number, number>();
+  readonly hasVents: boolean;
 
   constructor(level: ParsedLevel, skipItems: Iterable<number> = []) {
     this.level = level;
@@ -140,7 +157,10 @@ export class World {
       pending: 0,
       portalHold: -1,
       water: false,
+      ticks: 0,
+      crumbling: 0,
     };
+    this.hasVents = level.tiles.some((t) => t === T.VENT);
     // Each portal's partner (the other tile with the same digit)
     level.tiles.forEach((t, idx) => {
       if (!isPortal(t)) return;
@@ -159,6 +179,30 @@ export class World {
     return this.s.tiles[r * COLS + c];
   }
 
+  /** Advances timed tiles: crumbling blocks count down and vents light up or go out. */
+  private tick(ev: WorldEvent[]) {
+    const s = this.s;
+    s.ticks++;
+    if (this.hasVents && s.ticks % (VENT_CYCLE / 2) === 0)
+      ev.push({ type: 'vent', lit: this.ventLit });
+    if (s.crumbling === 0) return;
+    const gone: number[] = [];
+    for (let idx = 0; idx < s.tiles.length; idx++) {
+      if (s.tiles[idx] !== T.CRUMBLE || s.hits[idx] === 0) continue;
+      if (--s.hits[idx] > 1) continue;
+      s.tiles[idx] = T.EMPTY;
+      s.hits[idx] = 0;
+      s.crumbling--;
+      gone.push(idx);
+    }
+    if (gone.length) ev.push({ type: 'break', idxs: gone, tile: T.CRUMBLE });
+  }
+
+  /** Vents are lit (deadly) during the second half of their cycle. */
+  get ventLit(): boolean {
+    return this.s.ticks % VENT_CYCLE >= VENT_CYCLE / 2;
+  }
+
   /** Whether the ball passes through tile `t` at `idx` right now (air, wind, open blocks). */
   isOpen(t: number, idx: number): boolean {
     if (t === T.EMPTY || t === T.UPDRAFT || isPortal(t)) return true;
@@ -173,8 +217,8 @@ export class World {
     return true;
   }
 
-  /** Every map cell the ball's box covers. */
-  private box(): Cell[] {
+  /** Every map cell the ball's box covers (only the ones it collides with, if `solid`). */
+  private box(solid = false): Cell[] {
     const { x, y } = this.s;
     const c0 = Math.floor((x - BALL_R) / TILE);
     const c1 = Math.ceil((x + BALL_R) / TILE) - 1;
@@ -183,15 +227,19 @@ export class World {
     const out: Cell[] = [];
     for (let r = r0; r <= r1; r++) {
       for (let c = c0; c <= c1; c++) {
-        const inside = c >= 0 && c < COLS && r >= 0 && r < ROWS;
-        out.push({ c, r, idx: inside ? r * COLS + c : -1, t: this.tileAt(c, r) });
+        const t = this.tileAt(c, r);
+        // The physics' hottest loop: skip air before building a cell
+        if (solid && t === T.EMPTY) continue;
+        const idx = c >= 0 && c < COLS && r >= 0 && r < ROWS ? r * COLS + c : -1;
+        if (solid && this.isOpen(t, idx)) continue;
+        out.push({ c, r, idx, t });
       }
     }
     return out;
   }
 
   private overlaps(): Cell[] {
-    return this.box().filter((c) => !this.isOpen(c.t, c.idx));
+    return this.box(true);
   }
 
   /** A toggle block that turns solid around the ball stays open until the ball leaves it. */
@@ -291,6 +339,17 @@ export class World {
       const pc = Math.floor(s.x / TILE);
       const prim = cells.filter((c) => c.c === pc);
       if (prim.length) hazard = prim;
+    }
+    // Crumbling blocks start their countdown on any touch
+    for (const c of cells) {
+      if (c.t !== T.CRUMBLE || c.idx < 0 || s.hits[c.idx] > 0) continue;
+      s.hits[c.idx] = CRUMBLE_STEPS + 1;
+      s.crumbling++;
+      ev.push({ type: 'crumble', idx: c.idx });
+    }
+    if (this.ventLit && hazard.some((c) => c.t === T.VENT)) {
+      this.die('vent', ev);
+      return null;
     }
     if (hazard.some((c) => c.t === T.SPIKE)) {
       this.die('spike', ev);
@@ -401,6 +460,7 @@ export class World {
     const ev: WorldEvent[] = [];
     if (s.status !== 'playing') return ev;
     s.time += dt;
+    this.tick(ev);
 
     // Jump: buffered before landing, or "upgraded" to a high bounce right after it
     if (input.jumpPressed) {
@@ -518,7 +578,7 @@ export class World {
       return ev;
     }
     this.settle();
-    this.portals(ev);
+    if (this.partner.size) this.portals(ev);
 
     // Items
     for (let i = 0; i < s.items.length; i++) {

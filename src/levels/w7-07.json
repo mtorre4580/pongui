@@ -1,0 +1,28 @@
+{
+  "id": "w7-07",
+  "name": {
+    "en": "Fire slide",
+    "es": "Tobogán de fuego",
+    "pt-BR": "Escorregador de fogo"
+  },
+  "hint": {
+    "en": "On ice you cannot stop: start each slide right as the vents go dark.",
+    "es": "En el hielo no podés frenar: arrancá cada tramo justo cuando se apagan los respiraderos.",
+    "pt-BR": "No gelo você não consegue parar: comece cada trecho assim que os respiradouros apagarem."
+  },
+  "par": 15,
+  "map": [
+    "####################",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#........#.........#",
+    "#....g...#..g......#",
+    "#.P......#........E#",
+    "#ii!!!iiii##!!!iiii#"
+  ]
+}

@@ -119,6 +119,12 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
   Thin ice `j` holds low bounces; a high bounce (jump held or buffered on landing) breaks every
   thin-ice tile it lands on and the ball falls through unless something else holds it. Plan
   steps end on that break so the plan can let go of jump before the next landing.
+- Crumbling blocks `c` start a 0.6 s countdown on any touch (landing, bonk or side) and then
+  vanish for good. Vents `!` follow the world's clock (`ticks`): 1.5 s off and solid, then
+  1.5 s lit and deadly (a hazard by the same center rule), starting off; a small flame flickers
+  in the last 0.4 s before they light. The solver keeps the vents' phase in its key (in 0.25 s
+  buckets) and, on levels with timed tiles, expands the states nearest to a target first: the
+  phase multiplies the states, so keep those levels compact (fill unused space with rock).
 - `World.step` returns events (`bounce`, `break`, `collect`, `die`, `win`…); scenes only render
   them. Never put gameplay rules in scenes.
 
@@ -137,7 +143,7 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
 - Every level teaches or tests one idea, introduced in its hint the first time it appears.
 - Row 0 must be plain walls (`#`): the HUD is drawn over it and `parseLevel` rejects anything
   else. The floor row (11) is free and may hold hazards.
-- `pnpm validate:levels` must pass: the map parses, every text exists in all languages, the solver
+- `pnpm validate:levels` (one level per CPU core) must pass: the map parses, every text exists in all languages, the solver
   beats it and the par time is above the solver's time (rule of thumb: 2.5× + 5 s).
 - Fairness rules learnt the hard way: ramps at least 2 tiles wide with a low ceiling before them,
   gems over pits placed on the ramp's launch path, no soft locks (a restart always works).
@@ -174,6 +180,12 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
 - Ice: people stop by sliding into a wall, so put a wall (or a step) wherever they must stop to
   aim. Thin ice cannot be climbed back with a high bounce, so route people past everything
   above it before they break through, or give them a spring back up.
+- Crumbling blocks never come back: a path that needs one twice soft-locks, so a fall from a
+  crumbling step should kill (spikes below) or lead somewhere that does not need it again.
+- Vents: check every crossing over the whole cycle (start the input at each moment of the 3 s
+  cycle and see who survives; a person starts right as the vents go dark). Keep strips 3 tiles
+  wide or less, give a solid resting spot before each strip, and never make people commit
+  (slide on ice, jump over a wall) while the vents are still lit.
 - Switches flip on every bounce: a switch you must cross mid-route should sit between solid
   tiles so people can stop on them, and the lamp shows which color is solid.
 
@@ -356,8 +368,9 @@ characters must stay unique across the game.
 - [x] World 4 — Gear Works: switches with A/B blocks, pushers
 - [x] World 5 — Coral Lagoon: portals, water
 - [x] World 6 — Frost Peaks: ice, thin ice
-- [ ] Worlds 7–10 (planned: crumbling blocks and vents, low gravity and bumpers, dark rooms and
-      phase blocks, rainbow bridges)
+- [x] World 7 — Ember Core: crumbling blocks, vents
+- [ ] Worlds 8–10 (planned: low gravity and bumpers, dark rooms and phase blocks, rainbow
+      bridges)
 - [x] Native apps — Capacitor iOS and Android projects (iOS verified in the simulator)
 - [ ] Store release (developer accounts, signing, store listings, privacy policy)
 - [ ] Public release (license, Pages deploy, CodeQL)

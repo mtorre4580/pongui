@@ -1,0 +1,28 @@
+{
+  "id": "w7-08",
+  "name": {
+    "en": "Falling floors",
+    "es": "Pisos que caen",
+    "pt-BR": "Pisos que caem"
+  },
+  "hint": {
+    "en": "Every floor gives way under you: grab the gems on the way down.",
+    "es": "Cada piso se hunde bajo tus pies: juntá las gemas en la bajada.",
+    "pt-BR": "Cada piso cede debaixo de você: pegue as gemas na descida."
+  },
+  "par": 26,
+  "map": [
+    "####################",
+    "####################",
+    "####.....g...g.....#",
+    "####.P.............#",
+    "###############ccc##",
+    "################...#",
+    "####.g....g........#",
+    "####...............#",
+    "####ccc#############",
+    "####.....g.........#",
+    "####...........E...#",
+    "####################"
+  ]
+}

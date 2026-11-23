@@ -7,6 +7,7 @@
  *     Each variant is "ok" (won, or still winnable from there), "dead" (a mistake that kills is
  *     fine) or "STUCK" (alive but the level can no longer be won). Steps with STUCK variants
  *     demand precision without warning: fix them. Exits with 1 if a step has 4+ of 8 stuck.
+ *     Levels run in parallel worker threads.
  *
  *   pnpm check:fairness jump <id> <col> <row> <left|right> [low|high]
  *     The ball rests on top of tile (col, row) and bounces (high by default), holding the
@@ -23,7 +24,9 @@
  *     Use it for items on falling paths: they must be on the line people actually take.
  */
 import { readdirSync, readFileSync } from 'node:fs';
+import { availableParallelism } from 'node:os';
 import { join } from 'node:path';
+import { isMainThread, parentPort, Worker } from 'node:worker_threads';
 import { BALL_R, STEP, TILE } from '../src/game/constants.ts';
 import { parseLevel, type ParsedLevel } from '../src/game/level.ts';
 import { cloneState, World, type InputState } from '../src/game/physics.ts';
@@ -91,42 +94,70 @@ function fly(w: World, d: Decision, delay: number, dur: number) {
   }
 }
 
-function tolerance(list: string[]): boolean {
-  let bad = false;
-  for (const id of list) {
-    const level = load(id);
-    const { plan, solved } = solve(level);
-    if (!solved) {
-      console.log(`${id}: no solution`);
-      bad = true;
-      continue;
+/** Perturbs every step of the bot's plan for one level (see the header). */
+function toleranceOf(id: string): { line: string; bad: boolean } {
+  const level = load(id);
+  const { plan, solved } = solve(level);
+  if (!solved) return { line: `${id}: no solution`, bad: true };
+  const w = new World(level);
+  const cells: string[] = [];
+  let worst = 0;
+  plan.forEach((d) => {
+    const before = cloneState(w.s);
+    let stuck = 0;
+    let dead = 0;
+    for (const [delay, dd] of VARIANTS) {
+      const t = new World(level);
+      t.s = cloneState(before);
+      const dur = d.dur >= 99 ? 99 : Math.max(0, d.dur + dd);
+      fly(t, d, d.dir === 0 ? 0 : delay, d.dir === 0 ? 0 : dur);
+      if (t.s.status === 'dead') dead++;
+      else if (t.s.status !== 'won' && !solve(level, 400000, t.s).solved) stuck++;
     }
-    const w = new World(level);
-    const cells: string[] = [];
-    let worst = 0;
-    plan.forEach((d) => {
-      const before = cloneState(w.s);
-      let stuck = 0;
-      let dead = 0;
-      for (const [delay, dd] of VARIANTS) {
-        const t = new World(level);
-        t.s = cloneState(before);
-        const dur = d.dur >= 99 ? 99 : Math.max(0, d.dur + dd);
-        fly(t, d, d.dir === 0 ? 0 : delay, d.dir === 0 ? 0 : dur);
-        if (t.s.status === 'dead') dead++;
-        else if (t.s.status !== 'won' && !solve(level, 400000, t.s).solved) stuck++;
-      }
-      worst = Math.max(worst, stuck);
-      cells.push(stuck ? `S${stuck}` : dead ? `d${dead}` : '.');
-      fly(w, d, 0, d.dur);
-    });
-    if (worst >= 4) bad = true;
-    console.log(
-      `${id.padEnd(6)} ${worst >= 4 ? 'FIX ' : worst ? 'look' : 'ok  '} steps: ${cells.join(' ')}`,
-    );
-  }
+    worst = Math.max(worst, stuck);
+    cells.push(stuck ? `S${stuck}` : dead ? `d${dead}` : '.');
+    fly(w, d, 0, d.dur);
+  });
+  return {
+    line: `${id.padEnd(6)} ${worst >= 4 ? 'FIX ' : worst ? 'look' : 'ok  '} steps: ${cells.join(' ')}`,
+    bad: worst >= 4,
+  };
+}
+
+/** Checks the levels in parallel worker threads and prints them in order. */
+async function tolerance(list: string[]): Promise<boolean> {
+  const results: { line: string; bad: boolean }[] = [];
+  let next = 0;
+  let printed = 0;
+  const workers = Math.max(1, Math.min(availableParallelism(), list.length));
+  await Promise.all(
+    Array.from(
+      { length: workers },
+      () =>
+        new Promise<void>((resolve, reject) => {
+          // Same script and loader (tsx) in each worker
+          const worker = new Worker(new URL(import.meta.url), { execArgv: process.execArgv });
+          const feed = () => {
+            if (next >= list.length) {
+              void worker.terminate().then(() => resolve());
+              return;
+            }
+            const index = next++;
+            worker.once('message', (r: { line: string; bad: boolean }) => {
+              results[index] = r;
+              // Print as soon as every level before this one is done
+              while (results[printed]) console.log(results[printed++].line);
+              feed();
+            });
+            worker.postMessage(list[index]);
+          };
+          worker.on('error', reject);
+          feed();
+        }),
+    ),
+  );
   console.log('\n. = every variant still winnable · dN = N of 8 died · SN = N of 8 STUCK');
-  return !bad;
+  return !results.some((r) => r.bad);
 }
 
 // ---------- jump / hover / sweep ----------
@@ -204,22 +235,27 @@ function sweep(id: string, dir: number) {
 
 // ---------- main ----------
 
-const [cmd, ...args] = process.argv.slice(2);
-const dirOf = (s: string) => (s === 'left' ? -1 : 1);
-if (cmd === 'tolerance' && args.length) {
-  if (!tolerance(ids(args))) process.exit(1);
-} else if (cmd === 'jump' && args.length >= 4) {
-  jump(args[0], Number(args[1]), Number(args[2]), dirOf(args[3]), args[4] !== 'low');
-} else if (cmd === 'hover' && args.length >= 4) {
-  hover(args[0], Number(args[1]), Number(args[2]), dirOf(args[3]));
-} else if (cmd === 'sweep' && args.length >= 2) {
-  sweep(args[0], dirOf(args[1]));
+if (!isMainThread) {
+  // A tolerance worker: one level id in, its line out
+  parentPort!.on('message', (id: string) => parentPort!.postMessage(toleranceOf(id)));
 } else {
-  console.log(
-    'Usage: pnpm check:fairness tolerance <w3 | w3-07 ...>\n' +
-      '       pnpm check:fairness jump <id> <col> <row> <left|right> [low|high]\n' +
-      '       pnpm check:fairness hover <id> <col> <row> <left|right>\n' +
-      '       pnpm check:fairness sweep <id> <left|right>',
-  );
-  process.exit(cmd ? 1 : 0);
+  const [cmd, ...args] = process.argv.slice(2);
+  const dirOf = (s: string) => (s === 'left' ? -1 : 1);
+  if (cmd === 'tolerance' && args.length) {
+    if (!(await tolerance(ids(args)))) process.exit(1);
+  } else if (cmd === 'jump' && args.length >= 4) {
+    jump(args[0], Number(args[1]), Number(args[2]), dirOf(args[3]), args[4] !== 'low');
+  } else if (cmd === 'hover' && args.length >= 4) {
+    hover(args[0], Number(args[1]), Number(args[2]), dirOf(args[3]));
+  } else if (cmd === 'sweep' && args.length >= 2) {
+    sweep(args[0], dirOf(args[1]));
+  } else {
+    console.log(
+      'Usage: pnpm check:fairness tolerance <w3 | w3-07 ...>\n' +
+        '       pnpm check:fairness jump <id> <col> <row> <left|right> [low|high]\n' +
+        '       pnpm check:fairness hover <id> <col> <row> <left|right>\n' +
+        '       pnpm check:fairness sweep <id> <left|right>',
+    );
+    process.exit(cmd ? 1 : 0);
+  }
 }
