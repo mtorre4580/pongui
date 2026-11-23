@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title data-i18n="meta.title">Boinky · A bouncing puzzle game for every screen</title>
+    <meta
+      name="description"
+      data-i18n-attr="content:meta.description"
+      content="Boinky is a free bouncing-ball puzzle game: collect every gem, dodge the spikes and find the exit. Plays in your browser on computer, tablet and phone, installs like an app and works offline."
+    />
+    <meta name="theme-color" content="#0d1024" />
+    <link rel="canonical" href="%VITE_SITE_URL%" />
+    <link rel="icon" href="/icons/icon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/icons/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <link rel="preload" as="image" href="/landing/hero.jpg" fetchpriority="high" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Boinky" />
+    <meta property="og:title" content="Boinky · A bouncing puzzle game for every screen" />
+    <meta
+      property="og:description"
+      content="Collect every gem, dodge the spikes and find the exit. Free, in your browser, on any device."
+    />
+    <meta property="og:url" content="%VITE_SITE_URL%" />
+    <meta property="og:image" content="%VITE_SITE_URL%og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="The Boinky main menu with its coral ball character" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "VideoGame",
+        "name": "Boinky",
+        "description": "A bouncing-ball puzzle game: collect every gem, dodge the spikes and find the exit.",
+        "url": "%VITE_SITE_URL%",
+        "image": "%VITE_SITE_URL%og-image.jpg",
+        "genre": ["Puzzle", "Platformer"],
+        "gamePlatform": ["Web browser", "Progressive Web App"],
+        "applicationCategory": "Game",
+        "operatingSystem": "Any",
+        "playMode": "SinglePlayer",
+        "inLanguage": ["en", "es", "pt-BR"],
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      }
+    </script>
+  </head>
+  <body>
+    <a class="skip" href="#main" data-i18n="skip">Skip to content</a>
+
+    <header class="topbar">
+      <div class="wrap topbar-inner">
+        <a class="brand" href="./" aria-label="Boinky">
+          <span class="brand-ball" aria-hidden="true"><i></i><i></i></span>
+          <span class="brand-name">Boinky</span>
+        </a>
+        <nav aria-label="Main" data-i18n-attr="aria-label:nav.label">
+          <ul class="nav-links">
+            <li><a href="#how" data-i18n="nav.how">How to play</a></li>
+            <li><a href="#mechanics" data-i18n="nav.mechanics">Mechanics</a></li>
+            <li><a href="#devices" data-i18n="nav.devices">Devices</a></li>
+            <li><a href="#faq" data-i18n="nav.faq">FAQ</a></li>
+          </ul>
+        </nav>
+        <div class="topbar-actions">
+          <label class="lang">
+            <span class="sr-only" data-i18n="lang.label">Language</span>
+            <select id="lang">
+              <option value="en">English</option>
+              <option value="es">Español</option>
+              <option value="pt-BR">Português</option>
+            </select>
+          </label>
+          <a class="btn btn-small" href="./play/" data-i18n="nav.play">Play</a>
+        </div>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="hero">
+        <div class="wrap hero-grid">
+          <div class="hero-copy">
+            <p class="kicker" data-i18n="hero.kicker">A bouncing puzzle game</p>
+            <h1 data-i18n="hero.title">
+              The ball never stops bouncing. You decide where it lands.
+            </h1>
+            <p class="lead" data-i18n="hero.text">
+              Steer a bouncy ball through hand-made puzzle levels: collect every gem, dodge spikes,
+              put out fires and find the exit. Free, in your browser, on any device.
+            </p>
+            <div class="cta-row">
+              <a class="btn btn-primary" href="./play/" data-i18n="hero.play"
+                >Play now, it’s free</a
+              >
+              <button
+                class="btn btn-ghost"
+                id="install"
+                type="button"
+                hidden
+                data-i18n="hero.install"
+              >
+                Install the app
+              </button>
+            </div>
+            <p class="meta" data-i18n="hero.meta">
+              No sign-up · Works offline · English, Español, Português
+            </p>
+          </div>
+          <div class="hero-media">
+            <div class="ball-deco" aria-hidden="true"><i></i><i></i></div>
+            <figure class="screen">
+              <video
+                class="clip"
+                data-src="/landing/hero.mp4"
+                poster="/landing/hero.jpg"
+                width="960"
+                height="624"
+                muted
+                loop
+                playsinline
+                preload="none"
+                aria-label="Boinky playing the grand finale: a ramp, fire put out with a water drop, a spring and a brick wall knocked down with a hammer"
+                data-i18n-attr="aria-label:hero.video"
+              ></video>
+              <button class="clip-toggle" type="button">
+                <span class="sr-only" data-i18n="video.pause">Pause video</span>
+              </button>
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="how" aria-labelledby="how-title">
+        <div class="wrap">
+          <h2 id="how-title" data-i18n="how.title">Easy to learn, tricky to master</h2>
+          <ol class="steps">
+            <li class="step">
+              <span class="step-icon step-bounce" aria-hidden="true"></span>
+              <h3 data-i18n="how.1.title">Bounce</h3>
+              <p data-i18n="how.1.text">
+                The ball bounces on its own. Steer it in the air with the arrows.
+              </p>
+            </li>
+            <li class="step">
+              <span class="step-icon step-high" aria-hidden="true"></span>
+              <h3 data-i18n="how.2.title">Bounce higher</h3>
+              <p data-i18n="how.2.text">
+                Hold jump as you land and it climbs three blocks instead of one.
+              </p>
+            </li>
+            <li class="step">
+              <span class="step-icon step-gem" aria-hidden="true"></span>
+              <h3 data-i18n="how.3.title">Find the exit</h3>
+              <p data-i18n="how.3.text">
+                Collect every gem to open the exit, and earn up to three stars per level.
+              </p>
+            </li>
+          </ol>
+          <p class="controls">
+            <span class="keys" aria-hidden="true"><kbd>←</kbd><kbd>→</kbd><kbd>Space</kbd></span>
+            <span data-i18n="how.controls">
+              Arrows or A D to move, Space to bounce higher. Touch buttons on phones and tablets,
+              and any gamepad.
+            </span>
+          </p>
+        </div>
+      </section>
+
+      <section class="section section-alt" id="mechanics" aria-labelledby="mech-title">
+        <div class="wrap">
+          <h2 id="mech-title" data-i18n="mech.title">Every level teaches a new trick</h2>
+          <p class="section-lead" data-i18n="mech.text">
+            Each mechanic gets its own level before they all meet in the grand finale.
+          </p>
+          <ul class="cards">
+            <li class="card">
+              <figure class="screen screen-small">
+                <video
+                  class="clip"
+                  data-src="/landing/high-bounce.mp4"
+                  poster="/landing/high-bounce.jpg"
+                  width="640"
+                  height="416"
+                  muted
+                  loop
+                  playsinline
+                  preload="none"
+                  aria-hidden="true"
+                ></video>
+              </figure>
+              <h3 data-i18n="mech.highBounce.title">High bounce</h3>
+              <p data-i18n="mech.highBounce.text">Time your jump to reach the high ledges.</p>
+            </li>
+            <li class="card">
+              <figure class="screen screen-small">
+                <video
+                  class="clip"
+                  data-src="/landing/fragile.mp4"
+                  poster="/landing/fragile.jpg"
+                  width="640"
+                  height="416"
+                  muted
+                  loop
+                  playsinline
+                  preload="none"
+                  aria-hidden="true"
+                ></video>
+              </figure>
+              <h3 data-i18n="mech.fragile.title">Fragile floors</h3>
+              <p data-i18n="mech.fragile.text">
+                Yellow blocks crumble after one bounce. Keep moving!
+              </p>
+            </li>
+            <li class="card">
+              <figure class="screen screen-small">
+                <video
+                  class="clip"
+                  data-src="/landing/ramps.mp4"
+                  poster="/landing/ramps.jpg"
+                  width="640"
+                  height="416"
+                  muted
+                  loop
+                  playsinline
+                  preload="none"
+                  aria-hidden="true"
+                ></video>
+              </figure>
+              <h3 data-i18n="mech.ramps.title">Ramps</h3>
+              <p data-i18n="mech.ramps.text">
+                Blue ramps catch you and launch you over the spikes.
+              </p>
+            </li>
+            <li class="card">
+              <figure class="screen screen-small">
+                <video
+                  class="clip"
+                  data-src="/landing/springs.mp4"
+                  poster="/landing/springs.jpg"
+                  width="640"
+                  height="416"
+                  muted
+                  loop
+                  playsinline
+                  preload="none"
+                  aria-hidden="true"
+                ></video>
+              </figure>
+              <h3 data-i18n="mech.springs.title">Springs</h3>
+              <p data-i18n="mech.springs.text">Purple springs send you all the way up.</p>
+            </li>
+            <li class="card">
+              <figure class="screen screen-small">
+                <video
+                  class="clip"
+                  data-src="/landing/fire.mp4"
+                  poster="/landing/fire.jpg"
+                  width="640"
+                  height="416"
+                  muted
+                  loop
+                  playsinline
+                  preload="none"
+                  aria-hidden="true"
+                ></video>
+              </figure>
+              <h3 data-i18n="mech.fire.title">Fire and water</h3>
+              <p data-i18n="mech.fire.text">Grab a water drop to put the flames out.</p>
+            </li>
+            <li class="card">
+              <figure class="screen screen-small">
+                <video
+                  class="clip"
+                  data-src="/landing/hammer.mp4"
+                  poster="/landing/hammer.jpg"
+                  width="640"
+                  height="416"
+                  muted
+                  loop
+                  playsinline
+                  preload="none"
+                  aria-hidden="true"
+                ></video>
+              </figure>
+              <h3 data-i18n="mech.hammer.title">Hammer</h3>
+              <p data-i18n="mech.hammer.text">One hammer knocks down a whole brick wall.</p>
+            </li>
+            <li class="card">
+              <figure class="screen screen-small">
+                <video
+                  class="clip"
+                  data-src="/landing/spikes.mp4"
+                  poster="/landing/spikes.jpg"
+                  width="640"
+                  height="416"
+                  muted
+                  loop
+                  playsinline
+                  preload="none"
+                  aria-hidden="true"
+                ></video>
+              </figure>
+              <h3 data-i18n="mech.spikes.title">Spikes</h3>
+              <p data-i18n="mech.spikes.text">
+                Land with precision: the ball rests where its center is.
+              </p>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="section" id="devices" aria-labelledby="devices-title">
+        <div class="wrap devices-grid">
+          <div>
+            <h2 id="devices-title" data-i18n="devices.title">One game, every screen</h2>
+            <p class="section-lead" data-i18n="devices.text">
+              Play on a computer, a tablet or a phone. Install it like an app, with no store: it
+              opens full screen and keeps working without a connection.
+            </p>
+            <ul class="features">
+              <li data-i18n="feat.offline">Works offline after your first visit</li>
+              <li data-i18n="feat.install">Installs from the browser, no app store</li>
+              <li data-i18n="feat.controls">Keyboard, touch and gamepad</li>
+              <li data-i18n="feat.languages">English, Spanish and Portuguese</li>
+              <li data-i18n="feat.privacy">No account: your progress stays on your device</li>
+            </ul>
+          </div>
+          <div class="devices">
+            <figure class="device device-laptop">
+              <img
+                src="/landing/desktop.jpg"
+                width="1280"
+                height="832"
+                loading="lazy"
+                decoding="async"
+                alt="Boinky on a computer"
+                data-i18n-attr="alt:devices.desktop"
+              />
+            </figure>
+            <figure class="device device-tablet">
+              <img
+                src="/landing/tablet.jpg"
+                width="1024"
+                height="768"
+                loading="lazy"
+                decoding="async"
+                alt="Boinky on a tablet, with touch controls"
+                data-i18n-attr="alt:devices.tablet"
+              />
+            </figure>
+            <figure class="device device-phone">
+              <img
+                src="/landing/phone.jpg"
+                width="1100"
+                height="530"
+                loading="lazy"
+                decoding="async"
+                alt="Boinky on a phone in landscape, with touch controls beside the level"
+                data-i18n-attr="alt:devices.phone"
+              />
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section-alt" id="install-help" aria-labelledby="install-title">
+        <div class="wrap">
+          <h2 id="install-title" data-i18n="install.title">Install it in a few taps</h2>
+          <ul class="install">
+            <li>
+              <h3 data-i18n="install.desktop.title">Computer</h3>
+              <p data-i18n="install.desktop.text">
+                In Chrome or Edge, press “Install app” in the game menu or the install icon in the
+                address bar. On a Mac with Safari: File → Add to Dock.
+              </p>
+            </li>
+            <li>
+              <h3 data-i18n="install.android.title">Android</h3>
+              <p data-i18n="install.android.text">
+                Open the game in Chrome and tap “Install app” (or ⋮ → Install app).
+              </p>
+            </li>
+            <li>
+              <h3 data-i18n="install.ios.title">iPhone and iPad</h3>
+              <p data-i18n="install.ios.text">
+                Open the game in Safari, tap Share and then “Add to Home Screen”.
+              </p>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="section" id="levels" aria-labelledby="levels-title">
+        <div class="wrap">
+          <h2 id="levels-title" data-i18n="levels.title">World 1 · Bouncy Valley</h2>
+          <p class="section-lead" data-i18n="levels.text">
+            Ten levels, from your first bounce to the grand finale.
+          </p>
+          <ol class="levels" id="level-list"></ol>
+          <p class="soon" data-i18n="levels.soon">World 2 is on the way.</p>
+        </div>
+      </section>
+
+      <section class="section section-alt" id="faq" aria-labelledby="faq-title">
+        <div class="wrap faq-wrap">
+          <h2 id="faq-title" data-i18n="faq.title">Questions</h2>
+          <details>
+            <summary data-i18n="faq.free.q">Is Boinky free?</summary>
+            <p data-i18n="faq.free.a">
+              Yes. Play it in your browser at no cost, without an account.
+            </p>
+          </details>
+          <details>
+            <summary data-i18n="faq.offline.q">Does it work offline?</summary>
+            <p data-i18n="faq.offline.a">
+              Yes. After your first visit the whole game is stored on your device, so it plays
+              without a connection.
+            </p>
+          </details>
+          <details>
+            <summary data-i18n="faq.progress.q">Where is my progress saved?</summary>
+            <p data-i18n="faq.progress.a">
+              Only in your browser, on your device. Nothing is sent anywhere.
+            </p>
+          </details>
+          <details>
+            <summary data-i18n="faq.devices.q">Which devices can I use?</summary>
+            <p data-i18n="faq.devices.a">
+              Any modern browser on a computer, tablet or phone. On a phone, turn it sideways to
+              play.
+            </p>
+          </details>
+          <details>
+            <summary data-i18n="faq.languages.q">Which languages does it speak?</summary>
+            <p data-i18n="faq.languages.a">
+              English, Spanish and Portuguese. It follows your browser, and you can switch it from
+              the menu.
+            </p>
+          </details>
+        </div>
+      </section>
+
+      <section class="final-cta">
+        <div class="wrap">
+          <h2 data-i18n="cta.title">Ready to bounce?</h2>
+          <a class="btn btn-primary btn-big" href="./play/" data-i18n="cta.play">Play Boinky</a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="wrap footer-inner">
+        <span>© <span id="year">2026</span> Boinky.</span>
+        <span data-i18n="footer.rights">All rights reserved.</span>
+      </div>
+    </footer>
+
+    <script type="module" src="/src/landing/main.ts"></script>
+  </body>
+</html>

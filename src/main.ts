@@ -1,7 +1,7 @@
 import '@fontsource/fredoka/latin-600.css';
 import '@fontsource/fredoka/latin-700.css';
 import './style.css';
-import './pwa';
+import { registerServiceWorker } from './pwa';
 import Phaser from 'phaser';
 import { CANVAS_H, CANVAS_W } from './game/constants';
 import { applyDomTexts } from './i18n';
@@ -11,6 +11,8 @@ import { Game } from './scenes/Game';
 import { LevelSelect } from './scenes/LevelSelect';
 import { Menu } from './scenes/Menu';
 import { Overlay } from './scenes/Overlay';
+
+registerServiceWorker();
 
 async function start() {
   applyDomTexts();

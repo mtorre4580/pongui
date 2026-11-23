@@ -3,7 +3,7 @@ import { expectScene, trackErrors } from './support';
 
 test('boots into the menu without errors', async ({ page }) => {
   const errors = trackErrors(page);
-  await page.goto('./');
+  await page.goto('./play/');
   await expect(page).toHaveTitle(/Boinky/);
   await expect(page.locator('#game canvas')).toBeVisible();
   await expectScene(page, 'Menu');
@@ -12,7 +12,7 @@ test('boots into the menu without errors', async ({ page }) => {
 
 test('the keyboard goes from the menu to a level and pauses it', async ({ page, isMobile }) => {
   test.skip(isMobile, 'keyboard flow');
-  await page.goto('./');
+  await page.goto('./play/');
   await expectScene(page, 'Menu');
   // First Enter focuses the first button, the second one activates it
   const confirm = async () => {
@@ -32,12 +32,12 @@ test('the keyboard goes from the menu to a level and pauses it', async ({ page, 
 });
 
 test('a level can be opened from the URL', async ({ page }) => {
-  await page.goto('./?level=4');
+  await page.goto('./play/?level=4');
   await expectScene(page, 'Game');
 });
 
 test('touch controls appear in a level on phones only', async ({ page, isMobile }) => {
-  await page.goto('./?level=1');
+  await page.goto('./play/?level=1');
   await expectScene(page, 'Game');
   const pad = page.locator('#touch');
   if (isMobile) {
@@ -50,7 +50,7 @@ test('touch controls appear in a level on phones only', async ({ page, isMobile 
 
 test('the language follows the browser and can be saved', async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem('boinky:locale', 'es'));
-  await page.goto('./');
+  await page.goto('./play/');
   await expect(page.locator('html')).toHaveAttribute('lang', 'es');
   await expect(page.locator('#rotate-text')).toHaveText('Girá el dispositivo para jugar');
 });
