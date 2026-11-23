@@ -47,6 +47,10 @@ export const ptBR: Messages = {
   'overlay.toEditor': 'Voltar ao editor',
   'overlay.toMine': 'Meus níveis',
   'overlay.verified': 'Nível verificado: agora você pode compartilhar',
+  'overlay.share': 'Compartilhar meu tempo',
+  'overlay.shareCopied': 'Copiado!',
+  'overlay.shareText':
+    'Passei a fase {level} do Pongui em {t} s com {stars}. Você faz melhor? {url}',
   'mine.title': 'Meus níveis',
   'mine.new': '+ Novo nível',
   'mine.openCode': 'Abrir um link',

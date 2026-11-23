@@ -11,6 +11,7 @@ export type AnalyticsEvent =
   | 'install' // the browser installed the app
   | 'editor_open'
   | 'level_shared' // the share dialog was opened for a verified level
+  | 'result_shared' // "share my time" after finishing a level
   | 'shared_level_opened'; // a level arrived through a link
 
 type EventData = Record<string, string | number | boolean>;

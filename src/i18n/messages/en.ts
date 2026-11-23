@@ -46,6 +46,10 @@ export const en = {
   'overlay.toEditor': 'Back to editor',
   'overlay.toMine': 'My levels',
   'overlay.verified': 'Level verified: you can share it now',
+  'overlay.share': 'Share my time',
+  'overlay.shareCopied': 'Copied!',
+  'overlay.shareText':
+    'I beat level {level} of Pongui in {t} s with {stars}. Can you do better? {url}',
   'mine.title': 'My levels',
   'mine.new': '+ New level',
   'mine.openCode': 'Open a link',

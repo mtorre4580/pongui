@@ -283,7 +283,8 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
   is empty and for browsers that send Do Not Track; the script is only counted on the
   `VITE_SITE_URL` host. With no id the build contains no tracker code.
 - Events are a closed list (`AnalyticsEvent`): `play_click`, `level_start` (once per level per
-  visit), `level_complete`, `install`, `editor_open`, `level_shared`, `shared_level_opened`.
+  visit), `level_complete`, `install`, `editor_open`, `level_shared`, `result_shared`,
+  `shared_level_opened`.
   Scenes and the landing call `track()`; never `src/game`. Every event counts against the plan's
   quota, so do not report things that happen many times per level.
 - Whatever is measured must be listed in `privacy/index.html` (static, three languages) and in
