@@ -16,7 +16,9 @@ Thanks for helping! New levels, mechanics, translations and fixes are all welcom
   `id`, `name` and `hint` in `en`, `es` and `pt-BR`, a `par` time in seconds and a 20×12 `map`.
   Run `pnpm validate:levels`: it fails if the map does not parse, a language is missing, the
   solver cannot beat it or the par time is lower than the bot's. Then play it by hand.
-- **Translation fixes** in `src/i18n/messages/{es,pt-BR}.ts` or in a level's `name` and `hint`.
+- **Translation fixes** in `src/i18n/messages/{es,pt-BR}.ts` (game),
+  `src/landing/messages/{es,pt-BR}.ts` (landing page) or in a level's `name` and `hint`. English
+  landing texts live in both `index.html` and `src/landing/messages/en.ts`: change them together.
 - **Bug reports** with the steps to reproduce, the level, device, browser and language.
 
 ## Map legend
