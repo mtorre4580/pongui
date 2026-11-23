@@ -141,6 +141,8 @@ export function installDevTools(game: Phaser.Game) {
       status: s.status,
       lives: sc['lives'] as number,
       time: s.time,
+      // Something worth a screenshot: the boss in sight with an attack under way
+      busy: !fight.boss.away && !fight.dazed && fight.shots.length + fight.warns.length > 0,
     };
   };
 

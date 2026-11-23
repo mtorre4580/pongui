@@ -12,6 +12,8 @@ export interface BossArt {
   side?: number;
   /** Depth of the body: 4 by default (over the tiles, under the ball). */
   depth?: number;
+  /** It comes out of the ground: the part of it under its floor is not drawn. */
+  buried?: boolean;
   /** Draws the body for a pose. `w` and `h` are its box in texture pixels, from (0, top). */
   draw(g: G, w: number, h: number, pose: string): void;
 }
@@ -68,13 +70,60 @@ const ART: Record<number, BossArt> = {
       }
     },
   },
+  // Serpstone: the head and neck of a serpent of ochre rock, with a crest of crystals
+  2: {
+    top: 18,
+    buried: true,
+    draw(g, W, H) {
+      const TOP = 18;
+      const rock = { body: 0xb07d48, dark: 0x7a5230, light: 0xd9a868, belly: 0xf0d9a8 };
+      // Crystals along the crest
+      g.fillStyle(0x7ae7ff, 1);
+      g.fillTriangle(W * 0.3, TOP + 10, W * 0.42, TOP + 10, W * 0.34, 2);
+      g.fillTriangle(W * 0.44, TOP + 8, W * 0.6, TOP + 8, W * 0.52, 0);
+      g.fillStyle(0xb9f3ff, 1).fillTriangle(W * 0.58, TOP + 10, W * 0.72, TOP + 10, W * 0.68, 6);
+      // Neck and head: one rounded column, darker on its back edge
+      g.fillStyle(rock.dark, 1).fillRoundedRect(0, TOP, W, H + 20, 30);
+      g.fillStyle(rock.body, 1).fillRoundedRect(0, TOP, W - 10, H + 20, 30);
+      g.fillStyle(rock.light, 1).fillRoundedRect(8, TOP + 6, W - 34, 14, 7);
+      // Belly plates down the neck
+      g.fillStyle(rock.belly, 1);
+      for (let y = TOP + H * 0.58; y < TOP + H; y += 18)
+        g.fillRoundedRect(W * 0.14, y, W * 0.5, 12, 6);
+      // Slit eyes
+      const eyeY = TOP + H * 0.26;
+      g.fillStyle(0xffe66d, 1)
+        .fillEllipse(W * 0.26, eyeY, 24, 20)
+        .fillEllipse(W * 0.62, eyeY, 24, 20);
+      g.fillStyle(C.ink, 1)
+        .fillEllipse(W * 0.26, eyeY, 7, 18)
+        .fillEllipse(W * 0.62, eyeY, 7, 18);
+      // Mouth with two fangs
+      const mouthY = TOP + H * 0.42;
+      g.fillStyle(C.ink, 1).fillRoundedRect(W * 0.1, mouthY, W * 0.66, 12, 6);
+      g.fillStyle(C.white, 1);
+      g.fillTriangle(W * 0.18, mouthY + 2, W * 0.3, mouthY + 2, W * 0.24, mouthY + 20);
+      g.fillTriangle(W * 0.56, mouthY + 2, W * 0.68, mouthY + 2, W * 0.62, mouthY + 20);
+    },
+  },
 };
 
 /** What bosses throw, by the shot's kind. */
-const SHOTS: Record<string, ShotArt> = {};
+const SHOTS: Record<string, ShotArt> = {
+  // A shard of cave rock, point down
+  stalactite: {
+    draw(g, w, h) {
+      g.fillStyle(0x4a3c78, 1).fillTriangle(0, 0, w, 0, w / 2, h);
+      g.fillStyle(0xcdb8ff, 1).fillTriangle(w * 0.2, 0, w * 0.6, 0, w * 0.45, h * 0.7);
+    },
+  },
+};
 
 /** The color (and shape) of each kind of warning. */
-const WARNS: Record<string, WarnArt> = {};
+const WARNS: Record<string, WarnArt> = {
+  burrow: { color: 0xffd166, shape: 'spot' },
+  stalactite: { color: 0xcdb8ff },
+};
 
 /** A round shot: a ball of one color with a lighter core. */
 export const orb = (color: number, core: number): ShotArt => ({

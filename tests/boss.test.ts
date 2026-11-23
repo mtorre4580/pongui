@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { BOSSES, bossOf } from '../src/bosses';
 import { SCRIPTS } from '../src/bosses/scripts';
 import { arena } from '../src/bosses/types';
+import type { Serpent } from '../src/bosses/w2-serpstone';
 import { BossFight, MIN_WARN, seeded, type BossBrain, type BossDef } from '../src/game/boss';
 import { BALL_R, COLS, STEP, TILE, V_LOW } from '../src/game/constants';
 import { World, type InputState } from '../src/game/physics';
@@ -169,6 +170,34 @@ export function playScript(world: number, seconds: number, hp?: number) {
   return { f, status: s.status, won: f.won, hits, time: s.time };
 }
 
+/** Plays a boss holding the same keys all the time: what someone who has no plan would do. */
+function playNaive(world: number, keys: Partial<InputState>, seconds = 120) {
+  const { arena: level, def } = bossOf(world)!;
+  const f = new BossFight(new World(level), def);
+  const s = f.world.s;
+  for (let i = 0; i < seconds / STEP && s.status === 'playing' && !f.won; i++)
+    f.step(STEP, { ...idle, ...keys });
+  return { status: s.status, hp: f.boss.hp, time: s.time };
+}
+
+/** A fresh fight with a boss, and a way to run it with the ball held somewhere out of it. */
+function fightOf(world: number, hp?: number) {
+  const { arena: level, def } = bossOf(world)!;
+  const f = new BossFight(new World(level), def, hp);
+  const s = f.world.s;
+  /** Steps until `until` is true (or `seconds` pass), with the ball held at `at` if given. */
+  const run = (seconds: number, until?: () => boolean, at?: { x: number; y: number }) => {
+    const all = [];
+    // Held like in a grab: nothing the boss does reaches the ball
+    if (at) f.grab = { ...at, need: Infinity, wiggles: 0, last: 0 };
+    for (let i = 0; i < seconds / STEP && s.status === 'playing' && !until?.(); i++)
+      all.push(...f.step(STEP, idle).boss);
+    if (at) f.grab = null;
+    return all;
+  };
+  return { f, s, run, def };
+}
+
 describe('every boss', () => {
   it('is in BOSS_WORLDS and has a script that beats it', () => {
     expect(Object.keys(BOSSES).map(Number)).toEqual([...BOSS_WORLDS]);
@@ -181,6 +210,151 @@ describe('every boss', () => {
 
   it('is taller than a low bounce climbs, or standing still would beat it', () => {
     for (const world of BOSS_WORLDS) expect(bossOf(world)!.def.height).toBeGreaterThan(51);
+  });
+
+  it('beats a player who stands still or only runs to one side', () => {
+    for (const world of BOSS_WORLDS)
+      for (const keys of [{}, { right: true }, { left: true }, { right: true, jump: true }]) {
+        // Grumble's ledge is a place to rest: the first boss lets the player take their time
+        if (world === 1 && !keys.right) continue;
+        const result = playNaive(world, keys);
+        expect(result, `boss ${world} against ${JSON.stringify(keys)}`).toMatchObject({
+          status: 'dead',
+          hp: bossOf(world)!.def.hp,
+        });
+      }
+  });
+
+  it('announces everything it throws, for at least the minimum time', () => {
+    for (const world of BOSS_WORLDS) {
+      const { arena: level, def } = bossOf(world)!;
+      const f = new BossFight(new World(level), def);
+      const player = SCRIPTS[world]();
+      const s = f.world.s;
+      // When a warning of each kind last ran out
+      const over = new Map<string, number>();
+      let before = new Map<object, string>();
+      let shots = 0;
+      for (let i = 0; i < 240 / STEP && s.status === 'playing' && !f.won; i++) {
+        const { boss } = f.step(STEP, { ...player(f), jumpPressed: false });
+        const now = new Map<object, string>(f.warns.map((w) => [w, w.kind]));
+        for (const [w, kind] of before) if (!now.has(w)) over.set(kind, s.time);
+        for (const w of f.warns) expect(w.total).toBeGreaterThanOrEqual(MIN_WARN);
+        before = now;
+        for (const e of boss) {
+          if (e.type !== 'boss-shot') continue;
+          shots++;
+          // A warning of its kind ran out just before (volleys follow their warning closely)
+          expect(
+            s.time - (over.get(e.kind) ?? -Infinity),
+            `${e.kind} of boss ${world}`,
+          ).toBeLessThan(1.5);
+        }
+      }
+      if (world > 1) expect(shots, `shots of boss ${world}`).toBeGreaterThan(0);
+    }
+  });
+});
+
+describe('Serpstone (world 2)', () => {
+  const brain = (f: BossFight) => f.brain as Serpent;
+  const SAFE = { x: 600, y: 100 };
+
+  it('shakes its burrow before coming up, and is not there until then', () => {
+    const { f, run } = fightOf(2);
+    const { def } = BOSSES[2];
+    expect(f.boss.away).toBe(true);
+    const events = run(5, () => brain(f).mode === 'burrow', SAFE);
+    expect(events).toContainEqual(expect.objectContaining({ type: 'boss-warn', kind: 'burrow' }));
+    expect(f.boss.away).toBe(true);
+    const t0 = f.world.s.time;
+    run(5, () => brain(f).mode === 'rising', SAFE);
+    expect(f.world.s.time - t0).toBeGreaterThanOrEqual(def.warn[0] - STEP);
+    expect(f.boss.away).toBe(false);
+    run(5, () => brain(f).mode === 'up', SAFE);
+    expect(f.box[1]).toBe(def.floorY - def.height);
+    // And goes back under after a while, to come up somewhere else
+    const first = f.boss.x;
+    run(10, () => brain(f).mode === 'under', SAFE);
+    expect(f.boss.away).toBe(true);
+    run(10, () => brain(f).mode === 'up', SAFE);
+    expect(f.boss.x).not.toBe(first);
+  });
+
+  it('kills a ball waiting on its burrow, and cannot be hurt while it comes up', () => {
+    const { f, s, run } = fightOf(2);
+    const { def } = BOSSES[2];
+    run(5, () => brain(f).mode === 'burrow', SAFE);
+    // Bouncing on the moss right over the burrow
+    s.x = f.boss.x;
+    s.y = def.floorY - BALL_R;
+    run(4);
+    expect(s.status).toBe('dead');
+    expect(f.boss.hp).toBe(3);
+  });
+
+  it('cannot be reached from the moss, only from a stone', () => {
+    const up = () => {
+      const fight = fightOf(2);
+      fight.run(5, () => brain(fight.f).mode === 'up', SAFE);
+      return fight;
+    };
+    // From the moss beside it, holding jump: a low bounce, into its side
+    const low = up();
+    Object.assign(low.s, { x: low.f.boss.x + 50, y: BOSSES[2].def.floorY - BALL_R, vy: 0 });
+    for (let i = 0; i < 2 / STEP && low.s.status === 'playing'; i++)
+      low.f.step(STEP, { ...idle, left: true, jump: true });
+    expect(low.s.status).toBe('dead');
+    expect(low.f.boss.hp).toBe(3);
+    // From the edge of the stone next to it: a high bounce, onto its head
+    const high = up();
+    Object.assign(high.s, { x: 250, y: 10 * TILE - BALL_R - 1, vy: 50 });
+    let hit = false;
+    for (let i = 0; i < 2 / STEP && !hit && high.s.status === 'playing'; i++) {
+      const go = high.s.y < 10 * TILE - BALL_R - 40;
+      hit = high.f
+        .step(STEP, { ...idle, right: go, jump: true })
+        .boss.some((e) => e.type === 'boss-hit');
+    }
+    expect(hit).toBe(true);
+    expect(high.f.boss.hp).toBe(2);
+  });
+
+  it('drops a stalactite on the ball: deadly to wait under, easy to step away from', () => {
+    const still = fightOf(2);
+    const events = still.run(20, () => still.f.shots.length > 0);
+    expect(events).toContainEqual(
+      expect.objectContaining({ type: 'boss-warn', kind: 'stalactite' }),
+    );
+    // Over the ball's own column
+    expect(Math.abs(still.f.shots[0].x - still.s.x)).toBeLessThan(TILE / 2 + 1);
+    still.run(3, () => still.f.shots.length === 0);
+    expect(still.s.status).toBe('dead');
+    // Stepping to the other half of the stone when the warning shows
+    const moved = fightOf(2);
+    const x0 = moved.s.x;
+    let ended = false;
+    for (let i = 0; i < 20 / STEP && !ended && moved.s.status === 'playing'; i++) {
+      const warned = moved.f.warns.some((w) => w.kind === 'stalactite') || moved.f.shots.length;
+      const goal = warned ? x0 + 30 : x0;
+      ended = moved.f
+        .step(STEP, { ...idle, left: moved.s.x > goal + 3, right: moved.s.x < goal - 3 })
+        .boss.some((e) => e.type === 'boss-shot-end');
+    }
+    expect(ended).toBe(true);
+    expect(moved.s.status).toBe('playing');
+  });
+
+  it('is quicker and drops two stalactites at once in its last phase', () => {
+    const { def } = BOSSES[2];
+    for (const list of [def.warn, def.up, def.rest, def.stalEvery, def.stalWarn]) {
+      expect(list).toHaveLength(def.hp);
+      expect([...list]).toEqual([...list].sort((a, b) => b - a));
+      expect(Math.min(...list)).toBeGreaterThanOrEqual(MIN_WARN);
+    }
+    const last = fightOf(2, 1);
+    last.run(20, () => last.f.shots.length > 0, { x: 300, y: 100 });
+    expect(last.f.shots).toHaveLength(2);
   });
 });
 
