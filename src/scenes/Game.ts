@@ -17,6 +17,7 @@ import { FIELD, type ParsedLevel } from '../game/level';
 import { World, type WorldEvent } from '../game/physics';
 import { isPortal, isStatic, isToggle, T } from '../game/tiles';
 import { bakeSolids, C, drawBackground, sparkTexture, TEX } from '../gfx/textures';
+import { ITEM_TEX, TILE_TEX } from '../gfx/tileTextures';
 import { themeOf, type Theme } from '../gfx/themes';
 import { setupCamera, text } from '../gfx/ui';
 import { localized, t } from '../i18n';
@@ -24,12 +25,16 @@ import { controls } from '../input/controls';
 import { haptic } from '../native';
 import { levelLabel, LEVELS, worldOf } from '../levels';
 import { loadSave, recordWin } from '../save';
+import { parseCustom, type CustomRun } from '../custom/run';
+import { bestTime, getLevel, isVerified, recordCustomWin } from '../custom/store';
 
 export interface GameData {
   index: number;
   lives?: number;
   deaths?: number;
   takenLives?: number[];
+  /** A player-made level instead of an official one (`index` is ignored). */
+  custom?: CustomRun;
 }
 
 // The level starts at the top of the world: the HUD sits over its first row, which is always a
@@ -38,37 +43,7 @@ const OY = 0;
 
 // The whole level must stay visible: there are no on-screen buttons to leave room for (touch
 // play uses gestures over the level), so it takes all the free space, centered
-const ITEM_TEX = { gem: 'gem', drop: 'drop', hammer: 'hammer', life: 'life', key: 'key' } as const;
-const TILE_TEX: Record<number, string> = {
-  [T.FRAGILE]: 'fragile',
-  [T.FRAGILE3]: 'fragile3-0',
-  [T.FIRE]: 'fire',
-  [T.SPRING]: 'spring',
-  [T.RAMP_L]: 'rampL',
-  [T.RAMP_R]: 'rampR',
-  [T.WALL]: 'wall',
-  [T.SPIKE]: 'spike',
-  [T.LOCK]: 'lockblock',
-  [T.MOSS]: 'moss',
-  [T.CLOUD]: 'cloud',
-  [T.UPDRAFT]: 'updraft',
-  [T.SWITCH]: 'switch-off',
-  [T.BLOCK_A]: 'blockA',
-  [T.BLOCK_B]: 'blockB',
-  [T.PUSH_L]: 'pushL',
-  [T.PUSH_R]: 'pushR',
-  [T.PORTAL_1]: 'portal1',
-  [T.PORTAL_2]: 'portal2',
-  [T.PORTAL_3]: 'portal3',
-  [T.ICE]: 'ice',
-  [T.THIN_ICE]: 'thinice',
-  [T.CRUMBLE]: 'crumble',
-  [T.VENT]: 'vent-off',
-  [T.BUMPER]: 'bumper',
-  [T.PHASE_A]: 'phaseA',
-  [T.PHASE_B]: 'phaseB',
-  [T.BRIDGE]: 'bridge',
-};
+
 // Particle colors per tile (solid blocks use the world's color)
 const TILE_COLOR: Record<number, number> = {
   [T.ASH]: C.ashTop,
@@ -102,6 +77,7 @@ const TILE_COLOR: Record<number, number> = {
 
 export class Game extends Phaser.Scene {
   private index = 0;
+  private custom?: CustomRun;
   private level!: ParsedLevel;
   private theme!: Theme;
   private world!: World;
@@ -149,8 +125,17 @@ export class Game extends Phaser.Scene {
 
   init(data: GameData) {
     this.index = Phaser.Math.Clamp(data.index ?? 0, 0, LEVELS.length - 1);
-    this.level = LEVELS[this.index];
-    this.theme = themeOf(worldOf(this.index).n);
+    this.custom = data.custom;
+    const own = data.custom && getLevel(data.custom.id);
+    if (own) {
+      const hint = data.custom!.from === 'editor' ? t('editor.testHint') : undefined;
+      this.level = parseCustom(own, hint);
+      this.theme = themeOf(own.theme);
+    } else {
+      this.custom = undefined;
+      this.level = LEVELS[this.index];
+      this.theme = themeOf(worldOf(this.index).n);
+    }
     this.lives = data.lives ?? START_LIVES;
     this.deaths = data.deaths ?? 0;
     this.takenLives = new Set(data.takenLives ?? []);
@@ -211,7 +196,7 @@ export class Game extends Phaser.Scene {
   private redrawSolids() {
     // A new key per version: the old texture is removed once the image no longer uses it
     const old = this.solids?.texture.key;
-    const key = `solids-${this.index}-${++this.solidsVersion}`;
+    const key = `solids-${this.level.id}-${++this.solidsVersion}`;
     bakeSolids(this, key, this.world.s.tiles, COLS, ROWS, isStatic, T.ASH, this.theme);
     if (this.solids) this.solids.setTexture(key);
     else this.solids = this.add.image(0, OY, key).setOrigin(0).setScale(0.5);
@@ -484,7 +469,9 @@ export class Game extends Phaser.Scene {
       this,
       TILE + 6,
       HUD_H / 2,
-      `${levelLabel(this.index)} · ${localized(this.level.name)}`,
+      this.custom
+        ? localized(this.level.name)
+        : `${levelLabel(this.index)} · ${localized(this.level.name)}`,
       14,
       '#ffffff',
     )
@@ -576,7 +563,9 @@ export class Game extends Phaser.Scene {
       this,
       0,
       hasHint ? -20 : 0,
-      t('game.level', { n: levelLabel(this.index), name: localized(this.level.name) }),
+      this.custom
+        ? localized(this.level.name)
+        : t('game.level', { n: levelLabel(this.index), name: localized(this.level.name) }),
       22,
       '#ffffff',
       { fontStyle: '700' },
@@ -962,6 +951,7 @@ export class Game extends Phaser.Scene {
       if (this.lives > 0) {
         this.scene.restart({
           index: this.index,
+          custom: this.custom,
           lives: this.lives,
           deaths: this.deaths,
           takenLives: [...this.takenLives],
@@ -969,7 +959,7 @@ export class Game extends Phaser.Scene {
       } else {
         controls.enableGestures(false);
         this.scene.pause();
-        this.scene.launch('Overlay', { mode: 'gameover', index: this.index });
+        this.scene.launch('Overlay', { mode: 'gameover', index: this.index, custom: this.custom });
       }
     });
   }
@@ -991,8 +981,19 @@ export class Game extends Phaser.Scene {
     this.burst(C.accent, ex.x, ex.y, 24, 220);
     const time = this.world.s.time;
     const stars = 1 + (this.deaths === 0 ? 1 : 0) + (time <= this.level.par ? 1 : 0);
-    const prevBest = loadSave().levels[this.level.id]?.bestTime;
-    recordWin(this.level.id, this.index, stars, time, LEVELS.length);
+    let prevBest: number | undefined;
+    let verified = false;
+    if (this.custom) {
+      const own = getLevel(this.custom.id);
+      prevBest = (own && bestTime(own)) ?? undefined;
+      const wasVerified = !!own && isVerified(own);
+      recordCustomWin(this.custom.id, time);
+      const now = getLevel(this.custom.id);
+      verified = !wasVerified && !!now && isVerified(now);
+    } else {
+      prevBest = loadSave().levels[this.level.id]?.bestTime;
+      recordWin(this.level.id, this.index, stars, time, LEVELS.length);
+    }
     this.time.delayedCall(750, () => {
       this.ball.setVisible(false);
       controls.enableGestures(false);
@@ -1000,6 +1001,8 @@ export class Game extends Phaser.Scene {
       this.scene.launch('Overlay', {
         mode: 'complete',
         index: this.index,
+        custom: this.custom,
+        verified,
         stars,
         time,
         par: this.level.par,
@@ -1013,12 +1016,13 @@ export class Game extends Phaser.Scene {
     if (this.ended || !this.scene.isActive()) return;
     controls.enableGestures(false);
     this.scene.pause();
-    this.scene.launch('Overlay', { mode: 'pause', index: this.index });
+    this.scene.launch('Overlay', { mode: 'pause', index: this.index, custom: this.custom });
   }
 
   private restartLevel() {
     this.scene.restart({
       index: this.index,
+      custom: this.custom,
       lives: this.lives,
       deaths: this.deaths,
       takenLives: [...this.takenLives],

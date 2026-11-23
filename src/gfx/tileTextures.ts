@@ -1,0 +1,40 @@
+// Texture of each tile and item, shared by the game and the level editor.
+import { T } from '../game/tiles';
+
+export const ITEM_TEX = {
+  gem: 'gem',
+  drop: 'drop',
+  hammer: 'hammer',
+  life: 'life',
+  key: 'key',
+} as const;
+export const TILE_TEX: Record<number, string> = {
+  [T.FRAGILE]: 'fragile',
+  [T.FRAGILE3]: 'fragile3-0',
+  [T.FIRE]: 'fire',
+  [T.SPRING]: 'spring',
+  [T.RAMP_L]: 'rampL',
+  [T.RAMP_R]: 'rampR',
+  [T.WALL]: 'wall',
+  [T.SPIKE]: 'spike',
+  [T.LOCK]: 'lockblock',
+  [T.MOSS]: 'moss',
+  [T.CLOUD]: 'cloud',
+  [T.UPDRAFT]: 'updraft',
+  [T.SWITCH]: 'switch-off',
+  [T.BLOCK_A]: 'blockA',
+  [T.BLOCK_B]: 'blockB',
+  [T.PUSH_L]: 'pushL',
+  [T.PUSH_R]: 'pushR',
+  [T.PORTAL_1]: 'portal1',
+  [T.PORTAL_2]: 'portal2',
+  [T.PORTAL_3]: 'portal3',
+  [T.ICE]: 'ice',
+  [T.THIN_ICE]: 'thinice',
+  [T.CRUMBLE]: 'crumble',
+  [T.VENT]: 'vent-off',
+  [T.BUMPER]: 'bumper',
+  [T.PHASE_A]: 'phaseA',
+  [T.PHASE_B]: 'phaseB',
+  [T.BRIDGE]: 'bridge',
+};

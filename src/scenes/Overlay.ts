@@ -6,6 +6,7 @@ import { button, ButtonGroup, setupCamera, text, type Button } from '../gfx/ui';
 import { t } from '../i18n';
 import { controls } from '../input/controls';
 import { LEVELS, worldOf } from '../levels';
+import { leaveCustom, type CustomRun } from '../custom/run';
 
 export interface OverlayData {
   mode: 'pause' | 'complete' | 'gameover';
@@ -15,6 +16,10 @@ export interface OverlayData {
   par?: number;
   deaths?: number;
   record?: boolean;
+  /** A player-made level: its buttons lead back to the editor or the level list. */
+  custom?: CustomRun;
+  /** The win that verified a player's level (its creator beat it). */
+  verified?: boolean;
 }
 
 export class Overlay extends Phaser.Scene {
@@ -34,9 +39,14 @@ export class Overlay extends Phaser.Scene {
     controls.clearEdges();
     const d = this.data_;
     const world = worldOf(d.index);
+    const custom = d.custom;
     // The last level of a world: "World complete!" and a button to the next world, if any
-    const last = d.index === world.first + world.count - 1;
-    const hasNext = d.index < LEVELS.length - 1;
+    const last = !custom && d.index === world.first + world.count - 1;
+    const hasNext = !custom && d.index < LEVELS.length - 1;
+    // Where "back" goes: the level select, the editor or the list of player-made levels
+    const backLabel = t(
+      !custom ? 'overlay.levels' : custom.from === 'editor' ? 'overlay.toEditor' : 'overlay.toMine',
+    );
 
     const dim = this.add
       // Larger than the world: it dims the whole screen at any aspect ratio
@@ -74,7 +84,7 @@ export class Overlay extends Phaser.Scene {
         setSound(!soundEnabled());
         s.setLabel(soundLabel());
       });
-      add(t('overlay.levels'), () => this.toLevels());
+      add(backLabel, () => this.toLevels());
       layout(-h / 2 + 84);
       this.group = new ButtonGroup(buttons, 1, () => this.resumeGame());
     } else if (d.mode === 'gameover') {
@@ -83,7 +93,7 @@ export class Overlay extends Phaser.Scene {
       );
       panel.add(text(this, 0, -h / 2 + 70, t('overlay.outOfLivesText'), 14, '#c9cff7'));
       add(t('overlay.retry'), () => this.startLevel(d.index), 0xe85d75);
-      add(t('overlay.levels'), () => this.toLevels());
+      add(backLabel, () => this.toLevels());
       layout(-h / 2 + 128);
       this.group = new ButtonGroup(buttons, 1, () => this.toLevels());
     } else {
@@ -119,7 +129,8 @@ export class Overlay extends Phaser.Scene {
       const tips: string[] = [];
       if ((d.deaths ?? 0) > 0) tips.push(t('overlay.starNoDeaths'));
       if ((d.time ?? 0) > (d.par ?? 0)) tips.push(t('overlay.starTime', { par: d.par ?? 0 }));
-      if (tips.length)
+      if (d.verified) panel.add(text(this, 0, -h / 2 + 156, t('overlay.verified'), 13, '#7ae582'));
+      else if (tips.length)
         panel.add(
           text(
             this,
@@ -136,8 +147,10 @@ export class Overlay extends Phaser.Scene {
           () => this.startLevel(d.index + 1),
           0xe85d75,
         );
+      if (custom?.from === 'editor') add(backLabel, () => this.toLevels(), 0xe85d75);
       add(t('overlay.replay'), () => this.startLevel(d.index));
-      add(t('overlay.levels'), () => this.toLevels(), hasNext ? undefined : 0xe85d75);
+      if (custom?.from !== 'editor')
+        add(backLabel, () => this.toLevels(), hasNext ? undefined : 0xe85d75);
       layout(-h / 2 + 190);
       this.group = new ButtonGroup(buttons, 1, () => this.toLevels());
     }
@@ -151,12 +164,14 @@ export class Overlay extends Phaser.Scene {
 
   private startLevel(index: number) {
     this.scene.stop('Game');
-    this.scene.start('Game', { index });
+    this.scene.start('Game', { index, custom: this.data_.custom });
   }
 
   private toLevels() {
     this.scene.stop('Game');
-    this.scene.start('LevelSelect', { world: worldOf(this.data_.index).n });
+    const custom = this.data_.custom;
+    if (custom) leaveCustom(this, custom);
+    else this.scene.start('LevelSelect', { world: worldOf(this.data_.index).n });
   }
 
   update() {
