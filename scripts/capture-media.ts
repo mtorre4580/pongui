@@ -12,7 +12,7 @@
  *        pnpm media:social   vertical videos for social networks in docs/social/ (not committed)
  */
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, readdirSync, readFileSync, rmSync } from 'node:fs';
+import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { chromium, devices, type Browser, type Page } from '@playwright/test';
 import { createServer } from 'vite';
@@ -48,11 +48,87 @@ const CLIPS = Array.from({ length: WORLDS }, (_, i) => ({
 const waitScene = (page: Page, scene: string) =>
   page.waitForFunction((s) => document.body.dataset.scene === s, scene, { timeout: 20_000 });
 
-async function prepare(page: Page) {
-  await page.addInitScript((save) => {
-    localStorage.setItem('pongui:locale', 'en');
-    localStorage.setItem('pongui:save', JSON.stringify(save));
-  }, SAVE);
+async function prepare(page: Page, { sound = false } = {}) {
+  await page.addInitScript(
+    (save) => {
+      localStorage.setItem('pongui:locale', 'en');
+      localStorage.setItem('pongui:save', JSON.stringify(save));
+    },
+    { ...SAVE, sound },
+  );
+  if (sound) await page.addInitScript(tapAudio);
+}
+
+/** Where a recording's sound ends up, and the second of the video it starts at. */
+interface AudioTrack {
+  file: string;
+  start: number;
+}
+
+interface AudioTap {
+  __audioStart(): Promise<void>;
+  __audioStop(): Promise<string>;
+}
+
+/**
+ * Runs inside the page. Playwright's video has no sound, so everything the game sends to the
+ * speakers is also sent to a recorder: `__audioStart()` begins once the game has made its
+ * AudioContext and `__audioStop()` returns the recording (WebM/Opus) as base64.
+ */
+function tapAudio() {
+  let recorder: MediaRecorder | null = null;
+  let stream: MediaStream | null = null;
+  const chunks: Blob[] = [];
+  const connect = AudioNode.prototype.connect as (this: AudioNode, ...args: unknown[]) => unknown;
+  AudioNode.prototype.connect = function (this: AudioNode, ...args: unknown[]) {
+    const target = args[0];
+    if (target instanceof AudioDestinationNode) {
+      const context = target.context as AudioContext;
+      const copy = context.createMediaStreamDestination();
+      connect.call(this, copy);
+      // An inaudible constant keeps the stream flowing, so the recording's clock starts with
+      // `start()` and not with the first sound
+      const hum = context.createConstantSource();
+      hum.offset.value = 1e-5;
+      hum.connect(copy);
+      hum.start();
+      stream = copy.stream;
+    }
+    return connect.apply(this, args);
+  } as typeof AudioNode.prototype.connect;
+  const tap = window as unknown as AudioTap;
+  tap.__audioStart = async () => {
+    for (let waited = 0; !stream; waited += 20) {
+      if (waited > 5000) throw new Error('the game never started its audio');
+      await new Promise((r) => setTimeout(r, 20));
+    }
+    recorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' });
+    recorder.ondataavailable = (e) => chunks.push(e.data);
+    // Not waiting for the `start` event: it only fires once sound flows, which a quiet screen
+    // like the editor may take a while to do
+    recorder.start();
+  };
+  tap.__audioStop = async () => {
+    const stopped = new Promise((r) => recorder!.addEventListener('stop', r, { once: true }));
+    recorder!.stop();
+    await stopped;
+    const bytes = new Uint8Array(await new Blob(chunks).arrayBuffer());
+    let binary = '';
+    for (let i = 0; i < bytes.length; i += 0x8000)
+      binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+    return btoa(binary);
+  };
+}
+
+const audioStart = (page: Page) =>
+  page.evaluate(() => (window as unknown as AudioTap).__audioStart());
+
+/** Stops the page's recorder and writes its sound next to the raw video. */
+async function audioStop(page: Page, start: number): Promise<AudioTrack> {
+  const data = await page.evaluate(() => (window as unknown as AudioTap).__audioStop());
+  const file = join(TMP, 'audio.webm');
+  writeFileSync(file, Buffer.from(data, 'base64'));
+  return { file, start };
 }
 
 const ffmpeg = (args: string[]) => execFileSync('ffmpeg', ['-y', '-loglevel', 'error', ...args]);
@@ -67,8 +143,8 @@ const toJpeg = (src: string, out: string, width: number) =>
 async function record(
   browser: Browser,
   levels: number[],
-  { banner = true, pause = 1600, width = 960, height = 624 } = {},
-): Promise<{ raw: string; parts: { start: number; won: number }[] }> {
+  { banner = true, pause = 1600, width = 960, height = 624, sound = false } = {},
+): Promise<{ raw: string; parts: { start: number; won: number }[]; audio?: AudioTrack }> {
   rmSync(TMP, { recursive: true, force: true });
   const context = await browser.newContext({
     viewport: { width, height },
@@ -77,11 +153,12 @@ async function record(
   const page = await context.newPage();
   const t0 = Date.now();
   const now = () => (Date.now() - t0) / 1000;
-  await prepare(page);
+  await prepare(page, { sound });
   await page.goto(`${GAME}?level=1`);
   await waitScene(page, 'Game');
   await page.waitForTimeout(500);
   const parts: { start: number; won: number }[] = [];
+  let heard: number | undefined;
   for (const level of levels) {
     const start = now();
     await page.evaluate(
@@ -91,16 +168,22 @@ async function record(
         }),
       [level, banner] as const,
     );
+    // The first demo creates the game's audio: the recorder starts right after it
+    if (sound && heard === undefined) {
+      await audioStart(page);
+      heard = now();
+    }
     await waitScene(page, 'Overlay'); // won: the result panel opens
     parts.push({ start, won: now() });
     await page.waitForTimeout(pause);
   }
+  const audio = heard === undefined ? undefined : await audioStop(page, heard);
   await context.close();
   const raw = join(
     TMP,
-    readdirSync(TMP).find((f) => f.endsWith('.webm'))!,
+    readdirSync(TMP).find((f) => f.endsWith('.webm') && f !== 'audio.webm')!,
   );
-  return { raw, parts };
+  return { raw, parts, audio };
 }
 
 /** Presses are edge-triggered per frame: leave a few frames between them. */
@@ -121,7 +204,8 @@ const times = (key: string, n: number) => Array.from({ length: n }, () => key);
 async function recordEditor(
   browser: Browser,
   width = 960,
-): Promise<{ raw: string; from: number; to: number }> {
+  sound = false,
+): Promise<{ raw: string; from: number; to: number; audio?: AudioTrack }> {
   // Same shape as the game's world (640×416), so the canvas has no side bars
   const height = Math.round((width * 416) / 640);
   rmSync(TMP, { recursive: true, force: true });
@@ -132,7 +216,7 @@ async function recordEditor(
   const page = await context.newPage();
   const t0 = Date.now();
   const now = () => (Date.now() - t0) / 1000;
-  await prepare(page);
+  await prepare(page, { sound });
   await page.goto(`${GAME}?editor=1`);
   await waitScene(page, 'Menu');
   // Menu: Play, My levels. My levels: "New level" is the first button
@@ -141,6 +225,13 @@ async function recordEditor(
   await press(page, ['Enter', 'Enter']);
   await waitScene(page, 'Editor');
   await page.waitForTimeout(600);
+  let heard: number | undefined;
+  if (sound) {
+    // Keyboard navigation alone does not start the game's audio
+    await page.evaluate(() => (window as unknown as { unlockAudio(): void }).unlockAudio());
+    await audioStart(page);
+    heard = now();
+  }
   const from = now();
   // The cursor starts at the top left cell. A ledge of solid blocks, painted as one stroke
   await press(page, [...times('ArrowRight', 7), ...times('ArrowDown', 5)], 70);
@@ -186,12 +277,14 @@ async function recordEditor(
   await page.mouse.click(share.x, share.y);
   await page.getByRole('dialog').waitFor({ state: 'visible' });
   await page.waitForTimeout(2600);
+  const to = now() - 0.3;
+  const audio = heard === undefined ? undefined : await audioStop(page, heard);
   await context.close();
   const raw = join(
     TMP,
-    readdirSync(TMP).find((f) => f.endsWith('.webm'))!,
+    readdirSync(TMP).find((f) => f.endsWith('.webm') && f !== 'audio.webm')!,
   );
-  return { raw, from, to: now() - 0.3 };
+  return { raw, from, to, audio };
 }
 
 /** Encodes a section of a raw recording as a small, web-friendly MP4 plus a JPEG poster. */
@@ -286,26 +379,30 @@ async function drawCard(
 }
 
 /** Lays a section of a recording over a card: a 1080×1920 MP4 ready to upload. */
-function vertical(card: string, raw: string, from: number, to: number, out: string) {
+function vertical(
+  card: string,
+  raw: string,
+  from: number,
+  to: number,
+  out: string,
+  audio?: AudioTrack,
+) {
+  const length = (to - from).toFixed(2);
+  // The sound is its own recording: cut the same moment out of it
+  const sound = audio
+    ? ['-ss', Math.max(0, from - audio.start).toFixed(2), '-t', length, '-i', audio.file]
+    : [];
   ffmpeg(
-    ['-loop', '1', '-i', card, '-ss', from.toFixed(2), '-t', (to - from).toFixed(2), '-i', raw]
+    ['-loop', '1', '-i', card, '-ss', from.toFixed(2), '-t', length, '-i', raw, ...sound]
       .concat([
         '-filter_complex',
-        `[1:v]scale=${SOCIAL_W}:${SHOT_H}:flags=lanczos[v];[0:v][v]overlay=0:${SHOT_Y}:shortest=1`,
+        `[1:v]scale=${SOCIAL_W}:${SHOT_H}:flags=lanczos[v];[0:v][v]overlay=0:${SHOT_Y}:shortest=1[out]`,
+        '-map',
+        '[out]',
       ])
-      .concat([
-        '-r',
-        '30',
-        '-c:v',
-        'libx264',
-        '-crf',
-        '20',
-        '-preset',
-        'slow',
-        '-pix_fmt',
-        'yuv420p',
-      ])
-      .concat(['-movflags', '+faststart', '-an', out]),
+      .concat(audio ? ['-map', '2:a', '-af', 'volume=8dB', '-c:a', 'aac', '-b:a', '128k'] : ['-an'])
+      .concat(['-r', '30', '-c:v', 'libx264', '-crf', '20', '-preset', 'slow'])
+      .concat(['-pix_fmt', 'yuv420p', '-movflags', '+faststart', '-t', length, out]),
   );
 }
 
@@ -370,7 +467,7 @@ async function social(browser: Browser) {
   const context = await browser.newContext({ viewport: { width: SOCIAL_W, height: SOCIAL_H } });
   const page = await context.newPage();
 
-  const size = { width: SOCIAL_W, height: SHOT_H };
+  const size = { width: SOCIAL_W, height: SHOT_H, sound: true };
   const worlds = await record(
     browser,
     CLIPS.map((c) => c.level),
@@ -390,10 +487,10 @@ async function social(browser: Browser) {
       });
       const part = worlds.parts[i];
       const out = join(SOCIAL, lang, `world-${String(n).padStart(2, '0')}.mp4`);
-      vertical(card, worlds.raw, part.start + 0.7, part.won + 0.2, out);
+      vertical(card, worlds.raw, part.start + 0.7, part.won + 0.2, out, worlds.audio);
     }
   }
-  const editor = await recordEditor(browser, SOCIAL_W);
+  const editor = await recordEditor(browser, SOCIAL_W, true);
   for (const lang of langs) {
     const card = join(cards, `${lang}-editor.png`);
     await drawCard(page, card, {
@@ -403,7 +500,14 @@ async function social(browser: Browser) {
       cta: SOCIAL_TEXT[lang].cta,
       site,
     });
-    vertical(card, editor.raw, editor.from, editor.to, join(SOCIAL, lang, 'editor.mp4'));
+    vertical(
+      card,
+      editor.raw,
+      editor.from,
+      editor.to,
+      join(SOCIAL, lang, 'editor.mp4'),
+      editor.audio,
+    );
   }
   await context.close();
   // The game is international: the banner speaks English
@@ -524,7 +628,8 @@ await server.listen();
 mkdirSync(DOCS, { recursive: true });
 mkdirSync(LANDING, { recursive: true });
 mkdirSync(TMP, { recursive: true });
-const browser = await chromium.launch();
+// Sound without a key press, for the demos recorded with audio
+const browser = await chromium.launch({ args: ['--autoplay-policy=no-user-gesture-required'] });
 
 try {
   if (only === 'social') await social(browser);

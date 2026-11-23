@@ -1,7 +1,8 @@
 # Pongui: lanzamiento y redes
 
 Guía de trabajo para publicar el juego y darlo a conocer. Los videos se generan con
-`pnpm media:social` (quedan en `docs/social/es` y `docs/social/en`, fuera del repo).
+`pnpm media:social` (quedan en `docs/social/es` y `docs/social/en`, fuera del repo). Llevan los
+efectos de sonido del propio juego; la música se puede sumar desde la app de cada red.
 
 ## Antes de publicar (una sola vez)
 

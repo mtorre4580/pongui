@@ -55,7 +55,8 @@ pnpm check:bundle       # gzip budget per chunk (after pnpm build)
 pnpm test:e2e           # Playwright + axe on desktop and phone (after pnpm build)
 pnpm lhci               # Lighthouse CI on the built game
 pnpm media              # README media, landing videos/screenshots and og-image (needs ffmpeg)
-pnpm media:social       # vertical videos for social networks in docs/social/ (not committed)
+pnpm media:social       # vertical videos with the game's sound for social networks, in
+                        # docs/social/ (not committed)
 pnpm icons              # regenerate public/icons and the native sources in assets/
 pnpm build:native       # game-only build in dist-native/ + `cap sync` into ios/ and android/
 pnpm native:assets      # every iOS/Android icon and splash size from assets/

@@ -1,6 +1,7 @@
 // Development-only tools (not included in the production build).
 // From the browser console: `await replay(3)` replays the solver's solution for level 4.
 import type Phaser from 'phaser';
+import { unlockAudio } from './audio/sfx';
 import { STEP } from './game/constants';
 import { endsStep, solve } from './game/solver';
 import type { World } from './game/physics';
@@ -72,6 +73,8 @@ export function installDevTools(game: Phaser.Game) {
    * GIF). When the level ends the usual result panel opens (`data-scene="Overlay"`).
    */
   const demo = (index: number, { banner = true } = {}) => {
+    // Nobody presses a key in a demo: start the audio here (recordings allow it without one)
+    unlockAudio();
     {
       const sc = game.scene.getScene('Game') as unknown as AnyGame;
       // Subscribe before starting: outside the game loop Phaser starts the scene synchronously
@@ -116,5 +119,5 @@ export function installDevTools(game: Phaser.Game) {
     }
   };
 
-  Object.assign(window, { game, tick, replay, demo });
+  Object.assign(window, { game, tick, replay, demo, unlockAudio });
 }
