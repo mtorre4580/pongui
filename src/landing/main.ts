@@ -1,8 +1,4 @@
 // Landing page: plain DOM, no game engine. Texts, videos, level list and install button.
-import '@fontsource/fredoka/latin-400.css';
-import '@fontsource/fredoka/latin-600.css';
-import '@fontsource/fredoka/latin-700.css';
-import './landing.css';
 import { getLocale, LOCALES, setLocale, t, type Locale, type MessageKey } from '../i18n';
 // Only the world count: the level maps stay out of the landing page's bundle
 import { PLANNED_WORLDS, WORLD_COUNT } from '../levels/worlds';

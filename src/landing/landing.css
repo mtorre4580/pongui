@@ -1,4 +1,11 @@
 /* Landing page. Same palette as the game: navy night, coral ball, teal blocks, gold stars. */
+/* Linked from the page's <head> (not imported from the script) so it blocks the first paint:
+   imported from JS, the dev server injects it only after the bundle runs and the page flashes
+   unstyled. */
+@import '@fontsource/fredoka/latin-400.css';
+@import '@fontsource/fredoka/latin-600.css';
+@import '@fontsource/fredoka/latin-700.css';
+
 :root {
   --bg: #0d1024;
   --bg-2: #12163a;

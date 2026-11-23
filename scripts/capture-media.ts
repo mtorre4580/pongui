@@ -190,6 +190,7 @@ try {
 
   // --- README GIF and video: levels 4 and 10 with their result panels ---
   const readme = await record(browser, [3, 9]);
+  // Both skip the first 0.8 s: the page loading and level 1 before the demo starts
   ffmpeg(
     ['-ss', '0.8', '-i', readme.raw, '-vf'].concat([
       'fps=20,scale=640:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=96[p];[b][p]paletteuse=dither=bayer:bayer_scale=4',
@@ -197,7 +198,7 @@ try {
     ]),
   );
   ffmpeg(
-    ['-i', readme.raw, '-c:v', 'libx264', '-pix_fmt', 'yuv420p'].concat([
+    ['-ss', '0.8', '-i', readme.raw, '-c:v', 'libx264', '-pix_fmt', 'yuv420p'].concat([
       '-movflags',
       '+faststart',
       '-an',
