@@ -1,0 +1,28 @@
+{
+  "id": "w4-07",
+  "name": {
+    "en": "Hot floor",
+    "es": "Piso caliente",
+    "pt-BR": "Piso quente"
+  },
+  "hint": {
+    "en": "Floors over fire come and go: watch the switch lamp before you cross.",
+    "es": "Los pisos sobre el fuego van y vienen: mirá la luz del interruptor antes de cruzar.",
+    "pt-BR": "Os pisos sobre o fogo vêm e vão: olhe a luz do interruptor antes de atravessar."
+  },
+  "par": 99,
+  "map": [
+    "####################",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#.....g.......g....#",
+    "#..................#",
+    "#.P..............E.#",
+    "###BBBBB#o#AAAAA####",
+    "###^^^^^###^^^^^####"
+  ]
+}

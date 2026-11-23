@@ -1,0 +1,28 @@
+{
+  "id": "w4-02",
+  "name": {
+    "en": "Pushers",
+    "es": "Empujadores",
+    "pt-BR": "Empurradores"
+  },
+  "hint": {
+    "en": "Pushers throw you sideways in a low, fast hop.",
+    "es": "Los empujadores te lanzan de costado en un salto bajo y rápido.",
+    "pt-BR": "Os empurradores lançam você de lado num pulo baixo e rápido."
+  },
+  "par": 99,
+  "map": [
+    "####################",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#......g...........#",
+    "#.E................#",
+    "#######**((#####...#",
+    "#..................#",
+    "#.....g............#",
+    "#.P..............#.#",
+    "###))**#############"
+  ]
+}

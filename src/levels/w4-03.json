@@ -1,0 +1,28 @@
+{
+  "id": "w4-03",
+  "name": {
+    "en": "Bonk it",
+    "es": "Cabezazo",
+    "pt-BR": "Cabeçada"
+  },
+  "hint": {
+    "en": "Hitting a switch from below flips it too.",
+    "es": "Pegarle a un interruptor desde abajo también lo cambia.",
+    "pt-BR": "Bater num interruptor por baixo também o aciona."
+  },
+  "par": 99,
+  "map": [
+    "####################",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#.............g....#",
+    "#.o................#",
+    "#..................#",
+    "#......g...........#",
+    "#.P...AAAAAAA.....E#",
+    "######*******#######"
+  ]
+}

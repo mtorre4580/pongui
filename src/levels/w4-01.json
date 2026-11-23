@@ -1,0 +1,28 @@
+{
+  "id": "w4-01",
+  "name": {
+    "en": "Flip switch",
+    "es": "Interruptor",
+    "pt-BR": "Interruptor"
+  },
+  "hint": {
+    "en": "Bounce on a switch: teal blocks open and orange ones turn solid.",
+    "es": "Rebotá en un interruptor: los bloques turquesa se abren y los naranjas se vuelven sólidos.",
+    "pt-BR": "Quique num interruptor: os blocos turquesa se abrem e os laranja ficam sólidos."
+  },
+  "par": 99,
+  "map": [
+    "####################",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#.............g....#",
+    "#..........B.......#",
+    "#..........B.AAA...#",
+    "#...g......B.......#",
+    "#.P........B.....E.#",
+    "########o###########"
+  ]
+}

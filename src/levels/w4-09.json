@@ -1,0 +1,28 @@
+{
+  "id": "w4-09",
+  "name": {
+    "en": "Spring press",
+    "es": "Prensa",
+    "pt-BR": "Prensa"
+  },
+  "hint": {
+    "en": "The spring only works while the orange lid is open.",
+    "es": "El resorte solo sirve mientras la tapa naranja está abierta.",
+    "pt-BR": "A mola só funciona enquanto a tampa laranja está aberta."
+  },
+  "par": 99,
+  "map": [
+    "####################",
+    "#..................#",
+    "#.......g..........#",
+    "#..................#",
+    "#.....----.........#",
+    "#..................#",
+    "#......AAA.........#",
+    "#..................#",
+    "#.............g...B#",
+    "#.................B#",
+    "#.P.....s.....o..BE#",
+    "####################"
+  ]
+}

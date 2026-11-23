@@ -18,6 +18,7 @@ export const es: Messages = {
   'world.1': 'Valle Saltarín',
   'world.2': 'Cuevas de Cristal',
   'world.3': 'Picos Nubosos',
+  'world.4': 'Taller de Engranajes',
   'game.level': 'Nivel {n} · {name}',
   'game.exitOpen': '¡Salida abierta!',
   'overlay.paused': 'Pausa',
