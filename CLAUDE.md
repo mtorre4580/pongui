@@ -287,6 +287,14 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
     (deadly from above too, e.g. while it bursts out of the ground), `boss.alpha` and
     `boss.pose` (which of its textures is shown); `emit({ type: 'boss-fx', name })` for sounds.
 - A boss must be taller than a low bounce climbs (51 px), or standing still would beat it.
+- `BossDef.shove`: a bounce off its head that does no damage (dazed or shielded) throws the
+  ball sideways until it lands. Every boss but Grumble sets it: without it, bouncing on a
+  dazed boss forever was a spot where nothing could reach the ball.
+- Things learnt building them: what is thrown in an arc crosses the spots next to its mark, so
+  marks are only honest for things that come straight down; an attack that starts at the boss's
+  head hits the ball on its way there; a body moving faster than the ball cannot be jumped
+  over, it needs a place to stand; and real key presses are slower than the simulation (play
+  every boss with `pnpm play:boss`, it finds what unit tests cannot).
 - `bosses/index.ts` lists them (`BOSSES`, `bossOf(world)`); `bosses/types.ts` has `arena()`: a
   level map whose exit cell is turned into rock (the fight ends when the boss does). `Game`
   runs a fight with `boss: <world>` (`play/?boss=N` opens one the player has reached, or any
@@ -331,6 +339,13 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
      holding jump). Running over its own ice it slips, slams into the wall and sits there,
      open, for 4 to 2.9 s: walk off the ledge onto its head. A ball that stays 2.5 s on a
      ledge while snowballs fly gets the ledge stomped away (it grows back in 6 s).
+  7. **Cinder** (4 hits): a lava dragon flying low. Low bounces pass under it, a high bounce
+     there touches its belly, and its head (150 px up) is only reached with a high bounce from
+     a ledge (96 px up) while it is near that ledge; after a hit it flees to its far turn.
+     Every second time the vents go dark it spits fire that comes straight down on the ball's
+     tile (two tiles from the third phase): rock hit by it becomes a crumbling block, floor
+     and ledges alike, so it holds one more bounce and is gone for good. Three vents in the
+     floor never crack but are lit half the time. The fight has an end: the floor runs out.
 - To add one: `src/bosses/wN-name.ts` (brain, `BossDef`, arena, theme) and its entry in
   `BOSSES`; its world in `BOSS_WORLDS`; its art in `gfx/bossArt.ts` and sounds in `sfx.ts`;
   `boss.N` and `game.bossHint.N` in the three languages; its script in `bosses/scripts.ts`;
