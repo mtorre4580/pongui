@@ -135,6 +135,8 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
   and they flicker in the last 0.3 s before swapping. Plan steps end on every swap. Dark levels
   (`"dark": true`) only change the look: a veil with a soft hole of light around the ball,
   with items and the exit drawn over it.
+- Rainbow bridges `=` are toggle blocks that turn solid when the last gem is taken (like A/B
+  blocks, one that appears around the ball waits until the ball leaves it).
 - `World.step` returns events (`bounce`, `break`, `collect`, `die`, `win`…); scenes only render
   them. Never put gameplay rules in scenes.
 
@@ -143,7 +145,8 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
 - The game has worlds of **exactly 10 levels**, with ids `w<world>-<nn>` (numeric order: `w2` before
   `w10`). Each world has a name (`world.N` in i18n), colors (`gfx/themes.ts`) and two new
   mechanics introduced in its first levels. The plan is 10 worlds (100 levels); `WORLD_COUNT` in
-  `src/levels/worlds.ts` says how many exist (the landing page reads it without the maps).
+  `src/levels/worlds.ts` says how many exist (the landing page reads it without the maps) and
+  `PLANNED_WORLDS` how many are planned (once both match, the landing stops promising more).
 - Progress: a level is open when the previous one has a record, so a new world opens for players
   who already finished the last one. The level select shows one world per page (◀ ▶, or
   left/right at the edge of a row) and `?level=` accepts `12` or `2-3`.
@@ -391,7 +394,7 @@ characters must stay unique across the game.
 - [x] World 7 — Ember Core: crumbling blocks, vents
 - [x] World 8 — Star Station: low-gravity zones, bumpers
 - [x] World 9 — Shadow Keep: dark levels, phase blocks
-- [ ] World 10 (planned: rainbow bridges and a remix of every mechanic)
+- [x] World 10 — Rainbow Summit: rainbow bridges and a remix of every mechanic
 - [x] Native apps — Capacitor iOS and Android projects (iOS verified in the simulator)
 - [ ] Store release (developer accounts, signing, store listings, privacy policy)
 - [ ] Public release (license, Pages deploy, CodeQL)

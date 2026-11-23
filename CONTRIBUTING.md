@@ -48,6 +48,7 @@ Thanks for helping! New levels, mechanics, translations and fixes are all welcom
 | `z` | low-gravity zone (45% gravity). Like water, anything drawn inside one is in it too |
 | `b` | bumper: a side hit throws you back at a fixed speed; from above it is a normal block |
 | `%` `&` | phase blocks: solid and ghost by turns every 1.2 s, always opposite (`%` solid first) |
+| `=` | rainbow bridge: not there until every gem is taken, then solid |
 | `~` | water: slow fall, higher bounces. Items, the start, portals or spikes drawn inside a pool are under water too |
 | `g` `d` `h` `l` `k` | gem, water drop, hammer, extra life, key |
 | `P` `E` | start and exit |
