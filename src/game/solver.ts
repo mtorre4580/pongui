@@ -40,7 +40,7 @@ function hashTiles(s: WorldState): number {
 function key(s: WorldState): string {
   let mask = 0;
   for (let i = 0; i < s.items.length; i++) if (s.items[i].taken) mask |= 1 << i;
-  return `${Math.round(s.x / 2)}|${Math.round(s.y / 2)}|${Math.round(s.vx / 10)}|${Math.round(s.vy / 20)}|${s.lockVx ?? 'n'}|${s.drops}|${s.hammers}|${mask}|${hashTiles(s)}`;
+  return `${Math.round(s.x / 2)}|${Math.round(s.y / 2)}|${Math.round(s.vx / 10)}|${Math.round(s.vy / 20)}|${s.lockVx ?? 'n'}|${s.drops}|${s.hammers}|${s.keys}|${mask}|${hashTiles(s)}`;
 }
 
 type Outcome = 'bounce' | 'win' | 'dead' | 'timeout';
@@ -59,8 +59,10 @@ function fly(w: World, d: Decision): Outcome {
   return 'timeout';
 }
 
-export function solve(level: ParsedLevel, maxNodes = 400000): SolveResult {
+/** Searches for a solution from the level's start, or from `start` (to test recoveries). */
+export function solve(level: ParsedLevel, maxNodes = 400000, start?: WorldState): SolveResult {
   const world = new World(level);
+  if (start) world.s = cloneState(start);
   const seen = new Set<string>();
   type Node = { s: WorldState; parent: Node | null; d: Decision | null };
   // Best-first search: states with more collected items are expanded first.
