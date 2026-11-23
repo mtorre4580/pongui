@@ -445,8 +445,8 @@ export function createTextures(scene: Phaser.Scene) {
   make(scene, 'bridge-open', S, S, (g) => {
     // Not there yet: a faint dotted rainbow
     C.rainbow.forEach((color, i) => {
-      g.fillStyle(color, 0.45);
-      for (let x = 2 + (i % 2) * 6; x < S; x += 12) g.fillRect(x, 3 + i * 5, 5, 3);
+      g.fillStyle(color, 0.75);
+      for (let x = 2 + (i % 2) * 6; x < S; x += 12) g.fillRect(x, 2 + i * 5, 6, 4);
     });
   });
 
