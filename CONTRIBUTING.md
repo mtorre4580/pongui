@@ -41,6 +41,8 @@ Thanks for helping! New levels, mechanics, translations and fixes are all welcom
 | `A` `B` | toggle blocks: `A` is solid while the switches are on, `B` while they are off (off at the start) |
 | `(` `)` | pusher: catches the ball and throws it left / right in a low, fast hop |
 | `1` `2` `3` | portal: each digit appears twice; entering one exits the other at the same speed |
+| `i` | ice: a bounce keeps your speed and you cannot steer until the next one; walls stop you |
+| `j` | thin ice: holds low bounces, breaks under a high bounce |
 | `~` | water: slow fall, higher bounces. Items, the start, portals or spikes drawn inside a pool are under water too |
 | `g` `d` `h` `l` `k` | gem, water drop, hammer, extra life, key |
 | `P` `E` | start and exit |

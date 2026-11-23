@@ -114,6 +114,11 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
   (a gem, the start, a portal, spikes) whose cell above or side neighbor is wet. Inside, gravity
   is halved and the fall speed is capped at 240 px/s, so bounces climb about twice as high.
   Plan steps also end at portals and at the water's edge (`endsStep`).
+- Ice `i`: a bounce on it keeps the ball's horizontal speed (`lockVx`) and steering waits for
+  the next bounce, so the ball slides until a wall stops it (a ball that lands still can steer).
+  Thin ice `j` holds low bounces; a high bounce (jump held or buffered on landing) breaks every
+  thin-ice tile it lands on and the ball falls through unless something else holds it. Plan
+  steps end on that break so the plan can let go of jump before the next landing.
 - `World.step` returns events (`bounce`, `break`, `collect`, `die`, `win`…); scenes only render
   them. Never put gameplay rules in scenes.
 
@@ -163,6 +168,12 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
   that leads back into an exit makes a "geyser" loop: fine only if people can steer out of it.
 - Pools: a pool's edge is hard to climb out of. From the pool floor a high bounce clears the
   surface by less than half a tile, so give people an underwater ledge to jump from.
+- Items for low bounces go 2 rows above the floor they are reached from (1 row above is only
+  touched near the bottom of each bounce: about a quarter of the passes); 3–4 rows above need a
+  high bounce.
+- Ice: people stop by sliding into a wall, so put a wall (or a step) wherever they must stop to
+  aim. Thin ice cannot be climbed back with a high bounce, so route people past everything
+  above it before they break through, or give them a spring back up.
 - Switches flip on every bounce: a switch you must cross mid-route should sit between solid
   tiles so people can stop on them, and the lamp shows which color is solid.
 
@@ -344,8 +355,9 @@ characters must stay unique across the game.
 - [x] World 3 — Cloud Peaks: one-way clouds, updrafts
 - [x] World 4 — Gear Works: switches with A/B blocks, pushers
 - [x] World 5 — Coral Lagoon: portals, water
-- [ ] Worlds 6–10 (planned: ice, crumbling blocks and vents, low gravity and bumpers, dark rooms
-      and phase blocks, rainbow bridges)
+- [x] World 6 — Frost Peaks: ice, thin ice
+- [ ] Worlds 7–10 (planned: crumbling blocks and vents, low gravity and bumpers, dark rooms and
+      phase blocks, rainbow bridges)
 - [x] Native apps — Capacitor iOS and Android projects (iOS verified in the simulator)
 - [ ] Store release (developer accounts, signing, store listings, privacy policy)
 - [ ] Public release (license, Pages deploy, CodeQL)
