@@ -112,6 +112,17 @@ export const THEMES: Record<number, Theme> = {
     speck: 0x2a2638,
     pattern: 'bricks',
   },
+  // 10 · Rainbow Summit: pearl stone above a violet sunset
+  10: {
+    bgTop: 0x7b4fb8,
+    bgBottom: 0x1f1440,
+    bubbles: [0xff595e, 0xffca3a, 0x1982c4],
+    solidTop: 0xfff4fb,
+    solid: 0xb79ced,
+    solidDark: 0x7d62b8,
+    speck: 0xffd6f6,
+    pattern: 'crystals',
+  },
 };
 
 export const themeOf = (world: number): Theme => THEMES[world] ?? THEMES[1];
