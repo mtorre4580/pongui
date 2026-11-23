@@ -71,7 +71,7 @@ Closes #
 ### Accessibility & UX _(only if the UI changed)_
 
 - [ ] Fully playable with keyboard, touch and gamepad
-- [ ] Touch controls never cover the level on phones
+- [ ] Touch gestures still work (slide to steer, double tap / second finger to bounce higher)
 - [ ] Checked on desktop and on a phone in landscape
 
 ### Conventions

@@ -37,8 +37,8 @@ Thanks for helping! New levels, mechanics, translations and fixes are all welcom
 | `P` `E` | start and exit |
 | `.` | empty |
 
-Row 0 and the first and last columns must be plain walls (`#`): the HUD covers the top row and
-the touch controls may cover the side columns. The floor row is free for hazards.
+Row 0 must be plain walls (`#`): the HUD covers it. The floor row is free for hazards. If a hint
+names keys or buttons, add a `hintTouch` with the touch-gesture version (see levels 1 and 2).
 
 Reach, for design: a normal bounce climbs 1 block and travels about 2; a high bounce climbs 3 and
 travels about 3; a spring climbs 6.

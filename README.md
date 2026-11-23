@@ -36,9 +36,10 @@ English, Spanish and Portuguese. Installs as an app and plays offline.
 ### On your phone
 
 Open it in the browser and add it to your home screen: it installs as an app (PWA), opens in full
-screen and works offline. The touch controls sit beside the level, never on top of it.
+screen and works offline. There are no on-screen buttons: slide a finger anywhere to steer, and
+double tap (or rest a second finger) to bounce higher.
 
-<img alt="A level on a phone in landscape, with the move buttons on the left and the bounce button on the right" src="docs/media/phone.png" width="720" />
+<img alt="A level on a phone in landscape, filling the screen with no on-screen buttons" src="docs/media/phone.png" width="720" />
 
 ## Landing page
 
@@ -71,7 +72,7 @@ come from `assets/` (`pnpm icons` then `pnpm native:assets`).
   fire and water, walls and hammers, spikes, and a grand finale that mixes them all.
 - **Solvable by construction**: an automatic solver plays every level with the real physics in CI,
   so no level ships without a proven solution.
-- **Keyboard, touch and gamepad**, with menus you can drive from any of them.
+- **Keyboard, touch gestures and gamepad**, with menus you can drive from any of them.
 - **Three languages**: English, Spanish and Brazilian Portuguese, picked from the browser and
   switchable in the menu.
 - **Installable and offline**: a PWA with a service worker that precaches the whole game.
