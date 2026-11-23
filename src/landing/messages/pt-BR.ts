@@ -31,7 +31,7 @@ export const ptBR: LandingMessages = {
   'how.3.title': 'Encontre a saída',
   'how.3.text': 'Pegue todas as gemas para abrir a saída e ganhe até três estrelas por fase.',
   'how.controls':
-    'Setas ou A D para mover, Espaço para quicar mais alto. Botões de toque no celular e no tablet, e qualquer gamepad.',
+    'Setas ou A D para mover, Espaço para quicar mais alto. Em telas de toque, deslize em qualquer lugar para mover e toque duas vezes para quicar mais alto. Qualquer gamepad também funciona.',
   'mech.title': 'Cada fase ensina um truque novo',
   'mech.text': 'Cada mecânica ganha a sua própria fase antes de todas se juntarem no grande final.',
   'mech.highBounce.title': 'Quique alto',
@@ -52,11 +52,11 @@ export const ptBR: LandingMessages = {
   'devices.text':
     'Jogue no computador, no tablet ou no celular. Instale como um app, sem loja: abre em tela cheia e continua funcionando sem conexão.',
   'devices.desktop': 'Boinky em um computador',
-  'devices.tablet': 'Boinky em um tablet, com controles de toque',
-  'devices.phone': 'Boinky em um celular na horizontal, com os controles de toque ao lado da fase',
+  'devices.tablet': 'Boinky em um tablet',
+  'devices.phone': 'Boinky em um celular na horizontal, ocupando a tela toda',
   'feat.offline': 'Funciona offline depois da primeira visita',
   'feat.install': 'Instala pelo navegador, sem loja de apps',
-  'feat.controls': 'Teclado, toque e gamepad',
+  'feat.controls': 'Teclado, gestos de toque e gamepad',
   'feat.languages': 'Inglês, espanhol e português',
   'feat.privacy': 'Sem conta: o seu progresso fica no seu dispositivo',
   'install.title': 'Instale em poucos toques',
