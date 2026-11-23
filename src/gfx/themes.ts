@@ -11,7 +11,7 @@ export interface Theme {
   /** Small marks drawn on solid blocks (pebbles, crystals…). */
   speck: number;
   /** What the marks look like: round pebbles by default. */
-  pattern?: 'crystals' | 'rivets';
+  pattern?: 'crystals' | 'rivets' | 'coral';
 }
 
 export const THEMES: Record<number, Theme> = {
@@ -56,6 +56,17 @@ export const THEMES: Record<number, Theme> = {
     solidDark: 0x6b3f22,
     speck: 0x4a2a16,
     pattern: 'rivets',
+  },
+  // 5 · Coral Lagoon: coral reefs in deep blue water
+  5: {
+    bgTop: 0x135e8a,
+    bgBottom: 0x05182b,
+    bubbles: [0x80ffdb, 0x48cae4, 0xffffff],
+    solidTop: 0xffb4a2,
+    solid: 0xe07a5f,
+    solidDark: 0x9c4a3a,
+    speck: 0xffe5d9,
+    pattern: 'coral',
   },
 };
 

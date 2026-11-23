@@ -117,6 +117,16 @@ export const sfx = {
     [660, 880, 1175].forEach((f, i) => tone(f, f, 0.14, 'triangle', 0.15, 0.06 + i * 0.06));
   },
   wind: () => noise(0.4, 0.16, 650, 0.6),
+  /** A rising shimmer. */
+  portal: () => {
+    tone(300, 1200, 0.18, 'sine', 0.16);
+    tone(600, 2400, 0.14, 'triangle', 0.06, 0.04);
+  },
+  /** Into the water a soft splash, out of it a lighter drip. */
+  splash: (inside: boolean) => {
+    if (inside) noise(0.22, 0.25, 900, 0.7, 0, 'lowpass');
+    else tone(900, 1500, 0.06, 'sine', 0.1);
+  },
   /** A mechanical clack, higher when the switches turn on. */
   switch: (on: boolean) => {
     noise(0.05, 0.3, 2600, 3);
