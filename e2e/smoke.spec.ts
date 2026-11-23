@@ -141,8 +141,8 @@ test('the balls screen opens from the menu and a locked ball stays locked', asyn
   await asReturningPlayer(page);
   await page.goto('./play/');
   await expectScene(page, 'Menu');
-  // Play, My levels, Balls
-  for (const key of ['Enter', 'ArrowDown', 'ArrowDown', 'Enter']) {
+  // The menu is a grid of two columns: Play, then My levels below it, then Balls to its right
+  for (const key of ['Enter', 'ArrowDown', 'ArrowRight', 'Enter']) {
     await page.keyboard.press(key);
     await page.waitForTimeout(150);
   }
@@ -155,6 +155,32 @@ test('the balls screen opens from the menu and a locked ball stays locked', asyn
   const save = await page.evaluate(() => JSON.parse(localStorage.getItem('pongui:save')!));
   expect(save.skin).toBeUndefined();
   await page.keyboard.press('Escape');
+  await expectScene(page, 'Menu');
+  expect(errors).toEqual([]);
+});
+
+test('the level of the day starts from the menu and its pause panel leads back to it', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, 'keyboard flow');
+  const errors = trackErrors(page);
+  await asReturningPlayer(page);
+  await page.goto('./play/');
+  await expectScene(page, 'Menu');
+  // Play is focused first; the level of the day is to its right
+  for (const key of ['Enter', 'ArrowRight', 'Enter']) {
+    await page.keyboard.press(key);
+    await page.waitForTimeout(150);
+  }
+  await expectScene(page, 'Game');
+  await page.keyboard.press('Escape');
+  await expectScene(page, 'Overlay');
+  // Resume, Restart, Sound, back to the menu
+  for (const key of ['Enter', 'ArrowDown', 'ArrowDown', 'ArrowDown', 'Enter']) {
+    await page.keyboard.press(key);
+    await page.waitForTimeout(150);
+  }
   await expectScene(page, 'Menu');
   expect(errors).toEqual([]);
 });

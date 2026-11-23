@@ -4,7 +4,9 @@ import { GAME_H, GAME_W } from '../game/constants';
 import { ballTexture, C, drawBackground } from '../gfx/textures';
 import { button, ButtonGroup, goTo, setupCamera, text, type Button } from '../gfx/ui';
 import { nextLocale, setLocale, t } from '../i18n';
+import { dailyIndex, dayNumber, todayStatus } from '../daily';
 import { controls } from '../input/controls';
+import { LEVELS } from '../levels';
 import { currentSkin } from '../skins';
 import {
   canFullscreen,
@@ -65,14 +67,26 @@ export class Menu extends Phaser.Scene {
     // Buttons
     const buttons: Button[] = [];
     let y = 196;
+    // Two columns: play and the level of the day lead the menu
+    const today = todayStatus();
     buttons.push(
-      button(this, GAME_W / 2, y, t('menu.play'), () => goTo(this, 'LevelSelect'), {
+      button(this, GAME_W / 2 - 96, y, t('menu.play'), () => goTo(this, 'LevelSelect'), {
         color: 0xe85d75,
-        w: 200,
+        w: 180,
         h: 44,
         size: 20,
       }),
+      button(
+        this,
+        GAME_W / 2 + 96,
+        y,
+        t(today.done ? 'menu.dailyDone' : 'menu.daily'),
+        () => goTo(this, 'Game', { index: dailyIndex(dayNumber(), LEVELS.length), daily: true }),
+        { color: 0xe07a1f, w: 180, h: 44 },
+      ),
     );
+    if (today.streak > 1)
+      text(this, GAME_W / 2 + 96, y - 30, t('menu.streak', { n: today.streak }), 11, '#ffd166');
     y += 48;
     // Player-made levels (the editor on computers, levels shared by link) and the balls to
     // choose from share a row
@@ -143,7 +157,7 @@ export class Menu extends Phaser.Scene {
       install.setX(fullscreen ? GAME_W / 2 + 96 : GAME_W / 2);
       this.group.setButtons(buttons.filter((b) => b.visible));
     };
-    this.group = new ButtonGroup(buttons);
+    this.group = new ButtonGroup(buttons, 2);
     refreshInstall();
     const off = onInstallChange(refreshInstall);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => off());

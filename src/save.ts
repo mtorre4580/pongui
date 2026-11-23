@@ -16,6 +16,8 @@ export interface SaveData {
   sound: boolean;
   /** Id of the chosen ball (see skins.ts); the default one when missing. */
   skin?: string;
+  /** Level of the day: last day beaten and streak (see daily.ts). */
+  daily?: { last: number; streak: number; best: number };
 }
 
 const fresh = (): SaveData => ({ unlocked: 0, levels: {}, sound: true });

@@ -23,6 +23,10 @@ export interface OverlayData {
   custom?: CustomRun;
   /** The win that verified a player's level (its creator beat it). */
   verified?: boolean;
+  /** The level of the day: back leads to the menu and there is no next level. */
+  daily?: boolean;
+  /** Consecutive days with the level of the day beaten, after this win. */
+  streak?: number;
 }
 
 export class Overlay extends Phaser.Scene {
@@ -44,12 +48,18 @@ export class Overlay extends Phaser.Scene {
     const world = worldOf(d.index);
     const custom = d.custom;
     // The last level of a world: "World complete!" and a button to the next world, if any
-    const last = !custom && d.index === world.first + world.count - 1;
-    const hasNext = !custom && d.index < LEVELS.length - 1;
+    const last = !custom && !d.daily && d.index === world.first + world.count - 1;
+    const hasNext = !custom && !d.daily && d.index < LEVELS.length - 1;
     // Where "back" goes: the level select, the editor or the list of player-made levels
-    const backLabel = t(
-      !custom ? 'overlay.levels' : custom.from === 'editor' ? 'overlay.toEditor' : 'overlay.toMine',
-    );
+    const backLabel = d.daily
+      ? t('select.back')
+      : t(
+          !custom
+            ? 'overlay.levels'
+            : custom.from === 'editor'
+              ? 'overlay.toEditor'
+              : 'overlay.toMine',
+        );
 
     const dim = this.add
       // Larger than the world: it dims the whole screen at any aspect ratio
@@ -120,7 +130,7 @@ export class Overlay extends Phaser.Scene {
           this,
           0,
           -h / 2 + 34,
-          t(last ? 'overlay.worldComplete' : 'overlay.complete'),
+          t(d.daily ? 'overlay.dailyDone' : last ? 'overlay.worldComplete' : 'overlay.complete'),
           26,
           '#ffd166',
           { fontStyle: '700' },
@@ -148,6 +158,17 @@ export class Overlay extends Phaser.Scene {
       if ((d.deaths ?? 0) > 0) tips.push(t('overlay.starNoDeaths'));
       if ((d.time ?? 0) > (d.par ?? 0)) tips.push(t('overlay.starTime', { par: d.par ?? 0 }));
       if (d.verified) panel.add(text(this, 0, -h / 2 + 156, t('overlay.verified'), 13, '#7ae582'));
+      else if (d.streak)
+        panel.add(
+          text(
+            this,
+            0,
+            -h / 2 + 156,
+            t(d.streak === 1 ? 'overlay.streakOne' : 'overlay.streak', { n: d.streak }),
+            13,
+            '#ffd166',
+          ),
+        );
       else if (tips.length)
         panel.add(
           text(
@@ -203,18 +224,19 @@ export class Overlay extends Phaser.Scene {
       track('bot_watched', { level: `${world.n}-${d.index - world.first + 1}` });
     }
     this.scene.stop('Game');
-    this.scene.start('Game', { index: d.index, custom: d.custom, bot: true });
+    this.scene.start('Game', { index: d.index, custom: d.custom, daily: d.daily, bot: true });
   }
 
   private startLevel(index: number) {
     this.scene.stop('Game');
-    this.scene.start('Game', { index, custom: this.data_.custom });
+    this.scene.start('Game', { index, custom: this.data_.custom, daily: this.data_.daily });
   }
 
   private toLevels() {
     this.scene.stop('Game');
     const custom = this.data_.custom;
     if (custom) leaveCustom(this, custom);
+    else if (this.data_.daily) this.scene.start('Menu');
     else this.scene.start('LevelSelect', { world: worldOf(this.data_.index).n });
   }
 
