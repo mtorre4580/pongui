@@ -124,8 +124,35 @@ const squall: BossScript = () => (f) => {
   return { jump: false, ...steer(s.x, goal) };
 };
 
+/**
+ * Sprocket: bounce on the switch, jump from the end of the step onto the bridge that closes,
+ * cross it and drop on the robot while its shield is off; then back to the step before the
+ * bridge opens. Gears are stepped away from; the bolts never reach the step.
+ */
+const sprocket: BossScript = () => (f) => {
+  const s = f.world.s;
+  const { boss } = f;
+  const open = !boss.armor && !f.dazed;
+  const bridge = 8 * 32;
+  const bottom = s.y + BALL_R;
+  if (open && canStomp(f)) return { jump: false, ...steer(s.x, boss.x) };
+  // Shield on (or the robot dazed): back along the bridge to the step, and onto the switch
+  // once the bridge has opened again
+  if (!open) {
+    const goal = s.x >= 224 ? 120 : around(f, ['gear'], f.world.s.switchOn ? 110 : 176, 26);
+    return { jump: s.x > 224 && bottom > bridge + 1, ...steer(s.x, goal) };
+  }
+  // Shield off. On the bridge: to its far end, and off it with a high bounce
+  if (bottom <= bridge + 1 && s.x > 214) return { jump: s.x > 360, right: true, left: false };
+  // On the step: a high bounce from its end, then right once the ball is over the bridge
+  if (s.x < 224) return { jump: true, ...steer(s.x, bottom < bridge - 2 ? 260 : 208) };
+  // In the lane: back to the step
+  return { jump: true, ...steer(s.x, 150) };
+};
+
 export const SCRIPTS: Record<number, BossScript> = {
   1: grumble,
   2: serpstone,
   3: squall,
+  4: sprocket,
 };

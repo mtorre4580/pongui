@@ -285,6 +285,11 @@ export class BossFight {
     this.emit({ type: 'boss-grab' });
   }
 
+  /** Flips the arena's switches, like a bounce on one. */
+  flipSwitch() {
+    this.world.flipSwitches(this.events);
+  }
+
   /** Turns the light off or on. */
   setDark(on: boolean) {
     if (this.dark === on) return;

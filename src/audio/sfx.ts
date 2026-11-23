@@ -228,4 +228,24 @@ const BOSS_FX: Record<string, (() => void) | undefined> = {
   'warn-gust-left': () => noise(0.5, 0.18, 700, 0.6),
   'warn-gust-right': () => noise(0.5, 0.18, 700, 0.6),
   gust: () => noise(1.4, 0.3, 1100, 0.5),
+  // Sprocket: the shield going down and coming back, a screw fired, a gear thrown and landing
+  'shield-off': () => {
+    tone(880, 110, 0.4, 'square', 0.1);
+    noise(0.2, 0.2, 3000, 2);
+  },
+  'shield-on': () => tone(220, 880, 0.25, 'square', 0.09),
+  'warn-shield': () => [0, 0.2, 0.4].forEach((d) => tone(1320, 1320, 0.06, 'square', 0.06, d)),
+  'warn-screw': () => tone(300, 500, 0.3, 'sawtooth', 0.07),
+  'shot-screw': () => {
+    noise(0.08, 0.3, 2000, 2);
+    tone(700, 300, 0.1, 'square', 0.08);
+  },
+  'end-screw': () => noise(0.06, 0.25, 3200, 3),
+  'warn-gear': () => tone(500, 380, 0.2, 'triangle', 0.08),
+  'gear-up': () => tone(260, 900, 0.22, 'sawtooth', 0.08),
+  'switch-back': () => [660, 880].forEach((f, i) => tone(f, f, 0.08, 'square', 0.08, i * 0.08)),
+  'end-gear': () => {
+    noise(0.1, 0.3, 900, 2);
+    tone(180, 90, 0.12, 'square', 0.1);
+  },
 };

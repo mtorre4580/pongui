@@ -9,4 +9,4 @@ export const LEVELS_PER_WORLD = 10;
  * Worlds that end with a boss: the next world opens when it is beaten, not when the last level
  * is. Worlds not listed here open the next one the old way.
  */
-export const BOSS_WORLDS: readonly number[] = [1, 2, 3];
+export const BOSS_WORLDS: readonly number[] = [1, 2, 3, 4];

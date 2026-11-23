@@ -318,7 +318,8 @@ export class World {
     ev.push({ type: 'portal', from: idx, to });
   }
 
-  private flipSwitches(ev: WorldEvent[]) {
+  /** Flips every A/B block, as a bounce on a switch does (a boss can do it too). */
+  flipSwitches(ev: WorldEvent[]) {
     this.s.switchOn = !this.s.switchOn;
     this.holdOpen();
     ev.push({ type: 'switch', on: this.s.switchOn });
