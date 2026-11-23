@@ -12,3 +12,14 @@ export function trackErrors(page: Page) {
   page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
   return errors;
 }
+
+/**
+ * Makes the browser look like a returning player's (a saved game with no progress): the game
+ * opens on its menu. A first visit goes straight to the first level.
+ */
+export async function asReturningPlayer(page: Page) {
+  await page.addInitScript(() => {
+    if (localStorage.getItem('pongui:save') === null)
+      localStorage.setItem('pongui:save', JSON.stringify({ unlocked: 0, levels: {}, sound: true }));
+  });
+}

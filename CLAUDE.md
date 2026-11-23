@@ -162,6 +162,9 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
   mechanics introduced in its first levels. The plan is 10 worlds (100 levels); `WORLD_COUNT` in
   `src/levels/worlds.ts` says how many exist (the landing page reads it without the maps) and
   `PLANNED_WORLDS` how many are planned (once both match, the landing stops promising more).
+- First visit: with no saved game (`isFirstVisit()` in `save.ts`), `/play/` starts on level 1-1
+  instead of the menu (pause → "Choose level" → "Menu" leads back). Browser tests that need the
+  menu call `asReturningPlayer(page)` first.
 - Progress: a level is open when the previous one has a record, so a new world opens for players
   who already finished the last one. The level select shows one world per page (◀ ▶, or
   left/right at the edge of a row) and `?level=` accepts `12` or `2-3`.

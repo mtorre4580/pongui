@@ -30,6 +30,19 @@ export function loadSave(): SaveData {
   return cache!;
 }
 
+/**
+ * True when this browser has no saved game at all: someone opening the game for the first time.
+ * Storage that cannot be read counts as a returning player, so they get the menu and not the
+ * first level on every visit.
+ */
+export function isFirstVisit(): boolean {
+  try {
+    return localStorage.getItem(KEY) === null && localStorage.getItem(LEGACY_KEY) === null;
+  } catch {
+    return false;
+  }
+}
+
 export function persist(mutate: (s: SaveData) => void) {
   const s = loadSave();
   mutate(s);

@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import { emptyMap, encodeLevel, paint } from '../src/game/custom';
-import { expectScene, trackErrors } from './support';
+import { asReturningPlayer, expectScene, trackErrors } from './support';
 
 const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 
@@ -55,6 +55,7 @@ test('a broken link does not add anything', async ({ page }) => {
 test('the editor makes a level the bot can beat and tests it', async ({ page, isMobile }) => {
   test.skip(isMobile, 'the editor is for computers');
   const errors = trackErrors(page);
+  await asReturningPlayer(page);
   await page.goto('./play/');
   await expectScene(page, 'Menu');
   // Menu: Play, My levels
@@ -81,6 +82,7 @@ test('the editor makes a level the bot can beat and tests it', async ({ page, is
 
 test('the link dialog has no WCAG 2.2 AA violations', async ({ page, isMobile }) => {
   test.skip(isMobile, 'keyboard flow');
+  await asReturningPlayer(page);
   await page.goto('./play/');
   await expectScene(page, 'Menu');
   await press(page, 'Enter', 'ArrowDown', 'Enter');
