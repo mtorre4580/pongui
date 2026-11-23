@@ -1,0 +1,28 @@
+{
+  "id": "w6-06",
+  "name": {
+    "en": "Frozen lock",
+    "es": "Candado helado",
+    "pt-BR": "Cadeado congelado"
+  },
+  "hint": {
+    "en": "Break through to the key, then find the lock on the way down.",
+    "es": "Rompé el hielo hasta la llave y buscá el candado en la bajada.",
+    "pt-BR": "Quebre o gelo até a chave e ache o cadeado na descida."
+  },
+  "par": 20,
+  "map": [
+    "####################",
+    "#..................#",
+    "#.....g......g.....#",
+    "#.P................#",
+    "###############jj###",
+    "#..................#",
+    "#........g......k..#",
+    "#..................#",
+    "##LL################",
+    "#...################",
+    "#.E.################",
+    "####################"
+  ]
+}

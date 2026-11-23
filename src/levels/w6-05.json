@@ -1,0 +1,28 @@
+{
+  "id": "w6-05",
+  "name": {
+    "en": "Ice spring",
+    "es": "Resorte helado",
+    "pt-BR": "Mola gelada"
+  },
+  "hint": {
+    "en": "A spring stops your slide and sends you up.",
+    "es": "Un resorte corta el deslizamiento y te manda para arriba.",
+    "pt-BR": "Uma mola interrompe o deslize e manda você para cima."
+  },
+  "par": 27,
+  "map": [
+    "####################",
+    "#..................#",
+    "#..g..........g....#",
+    "#..................#",
+    "#####........#######",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#.................E#",
+    "#.P..s......s....###",
+    "#iiiiiiiiiiiiiiiii##"
+  ]
+}

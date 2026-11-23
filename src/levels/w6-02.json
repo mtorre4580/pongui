@@ -1,0 +1,28 @@
+{
+  "id": "w6-02",
+  "name": {
+    "en": "Thin ice",
+    "es": "Hielo fino",
+    "pt-BR": "Gelo fino"
+  },
+  "hint": {
+    "en": "Thin ice holds low bounces, but a high bounce breaks through.",
+    "es": "El hielo fino aguanta los rebotes bajos, pero uno alto lo rompe.",
+    "pt-BR": "O gelo fino aguenta quiques baixos, mas um quique alto o quebra."
+  },
+  "par": 29,
+  "map": [
+    "####################",
+    "####################",
+    "#.......g...g......#",
+    "#.P................#",
+    "################jjj#",
+    "################...#",
+    "#.....g....g.......#",
+    "#..................#",
+    "#jjj################",
+    "#.......g..........#",
+    "#................E.#",
+    "####################"
+  ]
+}

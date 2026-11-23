@@ -1,0 +1,28 @@
+{
+  "id": "w6-09",
+  "name": {
+    "en": "Ice portal",
+    "es": "Portal helado",
+    "pt-BR": "Portal gelado"
+  },
+  "hint": {
+    "en": "Ice keeps your speed, and so does a portal.",
+    "es": "El hielo mantiene tu velocidad, y un portal también.",
+    "pt-BR": "O gelo mantém a sua velocidade, e um portal também."
+  },
+  "par": 21,
+  "map": [
+    "####################",
+    "#.........#........#",
+    "#.........#........#",
+    "#.........#........#",
+    "#.........#........#",
+    "#.........#........#",
+    "#.........#...g....#",
+    "#.........#1......E#",
+    "#.......g.#iiiiiiii#",
+    "#....######........#",
+    "#.P.......1#.......#",
+    "#iiiiiiiiii#########"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "id": "w6-08",
+  "name": {
+    "en": "Cold switch",
+    "es": "Interruptor frío",
+    "pt-BR": "Interruptor frio"
+  },
+  "hint": {
+    "en": "Slide into the teal wall to stop, then bonk the switch with a high bounce.",
+    "es": "Deslizate hasta la pared turquesa para frenar y pegale al interruptor con un rebote alto.",
+    "pt-BR": "Deslize até a parede turquesa para parar e acerte o interruptor com um quique alto."
+  },
+  "par": 13,
+  "map": [
+    "####################",
+    "#........B.........#",
+    "#........B.........#",
+    "#........B.........#",
+    "#........B.........#",
+    "#........B.........#",
+    "#........B.........#",
+    "#....o...B.........#",
+    "#........B.........#",
+    "#........B.....g...#",
+    "#.P......B........E#",
+    "#iiiiiiiiiiiiiiiiii#"
+  ]
+}

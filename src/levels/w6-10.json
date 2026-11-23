@@ -1,0 +1,28 @@
+{
+  "id": "w6-10",
+  "name": {
+    "en": "Frost Peaks",
+    "es": "Picos Helados",
+    "pt-BR": "Picos Gelados"
+  },
+  "hint": {
+    "en": "Ice, thin ice, springs and a key: climb the frozen summit!",
+    "es": "Hielo, hielo fino, resortes y una llave: ¡subí a la cumbre helada!",
+    "pt-BR": "Gelo, gelo fino, molas e uma chave: suba ao cume gelado!"
+  },
+  "par": 23,
+  "map": [
+    "####################",
+    "#...L..............#",
+    "#.E.L..............#",
+    "########...........#",
+    "#...........g..k...#",
+    "#..................#",
+    "#.......#iiiiiiiii.#",
+    "#..................#",
+    "#..g.........g.....#",
+    "#..................#",
+    "#.P.....jjjj......s#",
+    "#iiiiiii****iiiiiii#"
+  ]
+}
