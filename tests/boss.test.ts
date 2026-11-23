@@ -9,6 +9,7 @@ import type { Octopus } from '../src/bosses/w5-inkwell';
 import { LEDGES, type Giant } from '../src/bosses/w6-flurry';
 import type { Dragon } from '../src/bosses/w7-cinder';
 import type { Saucer } from '../src/bosses/w8-orbit';
+import type { Specter } from '../src/bosses/w9-gloom';
 import { BossFight, MIN_WARN, seeded, type BossBrain, type BossDef } from '../src/game/boss';
 import { BALL_R, COLS, STEP, TILE, V_LOW } from '../src/game/constants';
 import { World, type InputState } from '../src/game/physics';
@@ -257,7 +258,8 @@ describe('every boss', () => {
           ).toBeLessThan(1.5);
         }
       }
-      if (world > 1) expect(shots, `shots of boss ${world}`).toBeGreaterThan(0);
+      // (Grumble and Gloom throw nothing: their bodies are the danger)
+      if (![1, 9].includes(world)) expect(shots, `shots of boss ${world}`).toBeGreaterThan(0);
     }
   });
 });
@@ -1185,6 +1187,140 @@ describe('Orbit (world 8)', () => {
     // At four changes of direction a second, a ball caught on the floor gets loose in time
     const reach = (def.low - 2 * BALL_R) / def.pull;
     def.shakes.forEach((n) => expect(n / 4).toBeLessThan(reach));
+  });
+});
+
+describe('Gloom (world 9)', () => {
+  const { def } = BOSSES[9];
+  const brain = (f: BossFight) => f.brain as Specter;
+  const HALF = 144; // steps in half a turn of the phase blocks
+  const until = (f: BossFight, mode: Specter['mode'], input: InputState = idle, seconds = 12) => {
+    const all = [];
+    for (
+      let i = 0;
+      i < seconds / STEP && brain(f).mode !== mode && f.world.s.status === 'playing';
+      i++
+    )
+      all.push(...f.step(STEP, input).boss);
+    return all;
+  };
+
+  it('shows only its eyes, at the spot nearest the ball, before it turns solid there', () => {
+    const { f, s } = fightOf(9);
+    expect(f.boss.away).toBe(true);
+    expect(f.boss.alpha).toBe(0);
+    const events = until(f, 'eyes');
+    expect(events).toContainEqual(expect.objectContaining({ type: 'boss-warn', kind: 'eyes' }));
+    expect(f.boss.pose).toBe('eyes');
+    expect(f.boss.alpha).toBe(1);
+    // Not there yet: the ball can stand in it
+    expect(f.boss.away).toBe(true);
+    const nearest = [...def.spots].sort((a, b) => Math.abs(a - s.x) - Math.abs(b - s.x))[0];
+    expect(f.boss.x).toBe(nearest);
+    const t0 = s.ticks;
+    Object.assign(s, { x: 600, vx: 0 });
+    until(f, 'solid');
+    expect(s.ticks - t0).toBe(def.lead[0] * HALF);
+    expect((s.ticks - t0) * STEP).toBeGreaterThanOrEqual(MIN_WARN);
+    expect(f.boss.away).toBe(false);
+    expect(f.boss.x).toBeCloseTo(nearest, 0);
+  });
+
+  it('turns solid exactly as the % blocks open, and fades as they close', () => {
+    const { f, s } = fightOf(9);
+    const platform = 8 * COLS + 3;
+    until(f, 'solid');
+    expect(s.ticks % (2 * HALF)).toBe(HALF);
+    expect(f.world.isOpen(T.PHASE_A, platform)).toBe(true);
+    Object.assign(s, { x: 600, y: 100, vx: 0, vy: 0 });
+    until(f, 'hidden');
+    expect(s.ticks % (2 * HALF)).toBe(0);
+    expect(f.world.isOpen(T.PHASE_A, platform)).toBe(false);
+    expect(f.boss.away).toBe(true);
+  });
+
+  it('kills a ball standing where it appears, and sweeps towards one that stands near', () => {
+    const on = fightOf(9);
+    until(on.f, 'eyes');
+    Object.assign(on.s, { x: on.f.boss.x, vx: 0 });
+    on.run(6);
+    expect(on.s.status).toBe('dead');
+    expect(on.f.boss.hp).toBe(def.hp);
+    // Half way to the next spot: out of its body, within its sweep
+    const near = fightOf(9);
+    until(near.f, 'eyes');
+    Object.assign(near.s, { x: near.f.boss.x + 56, vx: 0 });
+    until(near.f, 'solid');
+    expect(near.s.status).toBe('playing');
+    const x0 = near.f.boss.x;
+    near.run(2);
+    expect(near.s.status).toBe('dead');
+    expect(near.f.boss.x).toBeGreaterThan(x0);
+  });
+
+  it('is hit by a ball waiting on the platform over it when the platform opens', () => {
+    const { f, s } = fightOf(9);
+    until(f, 'eyes');
+    // On the platform over the eyes for the last turn of the % blocks before it appears
+    for (let i = 0; i < 6 / STEP && f.warns[0].left > 1.1; i++) {
+      Object.assign(s, { x: 600, vx: 0 });
+      f.step(STEP, idle);
+    }
+    expect(brain(f).mode).toBe('eyes');
+    expect(f.world.isOpen(T.PHASE_A, 8 * COLS + 3)).toBe(false);
+    Object.assign(s, { x: f.boss.x, y: 8 * TILE - BALL_R - 1, vx: 0, vy: 0 });
+    const events = until(f, 'hidden', idle, 3);
+    // (dazed, it stays as it is until the ball lands)
+    expect(events).toContainEqual({ type: 'boss-hit', hp: def.hp - 1 });
+    expect(s.status).toBe('playing');
+  });
+
+  it('can be jumped over or landed on with a high bounce while it sweeps', () => {
+    const { f, s } = fightOf(9);
+    until(f, 'eyes');
+    Object.assign(s, { x: f.boss.x + 100, vx: 0 });
+    let hit = false;
+    for (let i = 0; i < 8 / STEP && !hit && s.status === 'playing'; i++) {
+      const solid = brain(f).mode === 'solid';
+      const over = solid && s.y + BALL_R < f.box[1] - 2;
+      hit = f
+        .step(STEP, {
+          ...idle,
+          jump: s.ticks % (2 * HALF) > HALF - 60,
+          left: over && s.x > f.boss.x,
+        })
+        .boss.some((e) => e.type === 'boss-hit');
+    }
+    expect(hit).toBe(true);
+  });
+
+  it('puts the light out after its first hit, and its eyes are still told', () => {
+    const { f, s } = fightOf(9);
+    expect(f.dark).toBe(false);
+    until(f, 'solid', { ...idle, right: s.x < 600 });
+    Object.assign(s, { x: f.boss.x, y: f.box[1] - BALL_R - 1, vx: 0, vy: 300 });
+    expect(f.step(STEP, idle).boss).toContainEqual({ type: 'boss-hit', hp: def.hp - 1 });
+    const events = [];
+    for (let i = 0; i < 3 / STEP && f.dazed; i++)
+      events.push(...f.step(STEP, { ...idle, right: true }).boss);
+    expect(events).toContainEqual({ type: 'boss-dark', on: true });
+    expect(f.dark).toBe(true);
+    expect(brain(f).mode).toBe('hidden');
+    // The next time its eyes open, the scene hears about it as before
+    const next = until(f, 'eyes', { ...idle, right: s.x < 600 });
+    expect(next).toContainEqual(expect.objectContaining({ type: 'boss-warn', kind: 'eyes' }));
+    expect(f.boss.pose).toBe('eyes');
+  });
+
+  it('sweeps faster and shows its eyes for less time in the later phases', () => {
+    expect([...def.sweep]).toEqual([...def.sweep].sort((a, b) => a - b));
+    expect([...def.lead]).toEqual([...def.lead].sort((a, b) => b - a));
+    // Never less than a whole turn of the platform over it: the time to climb onto it
+    expect(Math.min(...def.lead)).toBeGreaterThanOrEqual(2);
+    // Slower than the ball: it can be walked away from
+    expect(Math.max(...def.sweep)).toBeLessThan(160);
+    // It reaches the underside of the platforms, so a ball that drops through lands on it
+    expect(def.floorY - def.height).toBe(9 * TILE);
   });
 });
 

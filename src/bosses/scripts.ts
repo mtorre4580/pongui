@@ -7,6 +7,7 @@ import { BALL_R, GRAVITY, MAX_VX } from '../game/constants';
 import type { Serpent } from './w2-serpstone';
 import type { Giant } from './w6-flurry';
 import type { Saucer } from './w8-orbit';
+import type { Specter } from './w9-gloom';
 import type { InputState } from '../game/physics';
 
 /** What the script wants held right now (`jumpPressed` is left to whoever presses the keys). */
@@ -328,6 +329,33 @@ const orbit: BossScript = () => (f) => {
   return { jump: false, ...steer(s.x, goal) };
 };
 
+/**
+ * Gloom: go to the platform over the spot where its eyes glow. While the platform is solid,
+ * bounce high from beside it and land on it; when it opens, the ball drops on the specter's
+ * head. If that fails, keep away from it until it fades.
+ */
+const gloom: BossScript = () => (f) => {
+  const s = f.world.s;
+  const { boss } = f;
+  const mode = (f.brain as Specter).mode;
+  const top = 8 * 32; // the top of the platforms (each is 64 px wide, centered on a spot)
+  const bottom = s.y + BALL_R;
+  if (mode === 'solid' && !f.dazed) {
+    if (canStomp(f)) return { jump: false, ...steer(s.x, boss.x) };
+    // Missed it: away from where it is sweeping to
+    return { jump: false, ...steer(s.x, boss.x + (s.x < boss.x ? -200 : 200)) };
+  }
+  if (mode !== 'eyes') return { jump: false, left: false, right: false };
+  // Over the platform: stay over its middle. `%` blocks are solid in the first half of the cycle
+  if (bottom < top + 1 && Math.abs(s.x - boss.x) < 40)
+    return { jump: false, ...steer(s.x, boss.x) };
+  const solid = s.ticks % 288 < 144;
+  const side = s.x < boss.x ? -1 : 1;
+  if (bottom < top - 2 && solid) return { jump: false, ...steer(s.x, boss.x) };
+  // Beside it on the floor; a high bounce once it is solid
+  return { jump: solid, ...steer(s.x, boss.x + side * 52) };
+};
+
 export const SCRIPTS: Record<number, BossScript> = {
   1: grumble,
   2: serpstone,
@@ -337,4 +365,5 @@ export const SCRIPTS: Record<number, BossScript> = {
   6: flurry,
   7: cinder,
   8: orbit,
+  9: gloom,
 };
