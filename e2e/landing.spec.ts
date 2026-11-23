@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
+import { WORLD_COUNT } from '../src/levels/worlds';
 import { trackErrors } from './support';
 
 const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
@@ -11,7 +12,7 @@ test('the landing page loads without errors and links to the game', async ({ pag
   await expect(page.getByRole('heading', { level: 1 })).toContainText('never stops bouncing');
   const play = page.getByRole('link', { name: /Play now/ });
   await expect(play).toHaveAttribute('href', './play/');
-  await expect(page.locator('#level-list li')).toHaveCount(10);
+  await expect(page.locator('#level-list li')).toHaveCount(WORLD_COUNT);
   expect(errors).toEqual([]);
 });
 
@@ -29,7 +30,7 @@ test('the language selector translates the page and is remembered', async ({ pag
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
     'A bola nunca para de quicar. Você decide onde ela cai.',
   );
-  await expect(page.locator('#level-list li').first()).toContainText('Primeiro quique');
+  await expect(page.locator('#level-list li').first()).toContainText('Vale Saltitante');
   await page.reload();
   await expect(page.locator('html')).toHaveAttribute('lang', 'pt-BR');
 });
