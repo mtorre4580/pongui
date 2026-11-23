@@ -54,6 +54,7 @@ pnpm typecheck          # tsc --noEmit
 pnpm validate:levels    # parse every level, check its texts, prove it is solvable
 pnpm check:fairness     # find spots people cannot do reliably (see Levels)
 pnpm check:bundle       # gzip budget per chunk (after pnpm build)
+pnpm play:boss N        # play boss N in the real scene with real keys (needs pnpm dev)
 pnpm test:e2e           # Playwright + axe on desktop and phone (after pnpm build)
 pnpm lhci               # Lighthouse CI on the built game
 pnpm media              # README media, landing videos/screenshots and og-image (needs ffmpeg)
@@ -87,7 +88,7 @@ src/
     level.ts           # level JSON → ParsedLevel
     physics.ts         # World: step(dt, input) → events
     solver.ts          # best-first search between bounces (level validation, demos)
-    boss.ts            # BossFight: a boss on top of a World (stomp it, never touch its sides)
+    boss.ts            # BossFight: the frame of a boss fight on top of a World (see Bosses)
     custom.ts          # player levels: draft checks, auto par, link codes (encode/decode)
   custom/              # player levels in the browser: store.ts (`pongui:custom`), bot.ts +
                        # bot.worker.ts (solver in a Web Worker), dialogs.ts (HTML dialogs), run.ts
@@ -101,7 +102,7 @@ src/
   save.ts              # progress in localStorage (`pongui:save`)
   skins.ts             # balls to choose from, opened with stars (look only)
   daily.ts             # level of the day (picked by the date) and the streak of days
-  bosses/              # the boss of each world: its numbers and its arena
+  bosses/              # the boss of each world: brain, arena and music; scripts.ts plays them
   audio/music.ts       # boss music, synthesized (no audio files)
   pwa.ts               # install prompt, iOS detection, fullscreen
   analytics.ts         # anonymous usage statistics (Umami), off without VITE_UMAMI_ID
@@ -260,19 +261,51 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
   plays them, there is no "watch the bot", no stars, no sharing, and they are not in the editor.
   What keeps one winnable is `tests/boss.test.ts`, which plays it with a simple scripted
   player: keep that test passing when changing a boss.
-- `BossFight` (`game/boss.ts`, pure) steps the `World` and then the boss. Landing on its head
-  from above is a hit and a high bounce; touching it anywhere else kills. After a hit it is
-  dazed (harmless, cannot be hurt) for `stun` seconds *and* until the ball has bounced on the
-  ground again, so hits cannot be chained from head to head. Each hit starts the next phase
-  (clearly faster each time, and hopping from the second on). Losing a life starts the fight
-  over: the boss gets its hits back.
+- `BossFight` (`game/boss.ts`, pure) is the frame every boss shares: it steps the `World` and
+  then the boss. Landing on its head from above is a hit and a high bounce; touching it
+  anywhere else kills. After a hit it is dazed (harmless, cannot be hurt) for `stun` seconds
+  *and* until the ball has bounced on the ground again, so hits cannot be chained from head to
+  head. Each hit starts the next phase (`phase`) and clears every shot and warning. Losing a
+  life starts the fight over: the boss gets its hits back.
+- What a boss *does* is its brain (`BossBrain`: `think` every step, plus `init`, `wake`, `hit`,
+  `shotEnd`, `released`), a new one per fight (`BossDef.brain`). Brains live in `src/bosses/`,
+  one file per boss with its arena and music; they are pure logic too (no Phaser, no
+  `Math.random`: `fight.rand()` is seeded, so a fight is the same every time). What the frame
+  gives a brain:
+  - `announce(kind, area, seconds, then)`: a warning the view draws; `then` runs when it is
+    over. Never shorter than `MIN_WARN` (0.6 s): **every attack goes through it**.
+  - `shoot(spec)`: a shot (a box with speed, gravity and a lifetime) that kills on touch. Walls
+    stop it, let it pass or bounce it; `stomp` shots can be bounced on.
+  - `setTile(idx, tile)`: changes the arena (`boss-tiles` tells the scene to redraw). A block is
+    never put on the ball: toggle blocks wait for it to leave, anything else is refused.
+  - `seize(x, y, need)`: grabs the ball; it goes where `fight.grab` goes until the player
+    changes direction `need` times. A grabbed ball is out of reach of shots.
+  - `setDark(on)`: the veil of the dark levels, over a boss fight.
+  - `world.s.drift`: a sideways push on the ball (a gust), in px/s on top of its own speed.
+  - `boss.away` (not there), `boss.armor` (its head bounces without a hit), `boss.alpha` and
+    `boss.pose` (which of its textures is shown); `emit({ type: 'boss-fx', name })` for sounds.
 - A boss must be taller than a low bounce climbs (51 px), or standing still would beat it.
-- `bosses/index.ts` holds each boss: its numbers and its arena, a level map whose exit cell is
-  turned into rock (the fight ends when the boss does). `Game` runs it with `boss: <world>`;
-  `gfx/bossView.ts` draws the body and the hit bar; `audio/music.ts` plays its music, which
-  speeds up with each phase and follows the sound setting.
-- To add one: its `BossDef` and arena in `bosses/index.ts`, its world in `BOSS_WORLDS`, a
-  `boss.N` name in the three languages, and a winning script in `tests/boss.test.ts`.
+- `bosses/index.ts` lists them (`BOSSES`, `bossOf(world)`); `bosses/types.ts` has `arena()`: a
+  level map whose exit cell is turned into rock (the fight ends when the boss does). `Game`
+  runs a fight with `boss: <world>` (`play/?boss=N` opens one the player has reached, or any
+  while developing). `gfx/bossArt.ts` has each boss's vector body (one texture per pose), its
+  shots and the colors of its warnings; `gfx/bossView.ts` draws them, the line to a grabbed
+  ball and the hit bar. `audio/music.ts` plays the boss's `BossTheme` (root, bass line, tempo
+  per phase, timbres, beat), which follows the sound setting; `sfx.bossFx(name)` plays its
+  effects (`warn-<kind>`, `shot-<kind>`, `end-<kind>` and any `boss-fx` name).
+- `bosses/scripts.ts` has, for each boss, a player made of simple rules that beats it the way a
+  person could. Tests play every boss with it, and `pnpm play:boss N` (with `pnpm dev`
+  running) plays it in the real scene with real key presses and saves a screenshot per phase
+  in `docs/bosses/`. Only tests and `dev.ts` import it: it is not in the build.
+- Design rules: original characters, names and music; every attack announced; hit only by
+  bouncing on it while it is open to it; each boss harder than the one before (3 hits in the
+  first worlds, 5 in the last, shorter warnings, more at once); from world 4 on, no spot where
+  one can wait forever.
+- To add one: `src/bosses/wN-name.ts` (brain, `BossDef`, arena, theme) and its entry in
+  `BOSSES`; its world in `BOSS_WORLDS`; its art in `gfx/bossArt.ts` and sounds in `sfx.ts`;
+  `boss.N` and `game.bossHint.N` in the three languages; its script in `bosses/scripts.ts`;
+  and in `tests/boss.test.ts` a naive player that loses and a test per attack (announced,
+  deadly, avoidable). `tests/unlock.test.ts` covers the world it guards.
 
 ## Player levels (editor and sharing)
 
