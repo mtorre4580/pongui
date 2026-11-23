@@ -1,0 +1,28 @@
+{
+  "id": "w6-07",
+  "name": {
+    "en": "Frost fire",
+    "es": "Fuego y escarcha",
+    "pt-BR": "Fogo e geada"
+  },
+  "hint": {
+    "en": "Sliding over fire? Grab the water drops on the way.",
+    "es": "¿Deslizarte sobre el fuego? Agarrá las gotas en el camino.",
+    "pt-BR": "Deslizar sobre o fogo? Pegue as gotas no caminho."
+  },
+  "par": 14,
+  "map": [
+    "####################",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#.............g....#",
+    "#...d.....d........#",
+    "#.P...............E#",
+    "#iiiii^^iiiii^^iiii#"
+  ]
+}

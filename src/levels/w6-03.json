@@ -1,0 +1,28 @@
+{
+  "id": "w6-03",
+  "name": {
+    "en": "Ice bridge",
+    "es": "Puente de hielo",
+    "pt-BR": "Ponte de gelo"
+  },
+  "hint": {
+    "en": "Cross the thin ice gently: no high bounces over the spikes!",
+    "es": "Cruzá el hielo fino despacito: ¡nada de rebotes altos sobre los pinches!",
+    "pt-BR": "Atravesse o gelo fino com calma: nada de quiques altos sobre os espinhos!"
+  },
+  "par": 15,
+  "map": [
+    "####################",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#......g..g........#",
+    "#.............g....#",
+    "#.P.jjjjjjjjjj...E.#",
+    "####**********######"
+  ]
+}

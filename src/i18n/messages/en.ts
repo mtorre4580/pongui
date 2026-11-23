@@ -18,6 +18,7 @@ export const en = {
   'world.3': 'Cloud Peaks',
   'world.4': 'Gear Works',
   'world.5': 'Coral Lagoon',
+  'world.6': 'Frost Peaks',
   'game.level': 'Level {n} · {name}',
   'game.exitOpen': 'Exit open!',
   'overlay.paused': 'Paused',

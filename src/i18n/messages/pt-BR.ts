@@ -19,6 +19,7 @@ export const ptBR: Messages = {
   'world.3': 'Picos Nublados',
   'world.4': 'Oficina de Engrenagens',
   'world.5': 'Lagoa de Coral',
+  'world.6': 'Picos Gelados',
   'game.level': 'Fase {n} · {name}',
   'game.exitOpen': 'Saída aberta!',
   'overlay.paused': 'Pausa',

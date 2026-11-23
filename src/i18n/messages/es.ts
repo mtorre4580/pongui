@@ -20,6 +20,7 @@ export const es: Messages = {
   'world.3': 'Picos Nubosos',
   'world.4': 'Taller de Engranajes',
   'world.5': 'Laguna de Coral',
+  'world.6': 'Picos Helados',
   'game.level': 'Nivel {n} · {name}',
   'game.exitOpen': '¡Salida abierta!',
   'overlay.paused': 'Pausa',

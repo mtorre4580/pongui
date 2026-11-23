@@ -22,6 +22,8 @@ export const T = {
   PORTAL_1: 20, // portals come in pairs: entering one moves the ball to the other
   PORTAL_2: 21,
   PORTAL_3: 22,
+  ICE: 23, // slippery: the bounce keeps the horizontal speed and you cannot steer until the next
+  THIN_ICE: 24, // holds low bounces; a high bounce breaks it and the ball falls through
 } as const;
 
 export type TileCode = (typeof T)[keyof typeof T];
@@ -48,6 +50,8 @@ export const CHAR_TO_TILE: Record<string, TileCode> = {
   '1': T.PORTAL_1,
   '2': T.PORTAL_2,
   '3': T.PORTAL_3,
+  i: T.ICE,
+  j: T.THIN_ICE,
 };
 
 export function isPortal(t: number): boolean {

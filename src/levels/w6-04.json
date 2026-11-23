@@ -1,0 +1,28 @@
+{
+  "id": "w6-04",
+  "name": {
+    "en": "Ice steps",
+    "es": "Escalones helados",
+    "pt-BR": "Degraus gelados"
+  },
+  "hint": {
+    "en": "Slide into a step to stop, then bounce up onto it.",
+    "es": "Deslizate contra un escalón para frenar y después rebotá encima.",
+    "pt-BR": "Deslize até um degrau para parar e depois quique para cima dele."
+  },
+  "par": 15,
+  "map": [
+    "####################",
+    "#..................#",
+    "#..................#",
+    "#.............g....#",
+    "#..................#",
+    "#.........g....##..#",
+    "#..............##E.#",
+    "#.....g...##...#####",
+    "#.........##.......#",
+    "#.....##..##.......#",
+    "#.P...##..##.......#",
+    "#iiiiiiiiiiiiiiiiii#"
+  ]
+}

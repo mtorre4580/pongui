@@ -351,4 +351,51 @@ describe('bounce physics', () => {
     expect(at(7, 8)).toBe(0); // an air pocket drawn with '.'
     expect(at(5, 7)).toBe(0); // above the surface
   });
+
+  it('ice keeps the landing speed and blocks steering until the next bounce', () => {
+    const w = new World(level({ 10: '#.P................#', 11: '#iiiiiiiiiiiiiiiiii#' }));
+    // Land once standing still: steering works, so pick up speed to the right
+    let iceBounces = 0;
+    let vxAtSlide = 0;
+    for (let i = 0; i < 600 && iceBounces < 3; i++) {
+      const steerRight = iceBounces < 1;
+      const ev = w.step(STEP, { ...idle, right: steerRight, left: !steerRight });
+      if (ev.some((e) => e.type === 'bounce')) {
+        iceBounces++;
+        if (iceBounces === 2) vxAtSlide = w.s.vx;
+      }
+      // After the second bounce, holding left changes nothing
+      if (iceBounces === 2) expect(w.s.vx).toBe(vxAtSlide);
+    }
+    expect(vxAtSlide).toBeGreaterThan(0);
+    expect(w.s.lockVx).toBe(vxAtSlide);
+  });
+
+  it('a wall stops a slide on ice', () => {
+    const w = new World(level({ 10: '#.P..#.............#', 11: '#iiiiiiiiiiiiiiiiii#' }));
+    w.s.vx = 160;
+    for (let i = 0; i < 400; i++) w.step(STEP, idle);
+    expect(w.s.x).toBeLessThan(5 * TILE);
+    expect(w.s.lockVx).toBeNull();
+  });
+
+  it('thin ice holds low bounces and breaks under a high one', () => {
+    const low = new World(level({ 9: '#.P................#', 10: '#jjjjjjjjjjjjjjjjjj#' }));
+    for (let i = 0; i < 400; i++) low.step(STEP, idle);
+    expect(low.s.tiles[10 * 20 + 2]).toBe(T.THIN_ICE);
+    expect(low.s.y).toBeLessThan(10 * TILE);
+
+    const high = new World(level({ 9: '#.P................#', 10: '#jjjjjjjjjjjjjjjjjj#' }));
+    const broke: number[][] = [];
+    let lowest = 0;
+    for (let i = 0; i < 400; i++) {
+      for (const e of high.step(STEP, { ...idle, jump: true }))
+        if (e.type === 'break') broke.push(e.idxs);
+      lowest = Math.max(lowest, high.s.y);
+    }
+    expect(broke[0]).toEqual([10 * 20 + 2]);
+    // It fell through onto the floor below
+    expect(lowest).toBeGreaterThan(10 * TILE);
+    expect(high.s.status).toBe('playing');
+  });
 });

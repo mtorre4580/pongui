@@ -1,0 +1,28 @@
+{
+  "id": "w6-01",
+  "name": {
+    "en": "Slippery",
+    "es": "Resbaloso",
+    "pt-BR": "Escorregadio"
+  },
+  "hint": {
+    "en": "On ice you keep your speed and cannot steer. Walls stop you.",
+    "es": "En el hielo seguís a la misma velocidad y no podés doblar. Las paredes te frenan.",
+    "pt-BR": "No gelo você mantém a velocidade e não consegue virar. As paredes param você."
+  },
+  "par": 13,
+  "map": [
+    "####################",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#.................E#",
+    "#..........g......##",
+    "#...g.............##",
+    "#.P...............##",
+    "#iiiiiiiiiiiiiiiii##"
+  ]
+}

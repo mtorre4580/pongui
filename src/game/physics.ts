@@ -384,7 +384,9 @@ export class World {
         s.vx = s.lockVx;
       } else {
         kind = wantHigh ? 'high' : 'low';
-        s.lockVx = null;
+        // Ice keeps the speed the ball landed with, and steering waits for the next bounce. A
+        // ball that lands still can steer (a wall hit stops a slide, see the X axis)
+        s.lockVx = prim.t === T.ICE && s.vx !== 0 ? s.vx : null;
       }
     }
     s.jumpBuffer = 0;
@@ -483,8 +485,15 @@ export class World {
         if (contacts.some((c) => c.t === T.RAMP_L || c.t === T.RAMP_R)) {
           contacts = contacts.filter((c) => c.t !== T.SPIKE && c.t !== T.FIRE);
         }
-        const blocking = this.resolveContacts(contacts, true, ev);
+        let blocking = this.resolveContacts(contacts, true, ev);
         if (!blocking) return ev;
+        // A high bounce breaks thin ice: the ball falls through unless something else holds it
+        const thin = blocking.filter((c) => c.t === T.THIN_ICE && c.idx >= 0);
+        if (thin.length && (input.jump || s.jumpBuffer > 0)) {
+          for (const c of thin) s.tiles[c.idx] = T.EMPTY;
+          ev.push({ type: 'break', idxs: thin.map((c) => c.idx), tile: T.THIN_ICE });
+          blocking = blocking.filter((c) => c.t !== T.THIN_ICE);
+        }
         if (blocking.length) {
           s.y = row * TILE - BALL_R;
           this.bounce(blocking, row * TILE, input, ev);

@@ -2,6 +2,7 @@
 // Proves every level can be beaten with the real game physics.
 import { STEP } from './constants';
 import type { ParsedLevel } from './level';
+import { T } from './tiles';
 import { cloneState, World, type InputState, type WorldEvent, type WorldState } from './physics';
 
 export interface Decision {
@@ -45,12 +46,18 @@ function key(s: WorldState): string {
 
 /**
  * A plan step lasts until the next bounce, until the ball enters or leaves an updraft or water
- * (so the plan can steer out at an updraft's top or change course as it sinks), or until it
- * comes out of a portal. Replays must split steps the same way.
+ * (so the plan can steer out at an updraft's top or change course as it sinks), until it comes
+ * out of a portal, or until it breaks through thin ice (so it can let go of jump before the
+ * next landing). Replays must split steps the same way.
  */
 export const endsStep = (ev: WorldEvent[]) =>
   ev.some(
-    (e) => e.type === 'bounce' || e.type === 'wind' || e.type === 'water' || e.type === 'portal',
+    (e) =>
+      e.type === 'bounce' ||
+      e.type === 'wind' ||
+      e.type === 'water' ||
+      e.type === 'portal' ||
+      (e.type === 'break' && e.tile === T.THIN_ICE),
   );
 
 type Outcome = 'bounce' | 'win' | 'dead' | 'timeout';

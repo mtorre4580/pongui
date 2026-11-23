@@ -58,6 +58,8 @@ const TILE_TEX: Record<number, string> = {
   [T.PORTAL_1]: 'portal1',
   [T.PORTAL_2]: 'portal2',
   [T.PORTAL_3]: 'portal3',
+  [T.ICE]: 'ice',
+  [T.THIN_ICE]: 'thinice',
 };
 // Particle colors per tile (solid blocks use the world's color)
 const TILE_COLOR: Record<number, number> = {
@@ -80,6 +82,8 @@ const TILE_COLOR: Record<number, number> = {
   [T.PORTAL_1]: C.portal1,
   [T.PORTAL_2]: C.portal2,
   [T.PORTAL_3]: C.portal3,
+  [T.ICE]: C.iceLight,
+  [T.THIN_ICE]: C.iceLight,
 };
 
 export class Game extends Phaser.Scene {
@@ -204,7 +208,8 @@ export class Game extends Phaser.Scene {
       const img = this.add.image(c * TILE + TILE / 2, r * TILE + TILE / 2 + OY, tex).setScale(0.5);
       if (t === T.SPIKE) {
         const above = r > 0 ? tiles[idx - COLS] : T.SOLID;
-        const below = r < ROWS - 1 ? tiles[idx + COLS] : T.EMPTY;
+        // Spikes on the bottom row always point up (there is nothing under them to hang from)
+        const below = r < ROWS - 1 ? tiles[idx + COLS] : T.SOLID;
         if (above !== T.EMPTY && below === T.EMPTY) img.setFlipY(true);
       }
       if (t === T.SPRING) img.setOrigin(0.5, 1).setY((r + 1) * TILE + OY);
@@ -582,6 +587,7 @@ export class Game extends Phaser.Scene {
         case 'bounce': {
           this.squash = 1;
           sfx.bounce(e.kind);
+          if (e.idx >= 0 && this.level.tiles[e.idx] === T.ICE) sfx.ice();
           // A double tap's queued high bounce is spent on this landing
           controls.disarmJump();
           // Low bounces happen constantly: only the bigger ones vibrate on phones
@@ -652,6 +658,9 @@ export class Game extends Phaser.Scene {
           });
           if (e.tile === T.LOCK) {
             sfx.unlock();
+            haptic('medium');
+          } else if (e.tile === T.THIN_ICE) {
+            sfx.shatter();
             haptic('medium');
           } else sfx.break();
           if (e.tile === T.WALL) {
