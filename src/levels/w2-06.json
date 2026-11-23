@@ -1,0 +1,28 @@
+{
+  "id": "w2-06",
+  "name": {
+    "en": "Key over fire",
+    "es": "Llave sobre el fuego",
+    "pt-BR": "Chave sobre o fogo"
+  },
+  "hint": {
+    "en": "The drop lets you land on the fire once. The key floats over the flames.",
+    "es": "La gota te deja caer una vez sobre el fuego. La llave flota sobre las llamas.",
+    "pt-BR": "A gota deixa você cair no fogo uma vez. A chave flutua sobre as chamas."
+  },
+  "par": 20,
+  "map": [
+    "####################",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#...............LLL#",
+    "#..g............L..#",
+    "#.......k.......L.g#",
+    "#.d.............L..#",
+    "#P..............LE.#",
+    "#####^^^^^^^########"
+  ]
+}

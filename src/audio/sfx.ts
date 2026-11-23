@@ -108,6 +108,10 @@ export const sfx = {
     noise(0.25, 0.4, 900, 0.8);
     tone(160, 60, 0.2, 'triangle', 0.15);
   },
+  unlock: () => {
+    tone(1200, 1200, 0.05, 'square', 0.08);
+    [660, 880, 1175].forEach((f, i) => tone(f, f, 0.14, 'triangle', 0.15, 0.06 + i * 0.06));
+  },
   extinguish: () => noise(0.5, 0.35, 3500, 0.6, 0, 'highpass'),
   exitOpen: () => {
     [523, 659, 784].forEach((f) => tone(f, f, 0.5, 'sine', 0.12));

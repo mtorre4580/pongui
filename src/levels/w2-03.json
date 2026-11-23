@@ -1,0 +1,28 @@
+{
+  "id": "w2-03",
+  "name": {
+    "en": "Locked gems",
+    "es": "Gemas encerradas",
+    "pt-BR": "Gemas trancadas"
+  },
+  "hint": {
+    "en": "The gems are locked in. The key is somewhere high.",
+    "es": "Las gemas están encerradas. La llave está en algún lugar alto.",
+    "pt-BR": "As gemas estão trancadas. A chave está em algum lugar alto."
+  },
+  "par": 16,
+  "map": [
+    "####################",
+    "#..................#",
+    "#..................#",
+    "#.k................#",
+    "#####..............#",
+    "#..................#",
+    "#.........LLLLLL...#",
+    "#.........Lg..gL...#",
+    "#.........LLLLLL...#",
+    "#..................#",
+    "#.P..s..........E..#",
+    "####################"
+  ]
+}

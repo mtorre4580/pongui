@@ -11,9 +11,11 @@ import { solve } from '../src/game/solver.ts';
 const LOCALES = ['en', 'es', 'pt-BR'] as const;
 const DIR = 'src/levels';
 
+// Numeric order (w2 before w10), like the game
+const num = (f: string) => f.match(/\d+/g)!.map(Number);
 const files = readdirSync(DIR)
   .filter((f) => f.endsWith('.json'))
-  .sort();
+  .sort((a, b) => num(a)[0] - num(b)[0] || num(a)[1] - num(b)[1]);
 
 const errors: string[] = [];
 const rows: Record<string, string | number>[] = [];

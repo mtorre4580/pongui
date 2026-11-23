@@ -1,0 +1,28 @@
+{
+  "id": "w2-02",
+  "name": {
+    "en": "Soft landing",
+    "es": "Aterrizaje suave",
+    "pt-BR": "Pouso suave"
+  },
+  "hint": {
+    "en": "Moss is soft: it never bounces you high. Jump high from the stone pads.",
+    "es": "El musgo es blando: nunca te da un rebote alto. Saltá alto desde las piedras.",
+    "pt-BR": "O musgo é macio: nunca dá um quique alto. Pule alto das pedras."
+  },
+  "par": 22,
+  "map": [
+    "####################",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#....g.....g.....g.#",
+    "#..................#",
+    "#E.................#",
+    "#.P................#",
+    "#mmm##mmmm##mmmm##m#"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "id": "w2-04",
+  "name": {
+    "en": "Moss stairs",
+    "es": "Escalera de musgo",
+    "pt-BR": "Escada de musgo"
+  },
+  "hint": {
+    "en": "Low bounces climb one step. Save the high bounce for the stone.",
+    "es": "Un rebote bajo sube un escalón. Guardá el rebote alto para la piedra.",
+    "pt-BR": "Um quique baixo sobe um degrau. Guarde o quique alto para a pedra."
+  },
+  "par": 15,
+  "map": [
+    "####################",
+    "#..................#",
+    "#................E.#",
+    "#..........g...#####",
+    "#............mm#####",
+    "#..........mm#######",
+    "#..........#########",
+    "#.g....g...#########",
+    "#........###########",
+    "#......mm###########",
+    "#.P..mm#############",
+    "####################"
+  ]
+}

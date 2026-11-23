@@ -4,6 +4,7 @@ import { es } from './messages/es';
 import { ptBR } from './messages/pt-BR';
 import { persistNative } from '../native';
 
+export type { MessageKey };
 export type Locale = 'en' | 'es' | 'pt-BR';
 export type Localized<T> = Record<Locale, T>;
 
