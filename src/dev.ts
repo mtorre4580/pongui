@@ -71,11 +71,13 @@ export function installDevTools(game: Phaser.Game) {
    * Plays the solver's solution in real time inside the real scene (used to record the README
    * GIF). When the level ends the usual result panel opens (`data-scene="Overlay"`).
    */
-  const demo = (index: number) => {
+  const demo = (index: number, { banner = true } = {}) => {
     {
       const sc = game.scene.getScene('Game') as unknown as AnyGame;
       // Subscribe before starting: outside the game loop Phaser starts the scene synchronously
       sc.events.once('create', () => {
+        // Clean clips for the landing page: no level title banner
+        if (!banner) sc.hideBanner();
         const world = sc['world'] as World;
         const plan = solve(world.level).plan;
         let k = 0;

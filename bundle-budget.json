@@ -1,8 +1,9 @@
 {
-  "$comment": "Gzip size limits in KB. Chunks are matched by name without the content hash. Phaser is most of index.js (~340 KB gzip), so the budget leaves room for game code only.",
-  "initial": 380,
-  "defaultChunk": 60,
+  "$comment": "Gzip size limits in KB. Chunks are matched by name without the content hash. `initial` is what the landing page (dist/index.html) loads up front. play.js is the game: Phaser is ~340 KB of it.",
+  "initial": 40,
+  "defaultChunk": 20,
   "chunks": {
-    "index.js": 370
+    "play.js": 370,
+    "main.js": 15
   }
 }

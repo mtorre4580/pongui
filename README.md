@@ -40,6 +40,15 @@ screen and works offline. The touch controls sit beside the level, never on top 
 
 <img alt="A level on a phone in landscape, with the move buttons on the left and the bounce button on the right" src="docs/media/phone.png" width="720" />
 
+## Landing page
+
+The site root is a landing page that presents the game: a hero video, how to play, a clip for
+every mechanic (recorded from the game with the solver at the controls), the devices it runs on,
+install instructions, the level list and an FAQ, in the same three languages. The game lives at
+`/play/`, which is also where the installed app opens. The landing page is plain HTML, CSS and a
+small script (~15 KB gzip on first load); videos load only when they scroll into view and can
+always be paused.
+
 ## Features
 
 - **10 levels** in World 1, each teaching one idea: high bounces, fragile floors, ramps, springs,
@@ -69,7 +78,7 @@ pnpm dev
 
 | Command | What it does |
 |---|---|
-| `pnpm dev` | Development server (add `?level=5` to open a level directly) |
+| `pnpm dev` | Development server: landing page at `/`, game at `/play/` (`/play/?level=5` opens a level) |
 | `pnpm build` | Typecheck + production build with the service worker |
 | `pnpm preview` | Serves the build |
 | `pnpm test` / `pnpm test:run` | Vitest (watch / once) |
@@ -78,7 +87,7 @@ pnpm dev
 | `pnpm check:bundle` | Gzip budget per chunk (after `pnpm build`) |
 | `pnpm test:e2e` | Playwright + axe on desktop and phone (after `pnpm build`) |
 | `pnpm lhci` | Lighthouse CI on the built game |
-| `pnpm media` | Regenerates the README screenshots, GIF and video (needs ffmpeg) |
+| `pnpm media` | Regenerates the README media, the landing page videos and screenshots, and the social image (needs ffmpeg) |
 | `pnpm icons` | Regenerates the app icons in `public/icons` |
 
 In development, the browser console has `await replay(3)` (fast-forwards the solver's solution for
@@ -86,7 +95,8 @@ level 4) and `demo(3)` (plays it in real time).
 
 ## Deploy
 
-The build in `dist/` is a static site with relative paths, so it works from any folder.
+The build in `dist/` is a static site with relative paths, so it works from any folder. Set the
+public URL in `.env` (`VITE_SITE_URL`) for the canonical link, Open Graph and structured data.
 `.github/workflows/deploy.yml` publishes it to GitHub Pages after CI passes on `main`; it stays
 idle while the repository is private.
 

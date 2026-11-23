@@ -60,3 +60,17 @@ export async function toggleFullscreen() {
     /* the browser does not allow it */
   }
 }
+
+/**
+ * Registers the service worker. The URL is resolved from this bundle (`assets/…`), so it points
+ * to the site root from any page (/, /play/) and under any base folder.
+ */
+export function registerServiceWorker() {
+  if (!import.meta.env.PROD || !('serviceWorker' in navigator)) return;
+  const root = new URL('../', import.meta.url);
+  window.addEventListener('load', () => {
+    void navigator.serviceWorker
+      .register(new URL('sw.js', root), { scope: root.pathname })
+      .catch(() => undefined);
+  });
+}

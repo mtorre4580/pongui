@@ -155,3 +155,24 @@ body.touch-ui #game {
     display: flex;
   }
 }
+
+/*
+ * Screens narrower than the game (tablets, ~4:3) have spare height, not spare width: there the
+ * controls get a strip at the bottom instead of the sides, so the level stays large.
+ */
+@media (max-aspect-ratio: 3/2) {
+  :root {
+    --j: calc(var(--b) * 1.25);
+    --bz: calc(env(safe-area-inset-bottom) + var(--b) * 1.25 + var(--gap) * 2);
+  }
+  body.touch-ui #game {
+    left: 0;
+    right: 0;
+    bottom: var(--bz);
+  }
+  #tc-l,
+  #tc-r,
+  .tc-jump {
+    bottom: calc(env(safe-area-inset-bottom) + var(--gap));
+  }
+}

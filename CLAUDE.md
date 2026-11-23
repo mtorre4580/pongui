@@ -5,7 +5,8 @@ Context guide for working in this repo. Read all of it before touching code.
 ## What it is
 
 A bouncing-ball puzzle game that runs in the browser on desktop, tablet and phone, and installs
-as a PWA (no app stores). The ball bounces on its own; the player steers it in the air, holds
+as a PWA (no app stores). The site root is a landing page that presents it; the game is at
+`/play/`, which is also the installed app's start URL. The ball bounces on its own; the player steers it in the air, holds
 jump for high bounces, collects every gem to open the exit and avoids hazards. It is an original
 game in the genre of the late-80s bouncing-ball puzzlers: its own name, character, art, sounds
 and levels. Never copy names, art, music or level layouts from an existing game.
@@ -35,7 +36,7 @@ skip themselves while it is private and switch on when it becomes public.
 
 ```bash
 pnpm install
-pnpm dev                # development server (?level=N opens a level)
+pnpm dev                # development server: landing at /, game at /play/ (?level=N opens a level)
 pnpm build              # typecheck + production build with the service worker
 pnpm preview            # serve the build
 pnpm test               # Vitest in watch mode
@@ -46,15 +47,19 @@ pnpm validate:levels    # parse every level, check its texts, prove it is solvab
 pnpm check:bundle       # gzip budget per chunk (after pnpm build)
 pnpm test:e2e           # Playwright + axe on desktop and phone (after pnpm build)
 pnpm lhci               # Lighthouse CI on the built game
-pnpm media              # README screenshots, GIF and video into docs/media (needs ffmpeg)
+pnpm media              # README media, landing videos/screenshots and og-image (needs ffmpeg)
 pnpm icons              # regenerate public/icons
 ```
 
 ## Structure
 
 ```
+index.html             # landing page (English texts inline, see Landing page)
+play/index.html        # the game page
+public/landing/        # landing videos and screenshots, recorded by `pnpm media`
 src/
   main.ts              # Phaser config, scenes, font loading, resize observer
+  landing/             # landing page script, styles and messages/{en,es,pt-BR}.ts
   dev.ts               # dev-only console helpers: replay(i), demo(i), tick(n)
   game/                # pure game logic, no Phaser
     constants.ts       # grid, physics constants
@@ -102,6 +107,23 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
 - Play every new level by hand, and simulate naive play when in doubt (hold right, hold jump,
   different start timings): the solver only proves a level is possible, not that it is fair.
 
+## Landing page
+
+- Plain HTML + CSS + one small module (`src/landing/main.ts`): no framework and no Phaser, about
+  15 KB gzip on first load (`main.js` has its own budget).
+- Texts: `index.html` holds the English text of every `data-i18n` element (crawlers and no-JS
+  visitors read real content) and `data-i18n-attr="attr:key"` for attributes. `tests/landing.test.ts`
+  fails if the HTML and `src/landing/messages/en.ts` drift apart. The language is shared with the
+  game (`boinky:locale`).
+- Videos use `data-src` and load only when they scroll into view; they play only while visible,
+  never autoplay with `prefers-reduced-motion`, and every clip has a pause button (WCAG 2.2.2).
+  `data-src` paths are resolved relative to the page so the site works under any base folder.
+- Media is recorded, never drawn by hand: `pnpm media` plays each mechanic's level with the solver
+  (`demo(i, { banner: false })`) and encodes small MP4 clips with JPEG posters.
+- `VITE_SITE_URL` in `.env` feeds the canonical link, Open Graph tags and the `VideoGame` JSON-LD.
+- The service worker is registered from `src/pwa.ts` with a URL resolved from the bundle, so both
+  pages register `/sw.js` with the root scope. Landing media is excluded from the precache.
+
 ## Design
 
 - Modern flat vector look: navy gradient background with soft bubbles, teal solid blocks, a coral
@@ -112,14 +134,15 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
 - **Canvas renderer rules**: no `tint` (use `sparkTexture(color)`), no `fillGradientStyle` (bake
   gradients with a 2D canvas), and bake static layers (background, solid blocks) into textures
   instead of redrawing Graphics every frame.
-- Touch controls are HTML buttons. While a level is open, `body.touch-ui` reserves side strips so
-  the controls never cover the level; the strip stays during pause so the canvas does not resize.
+- Touch controls are HTML buttons. While a level is open, `body.touch-ui` reserves room so the
+  controls never cover the level: side strips on wide screens (phones), a bottom strip on screens
+  narrower than 3:2 (tablets). The room stays during pause so the canvas does not resize.
 - Portrait on touch screens shows a "rotate your device" notice.
 
 ## Performance
 
-- Lighthouse (desktop) must stay at 100/100/100/100. Main-thread blocking was 1.3 s with WebGL and
-  is ~10 ms with Canvas.
+- Lighthouse (desktop) must stay at 100/100/100/100 on both pages (`/` and `/play/`). Main-thread
+  blocking was 1.3 s with WebGL and is ~10 ms with Canvas.
 - Bundle budget in `bundle-budget.json` (Phaser is ~340 KB gzip of the 370 KB `index.js` limit).
 
 ## Accessibility (mandatory)
@@ -181,6 +204,6 @@ its legend entry in `CONTRIBUTING.md`, and a level that introduces it.
 
 - [x] World 1 — 10 levels, desktop/touch/gamepad controls, PWA, three languages
 - [x] Project setup — CI, hooks, browser tests, Lighthouse, docs
-- [ ] Landing page
+- [x] Landing page
 - [ ] World 2 and beyond
 - [ ] Public release (license, Pages deploy, CodeQL)
