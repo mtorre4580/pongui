@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
 import { VitePWA } from 'vite-plugin-pwa';
-import type { Plugin } from 'vite';
+import { loadEnv, type Plugin } from 'vite';
 
 /**
  * vite-plugin-pwa links the manifest as `./manifest.webmanifest` on every page, after the HTML
@@ -49,6 +49,31 @@ const nativeEntry = (): Plugin => ({
   },
 });
 
+/**
+ * robots.txt and sitemap.xml written from `VITE_SITE_URL`, so the public address lives in one
+ * place (.env) and these files can never point at an old domain.
+ */
+const siteFiles = (site: string): Plugin => ({
+  name: 'site-files',
+  apply: 'build',
+  generateBundle() {
+    const urls = ['', 'play/'].map((path) => `  <url>\n    <loc>${site}${path}</loc>\n  </url>`);
+    this.emitFile({
+      type: 'asset',
+      fileName: 'robots.txt',
+      source: `User-agent: *\nAllow: /\n\nSitemap: ${site}sitemap.xml\n`,
+    });
+    this.emitFile({
+      type: 'asset',
+      fileName: 'sitemap.xml',
+      source:
+        '<?xml version="1.0" encoding="UTF-8"?>\n' +
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
+        `${urls.join('\n')}\n</urlset>\n`,
+    });
+  },
+});
+
 /** The web build: landing page + game + PWA. */
 const pwa = () =>
   VitePWA({
@@ -85,7 +110,7 @@ const pwa = () =>
     workbox: {
       globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
       // Landing media is only for the web page, never needed offline
-      globIgnores: ['landing/**', 'og-image.jpg'],
+      globIgnores: ['landing/**', 'og-image.jpg', '404.html'],
       // `?level=N` deep links and shared levels (`?c=CODE`) must still hit the precached game
       // page offline
       ignoreURLParametersMatching: [/^utm_/, /^fbclid$/, /^level$/, /^c$/],
@@ -97,6 +122,7 @@ export default defineConfig(({ mode }) => {
   // `vite build --mode native`: only the game, for the iOS/Android apps (Capacitor). No PWA (the
   // app ships every file) and no public/ folder (landing media and web icons are not needed).
   const native = mode === 'native';
+  const site = loadEnv(mode, process.cwd()).VITE_SITE_URL ?? '/';
   // Web: the landing page at / and the game at /play/. Native: the game only
   const input: Record<string, string> = native
     ? { play: page('./play/index.html') }
@@ -104,7 +130,7 @@ export default defineConfig(({ mode }) => {
   return {
     base: './',
     publicDir: native ? false : 'public',
-    plugins: native ? [nativeEntry()] : [pwa(), rootManifestLink()],
+    plugins: native ? [nativeEntry()] : [pwa(), rootManifestLink(), siteFiles(site)],
     build: {
       outDir: native ? 'dist-native' : 'dist',
       chunkSizeWarningLimit: 2000,

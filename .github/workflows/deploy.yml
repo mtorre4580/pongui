@@ -1,7 +1,7 @@
 name: Deploy
 
 on:
-  # Deploy only after CI passes on main, so a broken commit never reaches Pages
+  # Deploy only after CI passes on main, so a broken commit never reaches the site
   workflow_run:
     workflows: [CI]
     types: [completed]
@@ -10,22 +10,25 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
-  group: pages
+  group: deploy
   cancel-in-progress: false
 
 jobs:
-  build:
-    # GitHub Pages is off while the repository is private (free plan): this skips until it is
-    # public and Pages is enabled with "GitHub Actions" as the source.
+  deploy:
+    name: Publish to Cloudflare Pages
+    # Idle until the Cloudflare project exists: set the repository variable
+    # CLOUDFLARE_PAGES_PROJECT to its name, and the secrets CLOUDFLARE_API_TOKEN and
+    # CLOUDFLARE_ACCOUNT_ID (see README, Deploy).
     if: >-
-      !github.event.repository.private &&
+      vars.CLOUDFLARE_PAGES_PROJECT != '' &&
       (github.event_name == 'workflow_dispatch' ||
       (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'))
     runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ vars.SITE_URL }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -38,16 +41,13 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec vite build
-      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
-        with:
-          path: dist
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
+        env:
+          # Optional: analytics stay off when the variable is not set
+          VITE_UMAMI_ID: ${{ vars.UMAMI_WEBSITE_ID }}
+      # Wrangler runs from the registry at a fixed version: it is a deploy tool, not a project
+      # dependency
+      - run: pnpm dlx wrangler@4.166.0 pages deploy dist --project-name="$PROJECT" --branch=main
+        env:
+          PROJECT: ${{ vars.CLOUDFLARE_PAGES_PROJECT }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

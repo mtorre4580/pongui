@@ -13,8 +13,10 @@ and levels. Never copy names, art, music or level layouts from an existing game.
 
 It also ships as native iOS and Android apps through Capacitor (see Native apps).
 
-The repository is **private** for now. The CodeQL, Dependency Review and Pages deploy workflows
-skip themselves while it is private and switch on when it becomes public.
+The repository is **private** for now. The site is published on Cloudflare Pages
+(`.github/workflows/deploy.yml`, after CI passes on `main`; idle until the repository variable
+`CLOUDFLARE_PAGES_PROJECT` is set). The CodeQL and Dependency Review workflows skip themselves
+while the repository is private.
 
 ## Stack
 
@@ -259,7 +261,8 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
   clip, and encodes small MP4 clips with JPEG posters (`pnpm media editor` records only that one).
 - World cards are static HTML (`data-world="N"`); their names come from the game's dictionary
   (`world.N`) and `tests/landing.test.ts` checks there is one card per world.
-- `VITE_SITE_URL` in `.env` feeds the canonical link, Open Graph tags and the `VideoGame` JSON-LD.
+- `VITE_SITE_URL` in `.env` feeds the canonical link, Open Graph tags, the `VideoGame` JSON-LD
+  and the generated `robots.txt` and `sitemap.xml` (`siteFiles` in `vite.config.ts`).
 - The service worker is registered from `src/pwa.ts` with a URL resolved from the bundle, so both
   pages register `/sw.js` with the root scope. Landing media is excluded from the precache.
 
@@ -435,4 +438,4 @@ characters must stay unique across the game.
 - [x] Level editor (computers) and sharing by link, WhatsApp and QR code, with "My levels"
 - [ ] Publishing player levels to a shared catalog (accounts, database, moderation)
 - [ ] Store release (developer accounts, signing, store listings, privacy policy)
-- [ ] Public release (license, Pages deploy, CodeQL)
+- [ ] Public launch (domain, Cloudflare Pages project, Search Console, social profiles)
