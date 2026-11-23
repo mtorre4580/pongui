@@ -1,0 +1,28 @@
+{
+  "id": "w10-02",
+  "name": {
+    "en": "Light steps",
+    "es": "Escalones de luz",
+    "pt-BR": "Degraus de luz"
+  },
+  "hint": {
+    "en": "On moss you only bounce low: take the gems, then climb the rainbow stairs.",
+    "es": "Sobre el musgo solo rebotás bajo: juntá las gemas y subí la escalera arcoíris.",
+    "pt-BR": "No musgo você só quica baixo: pegue as gemas e suba a escada de arco-íris."
+  },
+  "par": 17,
+  "map": [
+    "####################",
+    "#..................#",
+    "#..................#",
+    "#................E.#",
+    "#...............==.#",
+    "#.............==...#",
+    "#............=.....#",
+    "#..........==......#",
+    "#.........=........#",
+    "#...g...==.........#",
+    "#g.P..==...........#",
+    "#mmmmmmmmmmmmmmmmmm#"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "id": "w10-04",
+  "name": {
+    "en": "Lava lagoon",
+    "es": "Laguna de lava",
+    "pt-BR": "Lagoa de lava"
+  },
+  "hint": {
+    "en": "Sink slowly past the vents and only touch them while they are dark.",
+    "es": "Hundite despacio entre los respiraderos y tocalos solo cuando estén apagados.",
+    "pt-BR": "Afunde devagar entre os respiradouros e só toque neles quando estiverem apagados."
+  },
+  "par": 22,
+  "map": [
+    "####################",
+    "#..................#",
+    "#.P..............E.#",
+    "#####~~~~~~~~~######",
+    "######~~~~~~~#######",
+    "######~~~!!~~#######",
+    "######~g~~~~~#######",
+    "######~~~~~#########",
+    "######~~~~~~~#######",
+    "######!!~~~g~#######",
+    "######~~~~~~~#######",
+    "####################"
+  ]
+}

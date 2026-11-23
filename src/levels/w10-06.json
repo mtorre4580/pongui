@@ -1,0 +1,29 @@
+{
+  "id": "w10-06",
+  "name": {
+    "en": "Dark chimney",
+    "es": "Chimenea oscura",
+    "pt-BR": "Chaminé escura"
+  },
+  "hint": {
+    "en": "In the dark, ricochet up between the bumpers to the key.",
+    "es": "A oscuras, rebotá entre los rebotadores hasta la llave.",
+    "pt-BR": "No escuro, ricocheteie entre os rebatedores até a chave."
+  },
+  "dark": true,
+  "par": 18,
+  "map": [
+    "####################",
+    "#......b...........#",
+    "#......b.....k.....#",
+    "#......b...........#",
+    "#......b..b###.....#",
+    "#......b..b######..#",
+    "#......b..b######..#",
+    "#......b..b######..#",
+    "#......b..b######..#",
+    "#..g..#b..b###E.L..#",
+    "#.P.......b###..L..#",
+    "####################"
+  ]
+}

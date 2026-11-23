@@ -1,0 +1,28 @@
+{
+  "id": "w10-07",
+  "name": {
+    "en": "Phase portal",
+    "es": "Portal de fase",
+    "pt-BR": "Portal de fase"
+  },
+  "hint": {
+    "en": "A phase block guards the portal: go through when it is a ghost.",
+    "es": "Un bloque de fase cuida el portal: pasá cuando es un fantasma.",
+    "pt-BR": "Um bloco de fase guarda o portal: passe quando ele for um fantasma."
+  },
+  "par": 14,
+  "map": [
+    "####################",
+    "#..........#.......#",
+    "#..........#1...g..#",
+    "#..........#.......#",
+    "#..........#.&&&&..#",
+    "#..........#.......#",
+    "#..........#.......#",
+    "#..........#.......#",
+    "#..........#.......#",
+    "#.....######.......#",
+    "#.P....g.%1#.s..E..#",
+    "####################"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "id": "w10-09",
+  "name": {
+    "en": "Prism",
+    "es": "Prisma",
+    "pt-BR": "Prisma"
+  },
+  "hint": {
+    "en": "A switch, a portal and a rainbow: put them in the right order.",
+    "es": "Un interruptor, un portal y un arcoíris: usalos en el orden correcto.",
+    "pt-BR": "Um interruptor, um portal e um arco-íris: use-os na ordem certa."
+  },
+  "par": 16,
+  "map": [
+    "####################",
+    "#..................#",
+    "#..........g.......#",
+    "#.........AAA......#",
+    "#..................#",
+    "#......1...........#",
+    "#....###...........#",
+    "#..................#",
+    "#.g.........BBBB...#",
+    "#........o..B..B.1.#",
+    "#.P.........B.EB...#",
+    "##########======####"
+  ]
+}

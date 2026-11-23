@@ -1,0 +1,28 @@
+{
+  "id": "w10-05",
+  "name": {
+    "en": "Crumble wind",
+    "es": "Viento y derrumbe",
+    "pt-BR": "Vento e desmoronamento"
+  },
+  "hint": {
+    "en": "Hop across the crumbling clouds and let the wind carry you up.",
+    "es": "Saltá sobre la roca que se desmorona y dejá que el viento te suba.",
+    "pt-BR": "Pule sobre a rocha que desmorona e deixe o vento levar você para cima."
+  },
+  "par": 24,
+  "map": [
+    "####################",
+    "#..................#",
+    "#..E...........g...#",
+    "#####.......||.....#",
+    "#...........||.....#",
+    "#....-------||.....#",
+    "#...........||.....#",
+    "#...........||.....#",
+    "#..g.........cccc..#",
+    "#...........||.....#",
+    "#.P.........||.....#",
+    "##########**********"
+  ]
+}

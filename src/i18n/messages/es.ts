@@ -24,6 +24,7 @@ export const es: Messages = {
   'world.7': 'Núcleo de Brasas',
   'world.8': 'Estación Estelar',
   'world.9': 'Fortaleza Sombría',
+  'world.10': 'Cumbre Arcoíris',
   'game.level': 'Nivel {n} · {name}',
   'game.exitOpen': '¡Salida abierta!',
   'overlay.paused': 'Pausa',

@@ -5,7 +5,7 @@ import '@fontsource/fredoka/latin-700.css';
 import './landing.css';
 import { getLocale, LOCALES, setLocale, t, type Locale, type MessageKey } from '../i18n';
 // Only the world count: the level maps stay out of the landing page's bundle
-import { WORLD_COUNT } from '../levels/worlds';
+import { PLANNED_WORLDS, WORLD_COUNT } from '../levels/worlds';
 import {
   canInstall,
   isIOS,
@@ -38,6 +38,8 @@ function translate() {
 }
 
 function renderLevels() {
+  // Every planned world is out: stop promising more
+  document.querySelector('.soon')?.toggleAttribute('hidden', WORLD_COUNT >= PLANNED_WORLDS);
   const list = document.getElementById('level-list');
   if (!list) return;
   list.replaceChildren(

@@ -1,0 +1,28 @@
+{
+  "id": "w10-03",
+  "name": {
+    "en": "Gear slide",
+    "es": "Tobogán de engranajes",
+    "pt-BR": "Escorregador de engrenagens"
+  },
+  "hint": {
+    "en": "Bonk the switch, then slide across the ice before the teal wall closes in.",
+    "es": "Pegale al interruptor y deslizate por el hielo hasta pasar la pared turquesa.",
+    "pt-BR": "Acerte o interruptor e deslize pelo gelo até passar a parede turquesa."
+  },
+  "par": 21,
+  "map": [
+    "####################",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..o...............#",
+    "#.........B........#",
+    "#.........B...g....#",
+    "#...g.....B........#",
+    "#.P.......B......E.#",
+    "#iiiiiiiiiiiiiiiiii#"
+  ]
+}
