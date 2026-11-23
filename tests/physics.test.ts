@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   BALL_R,
+  CRUMBLE_STEPS,
   H_HIGH,
   H_LOW,
   H_SPRING,
@@ -397,5 +398,40 @@ describe('bounce physics', () => {
     // It fell through onto the floor below
     expect(lowest).toBeGreaterThan(10 * TILE);
     expect(high.s.status).toBe('playing');
+  });
+
+  it('a crumbling block starts crumbling on the first touch and is gone 0.6 s later', () => {
+    const w = new World(level({ 9: '#.P................#', 10: '#.c................#' }));
+    let touchedAt = -1;
+    let goneAt = -1;
+    for (let i = 0; i < 400 && goneAt < 0; i++) {
+      for (const e of w.step(STEP, idle)) {
+        if (e.type === 'crumble') touchedAt = i;
+        if (e.type === 'break' && e.tile === T.CRUMBLE) goneAt = i;
+      }
+    }
+    expect(touchedAt).toBeGreaterThanOrEqual(0);
+    expect(goneAt - touchedAt).toBe(CRUMBLE_STEPS);
+    expect(w.s.tiles[10 * 20 + 2]).toBe(T.EMPTY);
+    // Nothing holds the ball any more: it drops to the floor
+    let lowest = 0;
+    for (let i = 0; i < 200; i++) {
+      w.step(STEP, idle);
+      lowest = Math.max(lowest, w.s.y);
+    }
+    expect(lowest).toBeGreaterThan(10 * TILE);
+  });
+
+  it('a vent is solid for 1.5 s, then lit and deadly for 1.5 s', () => {
+    const w = new World(level({ 10: '#.P................#', 11: '#.!.################' }));
+    let bouncedOnVent = false;
+    for (let i = 0; i < 180; i++) {
+      for (const e of w.step(STEP, idle)) if (e.type === 'bounce') bouncedOnVent = true;
+      expect(w.s.status).toBe('playing');
+    }
+    expect(bouncedOnVent).toBe(true);
+    expect(w.ventLit).toBe(true);
+    for (let i = 0; i < 180 && w.s.status === 'playing'; i++) w.step(STEP, idle);
+    expect(w.s.status).toBe('dead');
   });
 });
