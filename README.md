@@ -129,8 +129,21 @@ level 4) and `demo(3)` (plays it in real time).
 
 The build in `dist/` is a static site with relative paths, so it works from any folder. Set the
 public URL in `.env` (`VITE_SITE_URL`) for the canonical link, Open Graph and structured data.
-`.github/workflows/deploy.yml` publishes it to GitHub Pages after CI passes on `main`; it stays
-idle while the repository is private.
+`robots.txt` and `sitemap.xml` are written from the same variable at build time.
+
+`.github/workflows/deploy.yml` publishes `dist/` to [Cloudflare Pages](https://pages.cloudflare.com)
+after CI passes on `main` (free, works with a private repository, custom domain with HTTPS). It
+stays idle until the repository has:
+
+| Kind | Name | Value |
+|---|---|---|
+| Variable | `CLOUDFLARE_PAGES_PROJECT` | Name of the Pages project (created once with "Direct upload") |
+| Variable | `SITE_URL` | Public address, shown on the deployment |
+| Secret | `CLOUDFLARE_API_TOKEN` | API token with the "Cloudflare Pages: Edit" permission |
+| Secret | `CLOUDFLARE_ACCOUNT_ID` | Account id from the Cloudflare dashboard |
+
+`public/_headers` sets the cache rules (hashed assets forever, the service worker never) and
+`public/404.html` is the "not found" page.
 
 ## Contributing
 
