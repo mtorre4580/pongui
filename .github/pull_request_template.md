@@ -1,5 +1,5 @@
 <!--
-  Thanks for contributing to Boinky!
+  Thanks for contributing to Pongui!
   Fill in every section. Write "N/A" when a section does not apply instead of deleting it.
   The PR title must follow Conventional Commits, e.g. `level: add world 2 ice levels`.
 -->

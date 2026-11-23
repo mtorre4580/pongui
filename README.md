@@ -1,4 +1,4 @@
-# Boinky
+# Pongui
 
 **A bouncing-ball puzzle game for desktop, tablet and phone.** The ball never stops bouncing:
 steer it, time your high bounces, collect every gem and reach the exit. Free, no sign-up, in
@@ -6,7 +6,7 @@ English, Spanish and Portuguese. Installs as an app and plays offline.
 
 [![CI](https://github.com/mtorre4580/boinky/actions/workflows/ci.yml/badge.svg)](https://github.com/mtorre4580/boinky/actions/workflows/ci.yml)
 
-![Boinky gameplay: the ball rides two ramps over spike pits, then clears the grand finale with fire, a spring and a hammer](docs/media/demo.gif)
+![Pongui gameplay: the ball rides two ramps over spike pits, then clears the grand finale with fire, a spring and a hammer](docs/media/demo.gif)
 
 <sub>Recorded from the game: the automatic solver playing levels 4 and 10.
 [Watch it as a video](docs/media/demo.mp4).</sub>
@@ -22,7 +22,7 @@ English, Spanish and Portuguese. Installs as an app and plays offline.
 
 <table>
   <tr>
-    <td width="33%"><img alt="Main menu: the Boinky title, Play, sound, language and fullscreen buttons" src="docs/media/menu.png" /></td>
+    <td width="33%"><img alt="Main menu: the Pongui title, Play, sound, language and fullscreen buttons" src="docs/media/menu.png" /></td>
     <td width="33%"><img alt="Level select: ten level cards for World 1 with the stars earned on each" src="docs/media/levels.png" /></td>
     <td width="33%"><img alt="The grand finale mid-level: ramps, fire, springs, a brick wall, fragile blocks and spikes" src="docs/media/gameplay.png" /></td>
   </tr>

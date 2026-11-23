@@ -4,7 +4,7 @@ import { expectScene, trackErrors } from './support';
 test('boots into the menu without errors', async ({ page }) => {
   const errors = trackErrors(page);
   await page.goto('./play/');
-  await expect(page).toHaveTitle(/Boinky/);
+  await expect(page).toHaveTitle(/Pongui/);
   await expect(page.locator('#game canvas')).toBeVisible();
   await expectScene(page, 'Menu');
   expect(errors).toEqual([]);
@@ -67,7 +67,7 @@ test('touch play uses gestures, with no on-screen buttons', async ({ page, isMob
 });
 
 test('the language follows the browser and can be saved', async ({ page }) => {
-  await page.addInitScript(() => localStorage.setItem('boinky:locale', 'es'));
+  await page.addInitScript(() => localStorage.setItem('pongui:locale', 'es'));
   await page.goto('./play/');
   await expect(page.locator('html')).toHaveAttribute('lang', 'es');
   await expect(page.locator('#rotate-text')).toHaveText('Girá el dispositivo para jugar');

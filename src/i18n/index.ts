@@ -10,7 +10,7 @@ export type Localized<T> = Record<Locale, T>;
 
 export const LOCALES: Locale[] = ['en', 'es', 'pt-BR'];
 const MESSAGES: Record<Locale, Messages> = { en, es, 'pt-BR': ptBR };
-const STORAGE_KEY = 'boinky:locale';
+const STORAGE_KEY = 'pongui:locale';
 
 /** A saved choice wins; otherwise the browser language if supported; otherwise English. */
 function detect(): Locale {

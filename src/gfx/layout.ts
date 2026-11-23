@@ -5,7 +5,7 @@
 import type Phaser from 'phaser';
 import { GAME_H, GAME_W } from '../game/constants';
 
-export const LAYOUT_EVENT = 'boinky:layout';
+export const LAYOUT_EVENT = 'pongui:layout';
 
 interface Insets {
   top: number;

@@ -1,9 +1,9 @@
 // Landing page texts. index.html holds these same English texts (for crawlers and no-JS
 // visitors); a test keeps both in sync. `es.ts` and `pt-BR.ts` must have exactly these keys.
 export const en = {
-  'meta.title': 'Boinky · A bouncing puzzle game for every screen',
+  'meta.title': 'Pongui · A bouncing puzzle game for every screen',
   'meta.description':
-    'Boinky is a free bouncing-ball puzzle game: collect every gem, dodge the spikes and find the exit. Plays in your browser on computer, tablet and phone, installs like an app and works offline.',
+    'Pongui is a free bouncing-ball puzzle game: collect every gem, dodge the spikes and find the exit. Plays in your browser on computer, tablet and phone, installs like an app and works offline.',
   skip: 'Skip to content',
   'nav.label': 'Main',
   'nav.how': 'How to play',
@@ -20,7 +20,7 @@ export const en = {
   'hero.install': 'Install the app',
   'hero.meta': 'No sign-up · Works offline · English, Español, Português',
   'hero.video':
-    'Boinky playing the grand finale: a ramp, fire put out with a water drop, a spring and a brick wall knocked down with a hammer',
+    'Pongui playing the grand finale: a ramp, fire put out with a water drop, a spring and a brick wall knocked down with a hammer',
   'video.pause': 'Pause video',
   'video.play': 'Play video',
   'how.title': 'Easy to learn, tricky to master',
@@ -51,9 +51,9 @@ export const en = {
   'devices.title': 'One game, every screen',
   'devices.text':
     'Play on a computer, a tablet or a phone. Install it like an app, with no store: it opens full screen and keeps working without a connection.',
-  'devices.desktop': 'Boinky on a computer',
-  'devices.tablet': 'Boinky on a tablet',
-  'devices.phone': 'Boinky on a phone in landscape, filling the screen',
+  'devices.desktop': 'Pongui on a computer',
+  'devices.tablet': 'Pongui on a tablet',
+  'devices.phone': 'Pongui on a phone in landscape, filling the screen',
   'feat.offline': 'Works offline after your first visit',
   'feat.install': 'Installs from the browser, no app store',
   'feat.controls': 'Keyboard, touch gestures and gamepad',
@@ -71,7 +71,7 @@ export const en = {
   'levels.text': 'Ten hand-made levels per world, and every world brings new tricks.',
   'levels.soon': 'More worlds are on the way.',
   'faq.title': 'Questions',
-  'faq.free.q': 'Is Boinky free?',
+  'faq.free.q': 'Is Pongui free?',
   'faq.free.a': 'Yes. Play it in your browser at no cost, without an account.',
   'faq.offline.q': 'Does it work offline?',
   'faq.offline.a':
@@ -85,7 +85,7 @@ export const en = {
   'faq.languages.a':
     'English, Spanish and Portuguese. It follows your browser, and you can switch it from the menu.',
   'cta.title': 'Ready to bounce?',
-  'cta.play': 'Play Boinky',
+  'cta.play': 'Play Pongui',
   'footer.rights': 'All rights reserved.',
 };
 

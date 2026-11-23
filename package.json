@@ -1,8 +1,8 @@
 {
-  "name": "boinky",
+  "name": "pongui",
   "private": true,
   "version": "0.2.0",
-  "description": "Boinky: a bouncing-ball puzzle game for desktop, tablet and phone. Installable PWA that works offline.",
+  "description": "Pongui: a bouncing-ball puzzle game for desktop, tablet and phone. Installable PWA that works offline.",
   "keywords": [
     "game",
     "puzzle",

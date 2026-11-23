@@ -1,4 +1,4 @@
-package io.github.mtorre4580.boinky;
+package io.github.mtorre4580.pongui;
 
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;

@@ -9,7 +9,7 @@ test('the web app manifest is installable', async ({ page, request }) => {
   const response = await request.get(new URL(href!, page.url()).href);
   expect(response.ok()).toBe(true);
   const manifest = await response.json();
-  expect(manifest.name).toBe('Boinky');
+  expect(manifest.name).toBe('Pongui');
   // The installed app opens the game, not the landing page
   expect(new URL(manifest.start_url, response.url()).pathname).toBe('/play/');
   expect(manifest.display).toBe('fullscreen');

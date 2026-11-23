@@ -169,7 +169,7 @@ export async function showShare(level: CustomLevelData): Promise<void> {
 
   const download = el('button', { type: 'button' }, [t('share.download')]);
   download.addEventListener('click', () => {
-    const a = el('a', { href: qr.toDataURL('image/png'), download: 'boinky-level-qr.png' });
+    const a = el('a', { href: qr.toDataURL('image/png'), download: 'pongui-level-qr.png' });
     a.click();
   });
 

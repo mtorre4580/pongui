@@ -1,4 +1,4 @@
-# CLAUDE.md — Boinky
+# CLAUDE.md — Pongui
 
 Context guide for working in this repo. Read all of it before touching code.
 
@@ -80,7 +80,7 @@ src/
     physics.ts         # World: step(dt, input) → events
     solver.ts          # best-first search between bounces (level validation, demos)
     custom.ts          # player levels: draft checks, auto par, link codes (encode/decode)
-  custom/              # player levels in the browser: store.ts (`boinky:custom`), bot.ts +
+  custom/              # player levels in the browser: store.ts (`pongui:custom`), bot.ts +
                        # bot.worker.ts (solver in a Web Worker), dialogs.ts (HTML dialogs), run.ts
   scenes/              # Boot, Menu, LevelSelect, MyLevels, Game, Overlay (pause / complete /
                        # game over), Editor (lazy chunk)
@@ -89,7 +89,7 @@ src/
   audio/sfx.ts         # synthesized sound effects
   i18n/                # t(), localized(), locale detection, messages/{en,es,pt-BR}.ts
   levels/              # w<world>-<nn>.json (numeric order), index.ts (LEVELS, WORLDS), worlds.ts
-  save.ts              # progress in localStorage (`boinky:save`)
+  save.ts              # progress in localStorage (`pongui:save`)
   pwa.ts               # install prompt, iOS detection, fullscreen
 tests/                 # Vitest: physics, levels, i18n
 e2e/                   # Playwright: smoke, PWA/offline, axe
@@ -223,7 +223,7 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
 - **Editor** (`scenes/Editor.ts`): computers only (`canCreate()`: fine pointer, 900 px wide, not
   native; `?editor=1` forces it). It is a lazy chunk added to Phaser on first use (`openEditor`),
   so phones never load it. Every tile of the ten worlds is in `PALETTE`; row 0 stays walls and
-  `paint()` keeps one start and one exit. Changes save at once (`boinky:custom`, mirrored to
+  `paint()` keeps one start and one exit. Changes save at once (`pongui:custom`, mirrored to
   native storage) with undo/redo.
 - **Verified** = the bot (the solver in a Web Worker, rerun 0.45 s after each change; a new run
   replaces the old worker) beat this exact map *and* its creator beat it with "Test". Both are
@@ -250,7 +250,7 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
 - Texts: `index.html` holds the English text of every `data-i18n` element (crawlers and no-JS
   visitors read real content) and `data-i18n-attr="attr:key"` for attributes. `tests/landing.test.ts`
   fails if the HTML and `src/landing/messages/en.ts` drift apart. The language is shared with the
-  game (`boinky:locale`).
+  game (`pongui:locale`).
 - Videos use `data-src` and load only when they scroll into view; they play only while visible,
   never autoplay with `prefers-reduced-motion`, and every clip has a pause button (WCAG 2.2.2).
   `data-src` paths are resolved relative to the page so the site works under any base folder.
@@ -263,7 +263,7 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
 ## Native apps
 
 - Capacitor 8 wraps the game for iOS (Swift Package Manager, no CocoaPods) and Android. App id
-  `io.github.mtorre4580.boinky` (cannot change after the first store upload).
+  `io.github.mtorre4580.pongui` (cannot change after the first store upload).
 - `vite build --mode native` builds only the game into `dist-native/` (no PWA plugin, no public/
   folder) plus a root `index.html` fallback that Capacitor requires. The app starts at
   `play/index.html` (`server.appStartPath`): a bare `play/` gets the root page and loops.
@@ -327,7 +327,7 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
 
 - **Every code comment is written in English**, no exceptions (team standard).
 - **i18n**: English by default; the browser language picks Spanish or Portuguese; the choice is
-  stored in `boinky:locale`. No visible text is hardcoded: use `t('key')` for UI and
+  stored in `pongui:locale`. No visible text is hardcoded: use `t('key')` for UI and
   `localized(value)` for level texts. Keys live in `src/i18n/messages/en.ts` (source of truth);
   `es.ts` and `pt-BR.ts` have exactly the same keys and placeholders (enforced by type and tests).
 - Tone: plain English; neutral Rioplatense Spanish (“juntá”, “probá”); Brazilian Portuguese.

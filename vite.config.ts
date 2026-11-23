@@ -44,7 +44,7 @@ const nativeEntry = (): Plugin => ({
   writeBundle(options) {
     writeFileSync(
       join(options.dir!, 'index.html'),
-      '<!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=/play/index.html"><title>Boinky</title>\n',
+      '<!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=/play/index.html"><title>Pongui</title>\n',
     );
   },
 });
@@ -58,8 +58,8 @@ const pwa = () =>
     injectRegister: false,
     includeAssets: ['icons/icon.svg', 'icons/apple-touch-icon.png', 'icons/favicon-32.png'],
     manifest: {
-      name: 'Boinky',
-      short_name: 'Boinky',
+      name: 'Pongui',
+      short_name: 'Pongui',
       description: 'A bouncing-ball puzzle game: collect every gem and find the exit.',
       lang: 'en',
       categories: ['games', 'entertainment'],

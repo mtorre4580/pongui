@@ -17,7 +17,7 @@ const SHARED = {
 /** Player-made levels saved in the browser. */
 const stored = (page: Page) =>
   page.evaluate(() => {
-    const raw = localStorage.getItem('boinky:custom');
+    const raw = localStorage.getItem('pongui:custom');
     return (raw ? JSON.parse(raw) : { levels: [] }) as {
       levels: { origin: string; name: string; map: string[]; bot: { solved: boolean } | null }[];
     };
