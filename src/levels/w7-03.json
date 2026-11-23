@@ -1,0 +1,28 @@
+{
+  "id": "w7-03",
+  "name": {
+    "en": "Soft walls",
+    "es": "Paredes blandas",
+    "pt-BR": "Paredes frágeis"
+  },
+  "hint": {
+    "en": "Crumbling rock gives way even when you bump into it from the side.",
+    "es": "La roca que se desmorona cede aunque la choques de costado.",
+    "pt-BR": "A rocha que desmorona cede mesmo quando você bate nela de lado."
+  },
+  "par": 18,
+  "map": [
+    "####################",
+    "#.......c.....c....#",
+    "#.......c.....c....#",
+    "#.......c.....c....#",
+    "#.......c.....c....#",
+    "#.......c.....c....#",
+    "#.......c.....c....#",
+    "#...g...c..g..c..g.#",
+    "#.......c.....c....#",
+    "#.......c.....c....#",
+    "#.P.....c.....c..E.#",
+    "####################"
+  ]
+}

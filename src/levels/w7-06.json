@@ -1,0 +1,28 @@
+{
+  "id": "w7-06",
+  "name": {
+    "en": "Ash key",
+    "es": "Llave de ceniza",
+    "pt-BR": "Chave de cinzas"
+  },
+  "hint": {
+    "en": "The key sits on crumbling rock: grab it and get off fast.",
+    "es": "La llave está sobre roca que se desmorona: agarrala y salí rápido.",
+    "pt-BR": "A chave está sobre rocha que desmorona: pegue-a e saia rápido."
+  },
+  "par": 17,
+  "map": [
+    "####################",
+    "#..................#",
+    "#.E.L.....k........#",
+    "#...L..............#",
+    "#######..ccc.......#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#...g..............#",
+    "#..................#",
+    "#.P....s...........#",
+    "#########****#######"
+  ]
+}

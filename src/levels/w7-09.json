@@ -1,0 +1,28 @@
+{
+  "id": "w7-09",
+  "name": {
+    "en": "Lava lift",
+    "es": "Ascensor de lava",
+    "pt-BR": "Elevador de lava"
+  },
+  "hint": {
+    "en": "Ride the hot air up, and touch the vent walls only while they are dark.",
+    "es": "Subí con el aire caliente y tocá las paredes de fuego solo cuando están apagadas.",
+    "pt-BR": "Suba com o ar quente e toque as paredes de fogo só quando estiverem apagadas."
+  },
+  "par": 26,
+  "map": [
+    "####################",
+    "#..................#",
+    "#....g.........E...#",
+    "#.......||.........#",
+    "########||##########",
+    "#######!||!#########",
+    "#######!||!#########",
+    "########||##########",
+    "#######!||!#########",
+    "########||##########",
+    "#.P.....||##########",
+    "####################"
+  ]
+}

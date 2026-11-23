@@ -1,0 +1,28 @@
+{
+  "id": "w7-01",
+  "name": {
+    "en": "Crumble",
+    "es": "Derrumbe",
+    "pt-BR": "Desmoronando"
+  },
+  "hint": {
+    "en": "Crumbling rock falls away a moment after you touch it: keep moving!",
+    "es": "La roca que se desmorona cae un momento después de que la tocás: ¡no te quedes quieto!",
+    "pt-BR": "A rocha que desmorona cai logo depois que você a toca: não fique parado!"
+  },
+  "par": 13,
+  "map": [
+    "####################",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#......g....g......#",
+    "#..................#",
+    "#.P..cccccccccc..E.#",
+    "#####**********#####"
+  ]
+}

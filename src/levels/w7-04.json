@@ -1,0 +1,28 @@
+{
+  "id": "w7-04",
+  "name": {
+    "en": "Vent steps",
+    "es": "Escalones de fuego",
+    "pt-BR": "Degraus de fogo"
+  },
+  "hint": {
+    "en": "Rest on the dark rock and jump onto a vent only while it is cool.",
+    "es": "Descansá en la roca oscura y saltá a un respiradero solo cuando está frío.",
+    "pt-BR": "Descanse na rocha escura e pule num respiradouro só quando ele estiver frio."
+  },
+  "par": 19,
+  "map": [
+    "####################",
+    "#.............g....#",
+    "#................E.#",
+    "#..........#########",
+    "#..........#########",
+    "#..........#########",
+    "#........!!#########",
+    "#..........#########",
+    "#..........#########",
+    "#.....##...#########",
+    "#.P........#########",
+    "####################"
+  ]
+}
