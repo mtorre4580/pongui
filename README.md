@@ -10,7 +10,7 @@ plays offline.
 | | |
 |---|---|
 | **Play** | [pongui.com](https://pongui.com/?utm_source=github) · [itch.io](https://pongui.itch.io/pongui) |
-| **Watch** | [YouTube](https://www.youtube.com/@playpongui) · [Instagram](https://www.instagram.com/playpongui/) |
+| **Watch** | [YouTube](https://www.youtube.com/@playpongui) · [Instagram](https://www.instagram.com/playpongui/) · [TikTok](https://www.tiktok.com/@playpongui) |
 | **Contact** | hello@pongui.com |
 
 [![CI](https://github.com/mtorre4580/pongui/actions/workflows/ci.yml/badge.svg)](https://github.com/mtorre4580/pongui/actions/workflows/ci.yml)
