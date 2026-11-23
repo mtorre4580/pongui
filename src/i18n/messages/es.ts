@@ -48,6 +48,7 @@ export const es: Messages = {
   'menu.skins': 'Pelotas',
   'boss.1': 'Gruñón',
   'boss.2': 'Sierpe',
+  'boss.3': 'Borrasca',
   'select.boss': 'Jefe: {name}',
   'select.bossLocked': 'Terminá los diez niveles para enfrentar al jefe',
   'select.lockedBoss': 'Vencé al jefe del mundo {n} para abrir este',
@@ -55,6 +56,8 @@ export const es: Messages = {
   'game.bossHint.1': 'Rebotale en la cabeza tres veces. ¡Nunca lo toques de costado!',
   'game.bossHint.2':
     'Sale donde tiembla el musgo. ¡Rebotá alto desde una piedra y caele en la cabeza!',
+  'game.bossHint.3':
+    'Subí por el aire hasta una nube y caele encima. ¡Salí de las columnas que se iluminan!',
   'overlay.toBoss': 'Enfrentar al jefe',
   'overlay.bossDown': '¡Jefe derrotado!',
   'overlay.bossDownText': 'Se abrió el mundo {n}.',

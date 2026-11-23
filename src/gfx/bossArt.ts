@@ -25,8 +25,11 @@ export interface ShotArt {
 
 export interface WarnArt {
   color: number;
-  /** A rectangle (the default) or a soft spot on the ground. */
-  shape?: 'rect' | 'spot';
+  /** A rectangle (the default), a soft spot on the ground, or streaks of wind blowing. */
+  shape?: 'rect' | 'spot' | 'wind';
+  /** Wind: which way it blows, and whether it is only the warning (fainter and slower). */
+  dir?: -1 | 1;
+  soft?: boolean;
 }
 
 const GRUMBLE = { body: 0x8e2f4f, dark: 0x5e1c35, light: 0xb5486b };
@@ -106,6 +109,58 @@ const ART: Record<number, BossArt> = {
       g.fillTriangle(W * 0.56, mouthY + 2, W * 0.68, mouthY + 2, W * 0.62, mouthY + 20);
     },
   },
+  // Squall: a round storm bird with spread wings, a lightning crest and a hooked beak
+  3: {
+    top: 16,
+    side: 40,
+    draw(g, W, H) {
+      const TOP = 16;
+      const sky = { body: 0x3d5a80, dark: 0x293f5c, light: 0x6f8fb8, belly: 0xc9d6ea };
+      // Wings, behind the body
+      g.fillStyle(sky.dark, 1);
+      g.fillTriangle(8, TOP + H * 0.3, -40, TOP + H * 0.1, -18, TOP + H * 0.75);
+      g.fillTriangle(W - 8, TOP + H * 0.3, W + 40, TOP + H * 0.1, W + 18, TOP + H * 0.75);
+      g.fillStyle(sky.body, 1);
+      g.fillTriangle(10, TOP + H * 0.35, -26, TOP + H * 0.3, 0, TOP + H * 0.8);
+      g.fillTriangle(W - 10, TOP + H * 0.35, W + 26, TOP + H * 0.3, W, TOP + H * 0.8);
+      // A crest like a lightning bolt
+      g.fillStyle(0xffe66d, 1);
+      g.fillTriangle(W * 0.42, TOP + 6, W * 0.62, TOP + 6, W * 0.46, 0);
+      g.fillTriangle(W * 0.5, TOP + 8, W * 0.7, TOP + 8, W * 0.66, 2);
+      g.fillStyle(sky.dark, 1).fillEllipse(W / 2, TOP + H / 2, W, H);
+      g.fillStyle(sky.body, 1).fillEllipse(W / 2, TOP + H / 2 - 4, W - 6, H - 10);
+      g.fillStyle(sky.belly, 1).fillEllipse(W / 2, TOP + H * 0.74, W * 0.56, H * 0.4);
+      g.fillStyle(sky.light, 1).fillEllipse(W * 0.4, TOP + H * 0.16, W * 0.4, 12);
+      // Eyes under heavy brows
+      const eyeY = TOP + H * 0.4;
+      g.fillStyle(C.white, 1)
+        .fillEllipse(W * 0.3, eyeY, 24, 26)
+        .fillEllipse(W * 0.7, eyeY, 24, 26);
+      g.fillStyle(C.ink, 1)
+        .fillCircle(W * 0.33, eyeY + 3, 6)
+        .fillCircle(W * 0.67, eyeY + 3, 6);
+      g.fillStyle(sky.dark, 1);
+      g.fillTriangle(W * 0.14, eyeY - 20, W * 0.46, eyeY - 6, W * 0.16, eyeY - 8);
+      g.fillTriangle(W * 0.86, eyeY - 20, W * 0.54, eyeY - 6, W * 0.84, eyeY - 8);
+      // Beak
+      g.fillStyle(0xf4a261, 1).fillTriangle(
+        W * 0.4,
+        eyeY + 14,
+        W * 0.6,
+        eyeY + 14,
+        W * 0.5,
+        eyeY + 40,
+      );
+      g.fillStyle(0xd97b3a, 1).fillTriangle(
+        W * 0.46,
+        eyeY + 28,
+        W * 0.54,
+        eyeY + 28,
+        W * 0.5,
+        eyeY + 40,
+      );
+    },
+  },
 };
 
 /** What bosses throw, by the shot's kind. */
@@ -117,12 +172,34 @@ const SHOTS: Record<string, ShotArt> = {
       g.fillStyle(0xcdb8ff, 1).fillTriangle(w * 0.2, 0, w * 0.6, 0, w * 0.45, h * 0.7);
     },
   },
+  // Lightning: a jagged line from the ceiling to the floor
+  bolt: {
+    draw(g, w, h) {
+      const steps = 10;
+      for (const [width, color] of [
+        [14, 0xffe66d],
+        [5, 0xffffff],
+      ] as const) {
+        g.lineStyle(width, color, 1)
+          .beginPath()
+          .moveTo(w / 2, 0);
+        for (let i = 1; i <= steps; i++)
+          g.lineTo(w / 2 + (i === steps ? 0 : i % 2 ? w * 0.3 : -w * 0.3), (h * i) / steps);
+        g.strokePath();
+      }
+    },
+  },
 };
 
 /** The color (and shape) of each kind of warning. */
 const WARNS: Record<string, WarnArt> = {
   burrow: { color: 0xffd166, shape: 'spot' },
   stalactite: { color: 0xcdb8ff },
+  bolt: { color: 0xffe66d },
+  'gust-left': { color: 0xffffff, shape: 'wind', dir: -1, soft: true },
+  'gust-right': { color: 0xffffff, shape: 'wind', dir: 1, soft: true },
+  'blow-left': { color: 0xffffff, shape: 'wind', dir: -1 },
+  'blow-right': { color: 0xffffff, shape: 'wind', dir: 1 },
 };
 
 /** A round shot: a ball of one color with a lighter core. */

@@ -3,12 +3,14 @@
 import type { Boss } from './types';
 import { GRUMBLE } from './w1-grumble';
 import { SERPSTONE } from './w2-serpstone';
+import { SQUALL } from './w3-squall';
 
 export type { Boss } from './types';
 
 export const BOSSES = {
   1: GRUMBLE,
   2: SERPSTONE,
+  3: SQUALL,
 } satisfies Record<number, Boss>;
 
 /** The boss of a world, if it has one. */

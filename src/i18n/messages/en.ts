@@ -46,6 +46,7 @@ export const en = {
   'menu.skins': 'Balls',
   'boss.1': 'Grumble',
   'boss.2': 'Serpstone',
+  'boss.3': 'Squall',
   'select.boss': 'Boss: {name}',
   'select.bossLocked': 'Finish the ten levels to face the boss',
   'select.lockedBoss': 'Beat the boss of world {n} to open this one',
@@ -53,6 +54,7 @@ export const en = {
   'game.bossHint.1': 'Bounce on its head three times. Never touch its sides!',
   'game.bossHint.2':
     'It comes up where the moss shakes. Bounce high off a stone and land on its head!',
+  'game.bossHint.3': 'Ride the air up to a cloud and drop on it. Leave the columns that light up!',
   'overlay.toBoss': 'Face the boss',
   'overlay.bossDown': 'Boss defeated!',
   'overlay.bossDownText': 'World {n} is open.',
