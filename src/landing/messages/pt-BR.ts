@@ -1,9 +1,9 @@
 import type { LandingMessages } from './en';
 
 export const ptBR: LandingMessages = {
-  'meta.title': 'Boinky · Um quebra-cabeça de quiques para qualquer tela',
+  'meta.title': 'Pongui · Um quebra-cabeça de quiques para qualquer tela',
   'meta.description':
-    'Boinky é um jogo grátis de quebra-cabeça com uma bola que quica: pegue todas as gemas, desvie dos espinhos e encontre a saída. Roda no navegador do computador, tablet e celular, instala como um app e funciona offline.',
+    'Pongui é um jogo grátis de quebra-cabeça com uma bola que quica: pegue todas as gemas, desvie dos espinhos e encontre a saída. Roda no navegador do computador, tablet e celular, instala como um app e funciona offline.',
   skip: 'Pular para o conteúdo',
   'nav.label': 'Principal',
   'nav.how': 'Como jogar',
@@ -20,7 +20,7 @@ export const ptBR: LandingMessages = {
   'hero.install': 'Instalar o app',
   'hero.meta': 'Sem cadastro · Funciona offline · English, Español, Português',
   'hero.video':
-    'Boinky jogando o grande final: uma rampa, fogo apagado com uma gota d’água, uma mola e um muro de tijolos derrubado com um martelo',
+    'Pongui jogando o grande final: uma rampa, fogo apagado com uma gota d’água, uma mola e um muro de tijolos derrubado com um martelo',
   'video.pause': 'Pausar vídeo',
   'video.play': 'Reproduzir vídeo',
   'how.title': 'Fácil de aprender, difícil de dominar',
@@ -51,9 +51,9 @@ export const ptBR: LandingMessages = {
   'devices.title': 'Um jogo, todas as telas',
   'devices.text':
     'Jogue no computador, no tablet ou no celular. Instale como um app, sem loja: abre em tela cheia e continua funcionando sem conexão.',
-  'devices.desktop': 'Boinky em um computador',
-  'devices.tablet': 'Boinky em um tablet',
-  'devices.phone': 'Boinky em um celular na horizontal, ocupando a tela toda',
+  'devices.desktop': 'Pongui em um computador',
+  'devices.tablet': 'Pongui em um tablet',
+  'devices.phone': 'Pongui em um celular na horizontal, ocupando a tela toda',
   'feat.offline': 'Funciona offline depois da primeira visita',
   'feat.install': 'Instala pelo navegador, sem loja de apps',
   'feat.controls': 'Teclado, gestos de toque e gamepad',
@@ -72,7 +72,7 @@ export const ptBR: LandingMessages = {
   'levels.text': 'Dez fases feitas à mão por mundo, e cada mundo traz truques novos.',
   'levels.soon': 'Mais mundos estão a caminho.',
   'faq.title': 'Perguntas',
-  'faq.free.q': 'O Boinky é grátis?',
+  'faq.free.q': 'O Pongui é grátis?',
   'faq.free.a': 'Sim. Jogue no seu navegador sem pagar nada e sem criar conta.',
   'faq.offline.q': 'Funciona offline?',
   'faq.offline.a':
@@ -86,6 +86,6 @@ export const ptBR: LandingMessages = {
   'faq.languages.a':
     'Inglês, espanhol e português. Ele segue o idioma do seu navegador, e você pode trocar pelo menu.',
   'cta.title': 'Pronto para quicar?',
-  'cta.play': 'Jogar Boinky',
+  'cta.play': 'Jogar Pongui',
   'footer.rights': 'Todos os direitos reservados.',
 };

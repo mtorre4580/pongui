@@ -30,7 +30,7 @@ export class Menu extends Phaser.Scene {
     drawBackground(this, GAME_W, GAME_H, 7);
 
     // Title with a small ball bouncing next to it
-    const title = text(this, GAME_W / 2, 92, 'Boinky', 64, '#ffffff', {
+    const title = text(this, GAME_W / 2, 92, 'Pongui', 64, '#ffffff', {
       fontStyle: '700',
       stroke: '#161a33',
       strokeThickness: 8,

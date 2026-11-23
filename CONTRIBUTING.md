@@ -1,4 +1,4 @@
-# Contributing to Boinky
+# Contributing to Pongui
 
 Thanks for helping! New levels, mechanics, translations and fixes are all welcome.
 

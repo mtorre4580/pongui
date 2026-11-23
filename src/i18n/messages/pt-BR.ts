@@ -104,7 +104,7 @@ export const ptBR: Messages = {
   'dialog.close': 'Fechar',
   'dialog.codeTitle': 'Abrir um nível compartilhado',
   'dialog.codeLabel': 'Cole o link ou o código que você recebeu',
-  'dialog.badCode': 'Isso não parece um nível de Boinky. Confira se copiou o link inteiro.',
+  'dialog.badCode': 'Isso não parece um nível de Pongui. Confira se copiou o link inteiro.',
   'dialog.open': 'Abrir',
   'dialog.deleteTitle': 'Apagar o nível?',
   'dialog.deleteText': '"{name}" vai sumir deste aparelho. Não dá para desfazer.',
@@ -118,7 +118,7 @@ export const ptBR: Messages = {
   'share.download': 'Salvar QR',
   'share.more': 'Mais…',
   'share.qrLabel': 'Código QR com o link deste nível',
-  'share.message': 'Jogue meu nível de Boinky "{name}": {url}',
+  'share.message': 'Jogue meu nível de Pongui "{name}": {url}',
   'share.localhost':
     'Este link aponta para este computador (localhost), então um celular não consegue abri-lo. Abra o jogo pelo endereço da sua rede ou pelo site publicado.',
   'share.soon': 'Em breve: publique seus níveis para qualquer pessoa encontrar.',

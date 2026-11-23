@@ -1,8 +1,8 @@
 // Progress saved in the browser (localStorage). The game still works if it is unavailable.
 import { persistNative } from './native';
 
-const KEY = 'boinky:save';
-// Key used before the game was renamed to Boinky: migrated on first load
+const KEY = 'pongui:save';
+// Key used before the game was renamed to Pongui: migrated on first load
 const LEGACY_KEY = 'rebotin.save.v1';
 
 export interface LevelRecord {

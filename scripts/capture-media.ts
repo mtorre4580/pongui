@@ -47,8 +47,8 @@ const waitScene = (page: Page, scene: string) =>
 
 async function prepare(page: Page) {
   await page.addInitScript((save) => {
-    localStorage.setItem('boinky:locale', 'en');
-    localStorage.setItem('boinky:save', JSON.stringify(save));
+    localStorage.setItem('pongui:locale', 'en');
+    localStorage.setItem('pongui:save', JSON.stringify(save));
   }, SAVE);
 }
 

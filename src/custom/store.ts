@@ -1,4 +1,4 @@
-// Player-made levels kept in the browser (localStorage `boinky:custom`), apart from progress.
+// Player-made levels kept in the browser (localStorage `pongui:custom`), apart from progress.
 // "mine" are levels made in the editor on this device; "received" came from a shared link.
 import {
   autoPar,
@@ -10,7 +10,7 @@ import {
 } from '../game/custom';
 import { persistNative } from '../native';
 
-export const CUSTOM_KEY = 'boinky:custom';
+export const CUSTOM_KEY = 'pongui:custom';
 const MAX_MINE = 60;
 const MAX_RECEIVED = 60;
 

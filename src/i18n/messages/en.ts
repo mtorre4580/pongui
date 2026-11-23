@@ -103,7 +103,7 @@ export const en = {
   'dialog.close': 'Close',
   'dialog.codeTitle': 'Open a shared level',
   'dialog.codeLabel': 'Paste the link or code you got',
-  'dialog.badCode': "That doesn't look like a Boinky level. Check that you copied the whole link.",
+  'dialog.badCode': "That doesn't look like a Pongui level. Check that you copied the whole link.",
   'dialog.open': 'Open',
   'dialog.deleteTitle': 'Delete level?',
   'dialog.deleteText': '"{name}" will be gone from this device. This can\'t be undone.',
@@ -117,7 +117,7 @@ export const en = {
   'share.download': 'Save QR',
   'share.more': 'More…',
   'share.qrLabel': 'QR code with the link to this level',
-  'share.message': 'Try my Boinky level "{name}": {url}',
+  'share.message': 'Try my Pongui level "{name}": {url}',
   'share.localhost':
     "This link points to this computer (localhost), so a phone can't open it. Open the game from your network address or from the public site.",
   'share.soon': 'Coming soon: publish your levels so anyone can find them.',

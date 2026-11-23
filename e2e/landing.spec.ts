@@ -8,7 +8,7 @@ const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 test('the landing page loads without errors and links to the game', async ({ page }) => {
   const errors = trackErrors(page);
   await page.goto('./');
-  await expect(page).toHaveTitle(/Boinky/);
+  await expect(page).toHaveTitle(/Pongui/);
   await expect(page.getByRole('heading', { level: 1 })).toContainText('never stops bouncing');
   const play = page.getByRole('link', { name: /Play now/ });
   await expect(play).toHaveAttribute('href', './play/');

@@ -7,7 +7,7 @@ describe('native helpers outside the app', () => {
 
   it('does nothing and never throws', async () => {
     await expect(initNative()).resolves.toBeUndefined();
-    expect(() => persistNative('boinky:save', '{}')).not.toThrow();
+    expect(() => persistNative('pongui:save', '{}')).not.toThrow();
     expect(() => hideSplash()).not.toThrow();
     expect(() => haptic('success')).not.toThrow();
   });

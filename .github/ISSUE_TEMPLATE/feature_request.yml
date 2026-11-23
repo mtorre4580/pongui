@@ -1,5 +1,5 @@
 name: Feature request
-description: Suggest an idea for Boinky
+description: Suggest an idea for Pongui
 labels: [enhancement]
 body:
   - type: textarea
