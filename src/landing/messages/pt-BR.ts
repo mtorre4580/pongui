@@ -91,6 +91,7 @@ export const ptBR: LandingMessages = {
   'devices.native':
     'Os apps para iPhone e Android ainda estão em desenvolvimento. Enquanto isso, jogue no navegador de qualquer computador, tablet ou celular, ou instale o jogo pelo navegador: funciona igual a um app.',
   'feat.editor': 'Editor de fases, com compartilhamento por link e código QR',
+  'feat.bosses': 'Um chefe no fim de cada mundo, cada um com a sua música',
   'faq.stores.q': 'Tem um app na App Store ou no Google Play?',
   'faq.stores.a':
     'Ainda não: os apps para iPhone e Android estão em desenvolvimento. Até lá, instale o jogo pelo navegador. Funciona igual, até offline.',
