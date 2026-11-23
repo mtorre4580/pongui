@@ -282,7 +282,8 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
     changes direction `need` times. A grabbed ball is out of reach of shots.
   - `setDark(on)`: the veil of the dark levels, over a boss fight.
   - `world.s.drift`: a sideways push on the ball (a gust), in px/s on top of its own speed.
-  - `boss.away` (not there), `boss.armor` (its head bounces without a hit), `boss.alpha` and
+  - `boss.away` (not there), `boss.armor` (its head bounces without a hit), `boss.spiked`
+    (deadly from above too, e.g. while it bursts out of the ground), `boss.alpha` and
     `boss.pose` (which of its textures is shown); `emit({ type: 'boss-fx', name })` for sounds.
 - A boss must be taller than a low bounce climbs (51 px), or standing still would beat it.
 - `bosses/index.ts` lists them (`BOSSES`, `bossOf(world)`); `bosses/types.ts` has `arena()`: a
@@ -301,6 +302,12 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
   bouncing on it while it is open to it; each boss harder than the one before (3 hits in the
   first worlds, 5 in the last, shorter warnings, more at once); from world 4 on, no spot where
   one can wait forever.
+- The bosses so far (what each asks of the player):
+  1. **Grumble** (3 hits): walks, faster after each hit, hops from the second phase. Drop on it
+     from a ledge or with a high bounce.
+  2. **Serpstone** (3 hits): comes up through the moss where a burrow shakes (deadly while it
+     bursts out or dives back) and drops stalactites on the ball's column, two at once in the
+     last phase. Moss only gives low bounces, so its head is reached from the two stones.
 - To add one: `src/bosses/wN-name.ts` (brain, `BossDef`, arena, theme) and its entry in
   `BOSSES`; its world in `BOSS_WORLDS`; its art in `gfx/bossArt.ts` and sounds in `sfx.ts`;
   `boss.N` and `game.bossHint.N` in the three languages; its script in `bosses/scripts.ts`;
