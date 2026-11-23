@@ -283,7 +283,7 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
   - `setDark(on)`: the veil of the dark levels, over a boss fight. `flipSwitch()`: flips the
     A/B blocks like a bounce on a switch.
   - `world.s.drift`: a sideways push on the ball (a gust), in px/s on top of its own speed.
-  - `boss.away` (not there), `boss.armor` (its head bounces without a hit), `boss.spiked`
+  - `boss.away` (not there; drawn faintly if its art says `faint`), `boss.armor` (its head bounces without a hit), `boss.spiked`
     (deadly from above too, e.g. while it bursts out of the ground), `boss.alpha` and
     `boss.pose` (which of its textures is shown); `emit({ type: 'boss-fx', name })` for sounds.
 - A boss must be taller than a low bounce climbs (51 px), or standing still would beat it.
@@ -346,6 +346,14 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
      tile (two tiles from the third phase): rock hit by it becomes a crumbling block, floor
      and ledges alike, so it holds one more bounce and is gone for good. Three vents in the
      floor never crack but are lit half the time. The fight has an end: the floor runs out.
+  8. **Orbit** (5 hits): a saucer in a low-gravity arena with bumpers down both walls. In low
+     gravity a high bounce reaches almost to the ceiling, so no height is out of reach: while
+     it hovers it is `away` (untouchable, drawn faintly). It follows the ball and lets out up
+     to 1 to 3 orbs that chase it at a quarter of its speed and burn out after 5.5 s. Then it
+     stops, comes down while the beam's column lights up, and turns the beam on (its orbs go
+     out): a ball under it is caught and pulled up unless it shakes loose (4 to 6 changes of
+     direction), which makes the beam fail for 2.2 s. While it is down, a high bounce from
+     beside the beam lands on its dome.
 - To add one: `src/bosses/wN-name.ts` (brain, `BossDef`, arena, theme) and its entry in
   `BOSSES`; its world in `BOSS_WORLDS`; its art in `gfx/bossArt.ts` and sounds in `sfx.ts`;
   `boss.N` and `game.bossHint.N` in the three languages; its script in `bosses/scripts.ts`;
