@@ -8,7 +8,7 @@ const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 // orientation notice). Keyboard play is covered by smoke.spec.ts.
 const views = [
   { name: 'game menu', path: './play/', scene: 'Menu' },
-  { name: 'level with touch controls', path: './play/?level=1', scene: 'Game' },
+  { name: 'level', path: './play/?level=1', scene: 'Game' },
 ];
 
 for (const view of views) {

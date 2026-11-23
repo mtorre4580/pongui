@@ -9,7 +9,7 @@ export const en = {
   'menu.iosHint': 'On iPhone/iPad: Share → "Add to Home Screen"',
   'menu.language': 'Language: English',
   'menu.helpKeys': 'Move: ◀ ▶ / A D   ·   High bounce: Space   ·   Pause: Esc   ·   Restart: R',
-  'menu.helpTouch': '◀ ▶ to move · big button to bounce higher',
+  'menu.helpTouch': 'Slide to move · double tap or a second finger to bounce higher',
   'select.world': 'World {n} · {name}',
   'select.back': '← Menu',
   'world.1': 'Bouncy Valley',
@@ -33,9 +33,6 @@ export const en = {
   'overlay.replay': 'Replay',
   'dom.loading': 'Loading…',
   'dom.rotate': 'Rotate your device to play',
-  'dom.left': 'Left',
-  'dom.right': 'Right',
-  'dom.jump': 'High bounce',
 };
 
 export type MessageKey = keyof typeof en;

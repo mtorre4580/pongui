@@ -25,8 +25,7 @@ export class Menu extends Phaser.Scene {
   create() {
     setupCamera(this);
     this.cameras.main.fadeIn(200, 13, 16, 36);
-    controls.showTouchUi(false);
-    controls.reserveTouchLayout(false);
+    controls.enableGestures(false);
     controls.clearEdges();
     drawBackground(this, GAME_W, GAME_H, 7);
 

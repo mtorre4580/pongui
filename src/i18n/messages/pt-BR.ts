@@ -10,7 +10,7 @@ export const ptBR: Messages = {
   'menu.iosHint': 'No iPhone/iPad: Compartilhar → "Adicionar à Tela de Início"',
   'menu.language': 'Idioma: Português',
   'menu.helpKeys': 'Mover: ◀ ▶ / A D   ·   Quique alto: Espaço   ·   Pausa: Esc   ·   Reiniciar: R',
-  'menu.helpTouch': '◀ ▶ para mover · botão grande para quicar mais alto',
+  'menu.helpTouch': 'Deslize para mover · toque duplo ou um segundo dedo para quicar mais alto',
   'select.world': 'Mundo {n} · {name}',
   'select.back': '← Menu',
   'world.1': 'Vale Saltitante',
@@ -34,7 +34,4 @@ export const ptBR: Messages = {
   'overlay.replay': 'Repetir',
   'dom.loading': 'Carregando…',
   'dom.rotate': 'Gire o dispositivo para jogar',
-  'dom.left': 'Esquerda',
-  'dom.right': 'Direita',
-  'dom.jump': 'Quique alto',
 };

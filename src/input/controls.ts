@@ -1,7 +1,7 @@
-// Unified input: keyboard, touch (HTML buttons) and gamepad.
+// Unified input: keyboard, touch gestures and gamepad.
 // Scenes poll it every frame: `held` for continuous actions and `consume()` for presses.
 
-import { LAYOUT_EVENT } from '../gfx/layout';
+import { Gestures, type GestureEvent } from './gestures';
 
 export type Action =
   'jump' | 'pause' | 'restart' | 'confirm' | 'back' | 'up' | 'down' | 'left' | 'right';
@@ -36,14 +36,18 @@ const GP_BUTTONS: Record<number, Action[]> = {
   15: ['right'],
 };
 
+// A double tap keeps the jump "held" until the next landing, or this long at most
+const ARMED_JUMP_MS = 900;
+
 class Controls {
   private kb = new Set<Action>();
-  private touch = new Map<Action, Set<number>>();
   private gp = new Set<Action>();
   private edges = new Set<Action>();
-  private touchEl: HTMLElement | null = null;
-  private wantTouchUi = false;
-  private layoutReserved = false;
+  private gestures = new Gestures();
+  private gesturesOn = false;
+  private jumpArmedAt = -Infinity;
+  private stickEl: HTMLElement | null = null;
+  private knobEl: HTMLElement | null = null;
   touchMode = false;
 
   init() {
@@ -51,7 +55,7 @@ class Controls {
       const acts = KEYMAP[e.code];
       if (!acts) return;
       e.preventDefault();
-      this.setTouchMode(false);
+      this.touchMode = false;
       if (e.repeat) return;
       for (const a of acts) {
         this.kb.add(a);
@@ -63,81 +67,77 @@ class Controls {
     });
     window.addEventListener('blur', () => {
       this.kb.clear();
-      this.touch.clear();
+      this.resetGestures();
     });
 
-    const coarse = window.matchMedia?.('(pointer: coarse)').matches;
-    this.touchMode = !!coarse;
-    window.addEventListener('touchstart', () => this.setTouchMode(true), { passive: true });
+    this.touchMode = !!window.matchMedia?.('(pointer: coarse)').matches;
+    window.addEventListener('touchstart', () => (this.touchMode = true), { passive: true });
 
-    this.touchEl = document.getElementById('touch');
-    this.bindTouch('tc-l', 'left');
-    this.bindTouch('tc-r', 'right');
-    this.bindTouch('tc-j', 'jump');
-    this.refreshTouchUi();
+    this.stickEl = document.getElementById('stick');
+    this.knobEl = document.getElementById('stick-knob');
+    this.bindGestures(document.getElementById('game'));
   }
 
-  private bindTouch(id: string, action: Action) {
-    const el = document.getElementById(id);
+  /** Touch gestures over the game (see gestures.ts). Mouse and pen input are ignored here. */
+  private bindGestures(el: HTMLElement | null) {
     if (!el) return;
-    const ids = new Set<number>();
-    this.touch.set(action, ids);
-    const down = (e: PointerEvent) => {
-      e.preventDefault();
-      if (!ids.size) this.edges.add(action);
-      ids.add(e.pointerId);
-      el.classList.add('on');
-      try {
-        el.setPointerCapture(e.pointerId);
-      } catch {
-        /* ignore */
-      }
-    };
+    const now = () => performance.now();
+    el.addEventListener('pointerdown', (e) => {
+      if (e.pointerType !== 'touch' || !this.gesturesOn) return;
+      this.handle(this.gestures.down(e.pointerId, e.clientX, e.clientY, now()));
+      this.drawStick();
+    });
+    window.addEventListener('pointermove', (e) => {
+      if (e.pointerType !== 'touch' || !this.gesturesOn) return;
+      this.gestures.move(e.pointerId, e.clientX, e.clientY);
+      this.drawStick();
+    });
     const up = (e: PointerEvent) => {
-      ids.delete(e.pointerId);
-      if (!ids.size) el.classList.remove('on');
+      if (e.pointerType !== 'touch') return;
+      this.handle(this.gestures.up(e.pointerId, e.clientX, e.clientY, now()));
+      this.drawStick();
     };
-    el.addEventListener('pointerdown', down);
-    el.addEventListener('pointerup', up);
-    el.addEventListener('pointercancel', up);
-    el.addEventListener('lostpointercapture', up);
-    el.addEventListener('contextmenu', (e) => e.preventDefault());
+    window.addEventListener('pointerup', up);
+    window.addEventListener('pointercancel', (e) => {
+      this.gestures.cancel(e.pointerId);
+      this.drawStick();
+    });
   }
 
-  setTouchMode(on: boolean) {
-    if (this.touchMode === on) return;
-    this.touchMode = on;
-    this.refreshTouchUi();
-  }
-
-  /** The game scene asks for the touch buttons; they only appear while touch is in use. */
-  showTouchUi(on: boolean) {
-    this.wantTouchUi = on;
-    this.refreshTouchUi();
-  }
-
-  /**
-   * Reserves (or frees) the side strips for the controls. It stays on for the whole level,
-   * even while paused, so the game does not resize when pausing.
-   */
-  reserveTouchLayout(on: boolean) {
-    this.layoutReserved = on;
-    this.refreshTouchUi();
-  }
-
-  private refreshTouchUi() {
-    if (!this.touchEl) return;
-    this.touchEl.hidden = !(this.wantTouchUi && this.touchMode);
-    const reserved = this.layoutReserved && this.touchMode;
-    if (document.body.classList.contains('touch-ui') !== reserved) {
-      document.body.classList.toggle('touch-ui', reserved);
-      // The free area for the level changed: scenes re-place their cameras
-      window.dispatchEvent(new Event(LAYOUT_EVENT));
+  private handle(events: GestureEvent[]) {
+    for (const ev of events) {
+      this.edges.add('jump');
+      if (ev === 'doubleTap') this.jumpArmedAt = performance.now();
     }
-    if (this.touchEl.hidden) {
-      for (const ids of this.touch.values()) ids.clear();
-      this.touchEl.querySelectorAll('.on').forEach((n) => n.classList.remove('on'));
-    }
+  }
+
+  /** Shows a faint ring where the steering finger landed and a knob where it is now. */
+  private drawStick() {
+    if (!this.stickEl || !this.knobEl) return;
+    const stick = this.gesturesOn ? this.gestures.stick : null;
+    this.stickEl.hidden = !stick;
+    if (!stick) return;
+    this.stickEl.style.transform = `translate(${stick.anchor.x}px, ${stick.anchor.y}px)`;
+    const dx = Math.max(-56, Math.min(56, stick.finger.x - stick.anchor.x));
+    this.knobEl.style.transform = `translateX(${dx}px)`;
+  }
+
+  private resetGestures() {
+    this.gestures.reset();
+    this.jumpArmedAt = -Infinity;
+    this.drawStick();
+  }
+
+  /** The game scene turns gestures on while a level is being played (not in menus or pause). */
+  enableGestures(on: boolean) {
+    if (this.gesturesOn === on) return;
+    this.gesturesOn = on;
+    this.resetGestures();
+  }
+
+  /** The queued high bounce of a double tap was used (the ball landed). */
+  disarmJump() {
+    this.jumpArmedAt = -Infinity;
   }
 
   /** Reads the gamepad (call once per frame). */
@@ -161,7 +161,14 @@ class Controls {
   }
 
   held(a: Action): boolean {
-    return this.kb.has(a) || this.gp.has(a) || (this.touch.get(a)?.size ?? 0) > 0;
+    if (this.kb.has(a) || this.gp.has(a)) return true;
+    if (!this.gesturesOn) return false;
+    if (a === 'left') return this.gestures.dir < 0;
+    if (a === 'right') return this.gestures.dir > 0;
+    if (a === 'jump') {
+      return this.gestures.jumpHeld || performance.now() - this.jumpArmedAt < ARMED_JUMP_MS;
+    }
+    return false;
   }
 
   consume(a: Action): boolean {

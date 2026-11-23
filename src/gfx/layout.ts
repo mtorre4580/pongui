@@ -43,12 +43,10 @@ export interface Placement {
    * function is evaluated on every placement, so it can depend on the touch controls being shown.
    */
   fit?: Rect | (() => Rect);
-  /** With spare height, stick the rectangle to the top of the free area instead of centering. */
-  alignTop?: boolean;
 }
 
 /** Zooms and places the camera so `fit` fills as much of the free area as possible. */
-export function placeCamera(scene: Phaser.Scene, { fit, alignTop = false }: Placement = {}) {
+export function placeCamera(scene: Phaser.Scene, { fit }: Placement = {}) {
   const area = (typeof fit === 'function' ? fit() : fit) ?? { x: 0, y: 0, w: GAME_W, h: GAME_H };
   const cam = scene.cameras.main;
   const { width, height } = scene.scale.gameSize;
@@ -66,7 +64,7 @@ export function placeCamera(scene: Phaser.Scene, { fit, alignTop = false }: Plac
   cam.setZoom(zoom);
   // Screen point where the rectangle's center must land
   const sx = left + freeW / 2;
-  const sy = alignTop ? top + (area.h * zoom) / 2 : top + freeH / 2;
+  const sy = top + freeH / 2;
   cam.centerOn(
     area.x + area.w / 2 - (sx - width / 2) / zoom,
     area.y + area.h / 2 - (sy - height / 2) / zoom,

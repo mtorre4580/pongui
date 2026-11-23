@@ -22,22 +22,8 @@
     <!-- Invisible: its padding marks the space the level must keep clear (see gfx/layout.ts) -->
     <div id="layout-probe" aria-hidden="true"></div>
 
-    <div id="touch" hidden>
-      <div class="tc-pad">
-        <button id="tc-l" class="tc-btn" aria-label="Left">
-          <svg viewBox="0 0 24 24"><path d="M15 5 8 12l7 7" /></svg>
-        </button>
-        <button id="tc-r" class="tc-btn" aria-label="Right">
-          <svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7" /></svg>
-        </button>
-      </div>
-      <button id="tc-j" class="tc-btn tc-jump" aria-label="High bounce">
-        <svg viewBox="0 0 24 24">
-          <path d="m6 14 6-6 6 6" />
-          <path d="m6 19 6-6 6 6" opacity=".5" />
-        </svg>
-      </button>
-    </div>
+    <!-- Touch steering indicator: where the finger landed (ring) and where it is (knob) -->
+    <div id="stick" hidden aria-hidden="true"><div id="stick-knob"></div></div>
 
     <div id="rotate">
       <svg viewBox="0 0 64 64" width="72" height="72">
