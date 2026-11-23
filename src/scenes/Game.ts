@@ -10,6 +10,7 @@ import {
   START_LIVES,
   STEP,
   TILE,
+  VENT_CYCLE,
 } from '../game/constants';
 import type { ParsedLevel } from '../game/level';
 import { World, type WorldEvent } from '../game/physics';
@@ -60,6 +61,8 @@ const TILE_TEX: Record<number, string> = {
   [T.PORTAL_3]: 'portal3',
   [T.ICE]: 'ice',
   [T.THIN_ICE]: 'thinice',
+  [T.CRUMBLE]: 'crumble',
+  [T.VENT]: 'vent-off',
 };
 // Particle colors per tile (solid blocks use the world's color)
 const TILE_COLOR: Record<number, number> = {
@@ -84,6 +87,8 @@ const TILE_COLOR: Record<number, number> = {
   [T.PORTAL_3]: C.portal3,
   [T.ICE]: C.iceLight,
   [T.THIN_ICE]: C.iceLight,
+  [T.CRUMBLE]: C.crumbleTop,
+  [T.VENT]: C.lava,
 };
 
 export class Game extends Phaser.Scene {
@@ -106,6 +111,8 @@ export class Game extends Phaser.Scene {
   private solidsVersion = 0;
   private tileSprites = new Map<number, Phaser.GameObjects.Image>();
   private flames = new Map<number, Phaser.GameObjects.Image>();
+  /** Vents: the tile and its flame, which shows when lit and flickers just before. */
+  private vents: { img: Phaser.GameObjects.Image; flame: Phaser.GameObjects.Image }[] = [];
   /** Blocks that open and close during play: their solid texture key and sprite. */
   private toggles: { idx: number; tex: string; img: Phaser.GameObjects.Image }[] = [];
   private switches: Phaser.GameObjects.Image[] = [];
@@ -145,6 +152,7 @@ export class Game extends Phaser.Scene {
     this.flames.clear();
     this.toggles = [];
     this.switches = [];
+    this.vents = [];
     this.bursts.clear();
     this.itemSprites = [];
     this.hudHearts = [];
@@ -216,6 +224,15 @@ export class Game extends Phaser.Scene {
       if (isToggle(t)) this.toggles.push({ idx, tex, img });
       if (isPortal(t)) this.tweens.add({ targets: img, angle: 360, duration: 2600, repeat: -1 });
       if (t === T.SWITCH) this.switches.push(img);
+      if (t === T.VENT) {
+        const flame = this.add
+          .image(c * TILE + TILE / 2, r * TILE + OY + 6, 'flame')
+          .setOrigin(0.5, 1)
+          .setScale(0.5)
+          .setDepth(-1)
+          .setVisible(false);
+        this.vents.push({ img, flame });
+      }
       this.tileSprites.set(idx, img);
       if (t === T.FIRE) {
         const fl = this.add
@@ -271,6 +288,23 @@ export class Game extends Phaser.Scene {
       .setOrigin(0)
       .setScale(1 / TEX)
       .setDepth(6);
+  }
+
+  /**
+   * Vents follow the world's clock: lit, the grate glows and a tall flame rises; in the last
+   * 0.4 s before lighting, a small flame flickers as a warning.
+   */
+  private syncVents() {
+    const phase = this.world.s.ticks % VENT_CYCLE;
+    const lit = this.world.ventLit;
+    const warn = !lit && phase >= VENT_CYCLE / 2 - 48;
+    const t = this.time.now / 1000;
+    for (const v of this.vents) {
+      v.img.setTexture(lit ? 'vent-lit' : 'vent-off');
+      v.flame.setVisible(lit || warn);
+      if (lit) v.flame.setScale(0.5, 0.62 + Math.sin(t * 18 + v.img.x) * 0.08).setAlpha(1);
+      else if (warn) v.flame.setScale(0.32, 0.22 + Math.sin(t * 30) * 0.06).setAlpha(0.8);
+    }
   }
 
   /** Shows each toggle block as solid or as an outline, following the world. */
@@ -530,6 +564,7 @@ export class Game extends Phaser.Scene {
         this.acc -= STEP;
       }
       if (this.toggles.length) this.syncToggles();
+      if (this.vents.length) this.syncVents();
       this.hudTime.setText(s.time.toFixed(1));
     }
     this.renderBall(deltaMs / 1000);
@@ -747,6 +782,25 @@ export class Game extends Phaser.Scene {
         case 'water':
           sfx.splash(e.inside);
           this.burst(C.waterLight, this.world.s.x, this.world.s.y + OY, e.inside ? 8 : 5, 90);
+          break;
+        case 'crumble': {
+          sfx.crumble();
+          const spr = this.tileSprites.get(e.idx);
+          if (spr)
+            this.tweens.add({
+              targets: spr,
+              x: { from: spr.x - 1.5, to: spr.x + 1.5 },
+              alpha: { from: 1, to: 0.55 },
+              duration: 60,
+              yoyo: true,
+              repeat: 4,
+            });
+          const p = this.cellCenter(e.idx);
+          this.burst(C.crumbleTop, p.x, p.y - 12, 4, 60);
+          break;
+        }
+        case 'vent':
+          if (e.lit) sfx.vent();
           break;
         case 'switch':
           sfx.switch(e.on);
