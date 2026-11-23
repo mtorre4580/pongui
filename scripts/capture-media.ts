@@ -6,10 +6,12 @@
  *   public/og-image.jpg  social sharing image
  * It starts its own Vite dev server: videos use the dev-only `demo()` helper, which plays the
  * solver's solution in real time inside the real game. Needs ffmpeg on the PATH.
- * Usage: pnpm media
+ * Usage: pnpm media          everything above
+ *        pnpm media editor   only the landing's editor clip
+ *        pnpm media:social   vertical videos for social networks in docs/social/ (not committed)
  */
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, readdirSync, rmSync } from 'node:fs';
+import { mkdirSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { chromium, devices, type Browser, type Page } from '@playwright/test';
 import { createServer } from 'vite';
@@ -64,12 +66,12 @@ const toJpeg = (src: string, out: string, width: number) =>
 async function record(
   browser: Browser,
   levels: number[],
-  { banner = true, pause = 1600 } = {},
+  { banner = true, pause = 1600, width = 960, height = 624 } = {},
 ): Promise<{ raw: string; parts: { start: number; won: number }[] }> {
   rmSync(TMP, { recursive: true, force: true });
   const context = await browser.newContext({
-    viewport: { width: 960, height: 624 },
-    recordVideo: { dir: TMP, size: { width: 960, height: 624 } },
+    viewport: { width, height },
+    recordVideo: { dir: TMP, size: { width, height } },
   });
   const page = await context.newPage();
   const t0 = Date.now();
@@ -115,11 +117,16 @@ const times = (key: string, n: number) => Array.from({ length: n }, () => key);
  * check the level, beat it with "Test" and open the share dialog. Returns the raw file and the
  * seconds where the editor appears and where the dialog has been on screen for a moment.
  */
-async function recordEditor(browser: Browser): Promise<{ raw: string; from: number; to: number }> {
+async function recordEditor(
+  browser: Browser,
+  width = 960,
+): Promise<{ raw: string; from: number; to: number }> {
+  // Same shape as the game's world (640×416), so the canvas has no side bars
+  const height = Math.round((width * 416) / 640);
   rmSync(TMP, { recursive: true, force: true });
   const context = await browser.newContext({
-    viewport: { width: 960, height: 624 },
-    recordVideo: { dir: TMP, size: { width: 960, height: 624 } },
+    viewport: { width, height },
+    recordVideo: { dir: TMP, size: { width, height } },
   });
   const page = await context.newPage();
   const t0 = Date.now();
@@ -172,9 +179,10 @@ async function recordEditor(browser: Browser): Promise<{ raw: string; from: numb
   // The dialog warns that a localhost link cannot be opened by a phone: true here, never on the
   // public site this clip is for
   await page.addStyleTag({ content: '.ui-note { display: none }' });
-  // "Share" has no key: click it where it sits in this 960×624 viewport
-  await page.mouse.move(864, 354, { steps: 8 });
-  await page.mouse.click(864, 354);
+  // "Share" has no key: click it where it sits (measured in a 960×624 viewport)
+  const share = { x: (864 * width) / 960, y: (354 * width) / 960 };
+  await page.mouse.move(share.x, share.y, { steps: 8 });
+  await page.mouse.click(share.x, share.y);
   await page.getByRole('dialog').waitFor({ state: 'visible' });
   await page.waitForTimeout(2600);
   await context.close();
@@ -204,22 +212,164 @@ function clip(raw: string, from: number, to: number, out: string, width: number)
   );
 }
 
-// `pnpm media editor` records only the editor clip (handy while changing it)
-const only = process.argv[2];
+// --- Vertical videos for Instagram Reels, TikTok and YouTube Shorts (`pnpm media:social`) ---
 
-const server = await createServer({ server: { port: PORT, strictPort: true }, logLevel: 'error' });
-await server.listen();
-mkdirSync(DOCS, { recursive: true });
-mkdirSync(LANDING, { recursive: true });
-mkdirSync(TMP, { recursive: true });
-const browser = await chromium.launch();
+const SOCIAL = 'docs/social';
+const SOCIAL_W = 1080;
+const SOCIAL_H = 1920;
+// The recording keeps the world's shape and sits in the middle of the card
+const SHOT_H = Math.round((SOCIAL_W * 416) / 640);
+const SHOT_Y = 640;
 
-try {
-  if (only === 'editor') {
-    const editor = await recordEditor(browser);
-    clip(editor.raw, editor.from, editor.to, join(LANDING, 'editor'), 960);
-    process.exit(0);
+const SOCIAL_TEXT = {
+  en: { world: 'World', cta: 'Play free', editor: 'Build your own levels', where: 'No download' },
+  es: {
+    world: 'Mundo',
+    cta: 'Jugá gratis',
+    editor: 'Creá tus propios niveles',
+    where: 'Sin descargar nada',
+  },
+} as const;
+type SocialLang = keyof typeof SOCIAL_TEXT;
+
+const escapeHtml = (text: string) =>
+  text.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
+
+/**
+ * Draws the still part of a vertical video (title above, call to action below, an empty slot for
+ * the recording) with the page's own font and colors, as a PNG. ffmpeg has no text filter in
+ * every build, and a browser lays text out better anyway.
+ */
+async function drawCard(
+  page: Page,
+  out: string,
+  { kicker, title, text, cta, site }: Record<'kicker' | 'title' | 'text' | 'cta' | 'site', string>,
+) {
+  // Embedded: a page made with setContent has no origin to fetch the font files from
+  const font = (weight: number) =>
+    `url(data:font/woff2;base64,${readFileSync(
+      `node_modules/@fontsource/fredoka/files/fredoka-latin-${weight}-normal.woff2`,
+    ).toString('base64')})`;
+  await page.setContent(`<!doctype html><meta charset="utf-8"><style>
+    @font-face { font-family: Fredoka; font-weight: 700; src: ${font(700)}; }
+    @font-face { font-family: Fredoka; font-weight: 500; src: ${font(500)}; }
+    * { margin: 0; box-sizing: border-box; }
+    body { width: ${SOCIAL_W}px; height: ${SOCIAL_H}px; overflow: hidden; color: #f1f2ff;
+      font-family: Fredoka, sans-serif; text-align: center;
+      background: radial-gradient(900px 700px at 15% 8%, #2a2f7a 0, transparent 70%),
+        radial-gradient(900px 800px at 90% 95%, #4a2360 0, transparent 70%), #0d1024; }
+    .top { position: absolute; inset: 150px 70px auto; }
+    .brand { display: inline-flex; align-items: center; gap: 22px; font: 700 76px Fredoka; }
+    .ball { width: 84px; height: 84px; border-radius: 50%; background: #ff6b6b; position: relative; }
+    .ball::before, .ball::after { content: ''; position: absolute; top: 24px; width: 20px;
+      height: 26px; border-radius: 50%; background: #fff; box-shadow: inset 5px 4px 0 5px #161a33; }
+    .ball::before { left: 18px; } .ball::after { right: 18px; }
+    .kicker { margin-top: 70px; font: 700 44px Fredoka; color: #ffd166; letter-spacing: 2px;
+      text-transform: uppercase; }
+    h1 { margin-top: 8px; font: 700 96px/1.05 Fredoka; }
+    .slot { position: absolute; left: 0; top: ${SHOT_Y}px; width: ${SOCIAL_W}px; height: ${SHOT_H}px;
+      background: #070918; box-shadow: 0 0 0 6px #2a2f5c; }
+    .bottom { position: absolute; inset: ${SHOT_Y + SHOT_H + 70}px 80px auto; }
+    p { font: 500 50px/1.25 Fredoka; color: #b8bde8; }
+    .cta { display: inline-block; margin-top: 70px; padding: 26px 64px; border-radius: 999px;
+      background: #ff6b6b; color: #161a33; font: 700 60px Fredoka; }
+    .site { margin-top: 30px; font: 700 54px Fredoka; color: #5ee6d6; }
+  </style>
+  <div class="top"><div class="brand"><span class="ball"></span>Pongui</div>
+    <div class="kicker">${escapeHtml(kicker)}</div><h1>${escapeHtml(title)}</h1></div>
+  <div class="slot"></div>
+  <div class="bottom"><p>${escapeHtml(text)}</p><div class="cta">${escapeHtml(cta)}</div>
+    <div class="site">${escapeHtml(site)}</div></div>`);
+  await page.evaluate(() => document.fonts.ready);
+  await page.screenshot({ path: out });
+}
+
+/** Lays a section of a recording over a card: a 1080×1920 MP4 ready to upload. */
+function vertical(card: string, raw: string, from: number, to: number, out: string) {
+  ffmpeg(
+    ['-loop', '1', '-i', card, '-ss', from.toFixed(2), '-t', (to - from).toFixed(2), '-i', raw]
+      .concat([
+        '-filter_complex',
+        `[1:v]scale=${SOCIAL_W}:${SHOT_H}:flags=lanczos[v];[0:v][v]overlay=0:${SHOT_Y}:shortest=1`,
+      ])
+      .concat([
+        '-r',
+        '30',
+        '-c:v',
+        'libx264',
+        '-crf',
+        '20',
+        '-preset',
+        'slow',
+        '-pix_fmt',
+        'yuv420p',
+      ])
+      .concat(['-movflags', '+faststart', '-an', out]),
+  );
+}
+
+async function social(browser: Browser) {
+  const { loadEnv } = await import('vite');
+  const site = new URL(loadEnv('production', process.cwd()).VITE_SITE_URL).hostname;
+  const game = {
+    en: (await import('../src/i18n/messages/en')).en,
+    es: (await import('../src/i18n/messages/es')).es,
+  };
+  const landing = {
+    en: (await import('../src/landing/messages/en')).en,
+    es: (await import('../src/landing/messages/es')).es,
+  };
+  const langs = Object.keys(SOCIAL_TEXT) as SocialLang[];
+  rmSync(SOCIAL, { recursive: true, force: true });
+  langs.forEach((lang) => mkdirSync(join(SOCIAL, lang), { recursive: true }));
+  const cards = join(SOCIAL, '.cards');
+  mkdirSync(cards, { recursive: true });
+  const context = await browser.newContext({ viewport: { width: SOCIAL_W, height: SOCIAL_H } });
+  const page = await context.newPage();
+
+  const size = { width: SOCIAL_W, height: SHOT_H };
+  const worlds = await record(
+    browser,
+    CLIPS.map((c) => c.level),
+    { banner: false, pause: 300, ...size },
+  );
+  // The recording is overwritten by the next one: finish every video that uses it first
+  for (const lang of langs) {
+    for (let i = 0; i < WORLDS; i++) {
+      const n = i + 1;
+      const card = join(cards, `${lang}-world-${n}.png`);
+      await drawCard(page, card, {
+        kicker: `${SOCIAL_TEXT[lang].world} ${n}`,
+        title: game[lang][`world.${n}` as keyof typeof game.en],
+        text: landing[lang][`world.${n}.text` as keyof typeof landing.en],
+        cta: SOCIAL_TEXT[lang].cta,
+        site,
+      });
+      const part = worlds.parts[i];
+      const out = join(SOCIAL, lang, `world-${String(n).padStart(2, '0')}.mp4`);
+      vertical(card, worlds.raw, part.start + 0.7, part.won + 0.2, out);
+    }
   }
+  const editor = await recordEditor(browser, SOCIAL_W);
+  for (const lang of langs) {
+    const card = join(cards, `${lang}-editor.png`);
+    await drawCard(page, card, {
+      kicker: SOCIAL_TEXT[lang].where,
+      title: SOCIAL_TEXT[lang].editor,
+      text: landing[lang]['create.3.text'],
+      cta: SOCIAL_TEXT[lang].cta,
+      site,
+    });
+    vertical(card, editor.raw, editor.from, editor.to, join(SOCIAL, lang, 'editor.mp4'));
+  }
+  await context.close();
+  rmSync(cards, { recursive: true, force: true });
+  rmSync(TMP, { recursive: true, force: true });
+  console.log(`Social videos written to ${SOCIAL}/`);
+}
+
+/** The whole set: README media, landing clips and screenshots, and the social image. */
+async function everything(browser: Browser) {
   // --- README screenshots (the game canvas is 1280×832) ---
   const desktop = await browser.newContext({ viewport: { width: 1280, height: 832 } });
   const page = await desktop.newPage();
@@ -318,6 +468,26 @@ try {
 
   rmSync(TMP, { recursive: true, force: true });
   console.log(`Media written to ${DOCS}/, ${LANDING}/ and public/og-image.jpg`);
+}
+
+// `pnpm media editor` records only the editor clip (handy while changing it) and
+// `pnpm media social` only the vertical videos
+const only = process.argv[2];
+
+const server = await createServer({ server: { port: PORT, strictPort: true }, logLevel: 'error' });
+await server.listen();
+mkdirSync(DOCS, { recursive: true });
+mkdirSync(LANDING, { recursive: true });
+mkdirSync(TMP, { recursive: true });
+const browser = await chromium.launch();
+
+try {
+  if (only === 'social') await social(browser);
+  else if (only === 'editor') {
+    const editor = await recordEditor(browser);
+    clip(editor.raw, editor.from, editor.to, join(LANDING, 'editor'), 960);
+    rmSync(TMP, { recursive: true, force: true });
+  } else await everything(browser);
 } finally {
   await browser.close();
   await server.close();
