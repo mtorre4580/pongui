@@ -4,7 +4,7 @@
 import { decodeLevel, encodeLevel, NAME_MAX, type CustomLevelData } from '../game/custom';
 import { track } from '../analytics';
 import { t } from '../i18n';
-import { IS_NATIVE } from '../native';
+import { OFF_SITE } from '../build';
 
 /** True while a dialog is open: game keys must not act behind it. */
 export const dialogOpen = () => !!document.querySelector('dialog.ui-dialog[open]');
@@ -108,10 +108,10 @@ export async function confirmDelete(name: string): Promise<boolean> {
   return (await closed(d)) === 'delete';
 }
 
-/** The page that opens a shared level: this game's page, or the public site in the apps. */
+/** The page that opens a shared level: this game's page, or the public site off it. */
 export function shareUrl(level: CustomLevelData): string {
   const code = encodeLevel(level);
-  const base = IS_NATIVE
+  const base = OFF_SITE
     ? new URL('play/', import.meta.env.VITE_SITE_URL as string)
     : new URL('./', location.href);
   return `${base.origin}${base.pathname}?c=${code}`;
@@ -198,7 +198,7 @@ export async function showShare(level: CustomLevelData): Promise<void> {
     ]),
   ];
   // A phone cannot open a link to this computer's localhost
-  if (['localhost', '127.0.0.1', '[::1]'].includes(location.hostname) && !IS_NATIVE)
+  if (['localhost', '127.0.0.1', '[::1]'].includes(location.hostname) && !OFF_SITE)
     body.push(el('p', { className: 'ui-note' }, [t('share.localhost')]));
   body.push(el('p', { className: 'ui-soon' }, [t('share.soon')]));
 

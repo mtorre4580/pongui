@@ -94,6 +94,22 @@ Hashtags (5 como máximo): `#indiegame #puzzlegame #webgame #juegosindie #gamede
 | Semanas 2 a 4 | itch.io y Newgrounds (juego HTML5) | El build funciona desde un zip; enlazar a pongui.com |
 | Más adelante | CrazyGames, Poki | Piden integrar su SDK y publicidad |
 
+## Subir el juego a itch.io
+
+1. Generar el paquete con `pnpm build:itch`: deja `pongui-itch.zip` en la raíz del proyecto.
+2. En itch.io: **Upload new project**. Título `Pongui`, **Kind of project: HTML**, precio
+   **No payments**.
+3. Subir `pongui-itch.zip` y marcar **This file will be played in the browser**.
+4. **Embed options:** tamaño `960 × 624`, activar **Fullscreen button** y **Mobile friendly**
+   con orientación **Landscape**.
+5. Descripción: el texto de presentación de esta guía, con el link
+   `https://pongui.com/?utm_source=itch` y capturas de `docs/media/`.
+6. Género **Puzzle**; etiquetas `puzzle`, `platformer`, `browser`, `level-editor`, `singleplayer`.
+7. Dejarlo en **Draft**, probarlo con el botón de vista previa y recién ahí pasarlo a **Public**.
+
+En esa versión el progreso se guarda en el navegador dentro de itch.io (aparte del de
+pongui.com), no hay métricas, y los links que se comparten llevan a pongui.com.
+
 ## Qué mirar en Umami
 
 - Visitas por día y de dónde vienen (`utm_source`, buscadores, links directos).

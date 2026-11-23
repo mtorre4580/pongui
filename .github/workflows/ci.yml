@@ -46,6 +46,8 @@ jobs:
       - run: pnpm check:bundle
       # The iOS/Android web bundle must keep building and syncing into the native projects
       - run: pnpm exec vite build --mode native && pnpm exec cap sync
+      # The package for games portals must keep building too
+      - run: pnpm exec vite build --mode portal
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: dist

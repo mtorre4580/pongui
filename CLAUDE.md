@@ -59,6 +59,7 @@ pnpm media:social       # vertical videos with the game's sound for social netwo
                         # docs/social/ (not committed)
 pnpm icons              # regenerate public/icons and the native sources in assets/
 pnpm build:native       # game-only build in dist-native/ + `cap sync` into ios/ and android/
+pnpm build:itch         # game-only build in dist-itch/ and pongui-itch.zip, to upload to itch.io
 pnpm native:assets      # every iOS/Android icon and splash size from assets/
 pnpm ios / pnpm android # open the native project in Xcode / Android Studio
 ```
@@ -289,6 +290,16 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
   quota, so do not report things that happen many times per level.
 - Whatever is measured must be listed in `privacy/index.html` (static, three languages) and in
   the landing FAQ.
+
+## Games portals (itch.io)
+
+- `vite build --mode portal` (`pnpm build:itch`) builds only the game into `dist-itch/`, with a
+  root `index.html` that redirects to `play/index.html` with a relative path (portals serve the
+  zip from a folder of their own), and zips it as `pongui-itch.zip`.
+- `src/build.ts` has `IS_PORTAL` and `OFF_SITE` (native app or portal). Off the site there is no
+  service worker, no analytics, no install or fullscreen button, and shared links (levels and
+  results) point to `VITE_SITE_URL` instead of the page's own address.
+- Preview the package with the `itch` configuration of `.claude/launch.json`.
 
 ## Native apps
 

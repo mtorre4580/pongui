@@ -1,7 +1,7 @@
 // Anonymous usage statistics (Umami: no cookies, no personal data). This is the only file that
-// knows the provider. Off in development, in the native apps, when `VITE_UMAMI_ID` is not set
+// knows the provider. Off in development, in the native apps and portal builds, when `VITE_UMAMI_ID` is not set
 // and for visitors whose browser sends "Do Not Track".
-import { IS_NATIVE } from './native';
+import { OFF_SITE } from './build';
 
 /** Everything the site reports. Keep it short: each event counts against the plan's quota. */
 export type AnalyticsEvent =
@@ -22,7 +22,7 @@ interface Umami {
 
 const SCRIPT = 'https://cloud.umami.is/script.js';
 const ID: string | undefined = import.meta.env.VITE_UMAMI_ID;
-const ENABLED = import.meta.env.PROD && !IS_NATIVE && !!ID;
+const ENABLED = import.meta.env.PROD && !OFF_SITE && !!ID;
 
 /** Events sent before the script arrives wait here (dropped if it never loads, e.g. offline). */
 let queue: [AnalyticsEvent, EventData | undefined][] | null = [];

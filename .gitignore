@@ -21,3 +21,7 @@ docs/social
 
 # Raw recordings while `pnpm media` runs
 docs/media/.video
+
+# Game packed for itch.io (`pnpm build:itch`)
+dist-itch
+pongui-itch.zip

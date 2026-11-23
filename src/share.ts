@@ -1,5 +1,5 @@
 // Sharing a result: "I beat level 3-4 in 12.3 s. Can you do better?" with a link to that level.
-import { IS_NATIVE } from './native';
+import { OFF_SITE } from './build';
 
 /** Three stars as text: earned ones filled, the rest hollow. */
 export const starsText = (stars: number) => '★'.repeat(stars) + '☆'.repeat(Math.max(0, 3 - stars));
@@ -13,9 +13,9 @@ export function levelUrl(base: string, level: string): string {
   return `${url.origin}${url.pathname}?level=${level}&utm_source=share`;
 }
 
-/** The game page: this one, or the public site inside the apps. */
+/** The game page: this one, or the public site inside the apps and on portals. */
 export const gamePage = () =>
-  IS_NATIVE
+  OFF_SITE
     ? new URL('play/', import.meta.env.VITE_SITE_URL as string).href
     : new URL('./', location.href).href;
 
