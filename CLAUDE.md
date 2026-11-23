@@ -13,10 +13,12 @@ and levels. Never copy names, art, music or level layouts from an existing game.
 
 It also ships as native iOS and Android apps through Capacitor (see Native apps).
 
-The repository is **private** for now. The site is published on Cloudflare Pages
-(`.github/workflows/deploy.yml`, after CI passes on `main`; idle until the repository variable
-`CLOUDFLARE_PAGES_PROJECT` is set). The CodeQL and Dependency Review workflows skip themselves
-while the repository is private.
+The repository is public but **not open source**: all rights reserved (`LICENSE`), and
+contributions are accepted under the terms in `CONTRIBUTING.md`. Never add code, art or text
+under a license that would force the project to be open. The site is published on Cloudflare
+Pages (`.github/workflows/deploy.yml`, after CI passes on `main`; idle until the repository
+variable `CLOUDFLARE_PAGES_PROJECT` is set). The CodeQL and Dependency Review workflows skip
+themselves on a private repository.
 
 ## Stack
 
@@ -473,4 +475,4 @@ characters must stay unique across the game.
 - [x] Level editor (computers) and sharing by link, WhatsApp and QR code, with "My levels"
 - [ ] Publishing player levels to a shared catalog (accounts, database, moderation)
 - [ ] Store release (developer accounts, signing, store listings, privacy policy)
-- [ ] Public launch (domain, Cloudflare Pages project, Search Console, social profiles)
+- [x] Public launch — pongui.com on Cloudflare Pages, Search Console, Instagram, YouTube, itch.io
