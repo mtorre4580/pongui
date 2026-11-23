@@ -86,6 +86,10 @@ test('the privacy page is linked from the footer and has no WCAG 2.2 AA violatio
     'href',
     'https://www.youtube.com/@playpongui',
   );
+  await expect(page.getByRole('link', { name: 'itch.io' })).toHaveAttribute(
+    'href',
+    'https://pongui.itch.io/pongui',
+  );
   await page.getByRole('link', { name: 'Privacy' }).click();
   await expect(page).toHaveURL(/\/privacy\/$/);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Privacy');
