@@ -71,7 +71,8 @@ export async function toggleFullscreen() {
 export function registerServiceWorker() {
   // The native app ships every file inside the package: no service worker needed
   if (!import.meta.env.PROD || IS_NATIVE || !('serviceWorker' in navigator)) return;
-  const root = new URL('../', import.meta.url);
+  // Resolved at runtime on purpose (it is the site root, not a file to bundle)
+  const root = new URL(/* @vite-ignore */ '../', import.meta.url);
   window.addEventListener('load', () => {
     void navigator.serviceWorker
       .register(new URL('sw.js', root), { scope: root.pathname })
