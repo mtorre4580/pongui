@@ -52,6 +52,12 @@ export const es: Messages = {
   'overlay.shareCopied': '¡Copiado!',
   'overlay.shareText':
     'Pasé el nivel {level} de Pongui en {t} s con {stars}. ¿Lo hacés mejor? {url}',
+  'overlay.watchBot': 'Mirá al bot',
+  'game.botPlaying': 'El bot está jugando: mirá cómo lo hace',
+  'overlay.watched': '¡Te toca!',
+  'overlay.watchedText': 'Esa es una forma de pasarlo. Ahora vos.',
+  'overlay.tryIt': 'Probar yo',
+  'overlay.watchAgain': 'Verlo de nuevo',
   'mine.title': 'Mis niveles',
   'mine.new': '+ Nuevo nivel',
   'mine.openCode': 'Abrir un link',

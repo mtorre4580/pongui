@@ -165,6 +165,11 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
 - First visit: with no saved game (`isFirstVisit()` in `save.ts`), `/play/` starts on level 1-1
   instead of the menu (pause → "Choose level" → "Menu" leads back). Browser tests that need the
   menu call `asReturningPlayer(page)` first.
+- Watch the bot: out of lives, the panel offers to see the level solved. `Game` started with
+  `bot: true` asks the solver for its plan in a worker (`planFor` in `custom/bot.ts`) and plays
+  it with `PlanPlayer` (`game/replay.ts`), one input per physics step, like the solver did.
+  Nothing is recorded: no win, no stars, no level events. `tests/replay.test.ts` replays every
+  world's finale.
 - Progress: a level is open when the previous one has a record, so a new world opens for players
   who already finished the last one. The level select shows one world per page (◀ ▶, or
   left/right at the edge of a row) and `?level=` accepts `12` or `2-3`.
@@ -290,7 +295,7 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
   `VITE_SITE_URL` host. With no id the build contains no tracker code.
 - Events are a closed list (`AnalyticsEvent`): `play_click`, `level_start` (once per level per
   visit), `level_complete`, `install`, `editor_open`, `level_shared`, `result_shared`,
-  `shared_level_opened`.
+  `bot_watched`, `shared_level_opened`.
   Scenes and the landing call `track()`; never `src/game`. Every event counts against the plan's
   quota, so do not report things that happen many times per level.
 - Whatever is measured must be listed in `privacy/index.html` (static, three languages) and in

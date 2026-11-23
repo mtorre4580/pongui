@@ -16,6 +16,7 @@ import {
 } from '../game/constants';
 import { FIELD, type ParsedLevel } from '../game/level';
 import { World, type WorldEvent } from '../game/physics';
+import { PlanPlayer } from '../game/replay';
 import { isPortal, isStatic, isToggle, T } from '../game/tiles';
 import { bakeSolids, C, drawBackground, sparkTexture, TEX } from '../gfx/textures';
 import { ITEM_TEX, TILE_TEX } from '../gfx/tileTextures';
@@ -26,6 +27,7 @@ import { controls } from '../input/controls';
 import { haptic } from '../native';
 import { levelLabel, LEVELS, worldOf } from '../levels';
 import { loadSave, recordWin } from '../save';
+import { planFor } from '../custom/bot';
 import { parseCustom, type CustomRun } from '../custom/run';
 import { bestTime, getLevel, isVerified, recordCustomWin } from '../custom/store';
 
@@ -36,6 +38,8 @@ export interface GameData {
   takenLives?: number[];
   /** A player-made level instead of an official one (`index` is ignored). */
   custom?: CustomRun;
+  /** "Watch the bot": the solver plays the level; nothing is recorded. */
+  bot?: boolean;
 }
 
 // The level starts at the top of the world: the HUD sits over its first row, which is always a
@@ -85,6 +89,9 @@ export class Game extends Phaser.Scene {
   private lives = START_LIVES;
   private deaths = 0;
   private takenLives = new Set<number>();
+  private bot = false;
+  /** The bot's solution being played back (null while it is still searching). */
+  private botPlayer: PlanPlayer | null = null;
 
   private acc = 0;
   private started = false;
@@ -139,7 +146,10 @@ export class Game extends Phaser.Scene {
     }
     this.lives = data.lives ?? START_LIVES;
     this.deaths = data.deaths ?? 0;
-    this.takenLives = new Set(data.takenLives ?? []);
+    this.bot = !!data.bot;
+    this.botPlayer = null;
+    // The bot solves the level as it is at the start, with every item in place
+    this.takenLives = new Set(this.bot ? [] : (data.takenLives ?? []));
     this.acc = 0;
     this.started = false;
     this.ended = false;
@@ -164,7 +174,7 @@ export class Game extends Phaser.Scene {
     this.cameras.main.fadeIn(180, 13, 16, 36);
     controls.clearEdges();
     controls.enableGestures(true);
-    if (!this.custom) trackLevelStart(this.level.id);
+    if (!this.custom && !this.bot) trackLevelStart(this.level.id);
     this.world = new World(this.level, this.takenLives);
 
     drawBackground(this, GAME_W, GAME_H, this.index + 11, this.theme);
@@ -175,6 +185,7 @@ export class Game extends Phaser.Scene {
     if (this.level.dark) this.buildDarkness();
     this.buildHud();
     this.showBanner();
+    if (this.bot) this.askBot();
 
     this.time.delayedCall(450, () => (this.started = true));
 
@@ -552,10 +563,28 @@ export class Game extends Phaser.Scene {
     this.hudKeys?.setText(String(s.keys));
   }
 
+  /**
+   * Asks the solver (in a worker) for its solution; the level stays still until it arrives. With
+   * no solution the level simply starts for the player.
+   */
+  private askBot() {
+    const { plan, cancel } = planFor(this.level);
+    let open = true;
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      open = false;
+      cancel();
+    });
+    void plan.then((decisions) => {
+      if (!open) return;
+      if (decisions) this.botPlayer = new PlanPlayer(decisions, STEP);
+      else this.scene.restart({ index: this.index, custom: this.custom });
+    });
+  }
+
   private showBanner() {
     const w = 420;
     const source = (controls.touchMode && this.level.hintTouch) || this.level.hint;
-    const hint = source ? localized(source) : '';
+    const hint = this.bot ? t('game.botPlaying') : source ? localized(source) : '';
     const hasHint = hint !== '';
     const h = hasHint ? 86 : 56;
     const bg = this.add.graphics();
@@ -610,21 +639,26 @@ export class Game extends Phaser.Scene {
     if (controls.consume('restart')) return this.restartLevel();
 
     const s = this.world.s;
-    if (this.started && s.status === 'playing') {
+    const player = this.botPlayer;
+    if (this.started && s.status === 'playing' && (!this.bot || player)) {
       const input = {
         left: controls.held('left'),
         right: controls.held('right'),
         jump: controls.held('jump'),
         jumpPressed: controls.consume('jump'),
       };
-      if ((input.left || input.right || input.jumpPressed) && this.banner && s.time > 0.6)
-        this.hideBanner();
-      if (input.jumpPressed || input.left || input.right) unlockAudio();
+      if (!player) {
+        if ((input.left || input.right || input.jumpPressed) && this.banner && s.time > 0.6)
+          this.hideBanner();
+        if (input.jumpPressed || input.left || input.right) unlockAudio();
+      }
       this.acc += Math.min(deltaMs / 1000, 0.1);
       while (this.acc >= STEP && s.status === 'playing') {
         this.prevX = s.x;
         this.prevY = s.y;
-        const ev = this.world.step(STEP, input);
+        // The bot decides again at every step: its plan changes between two frames
+        const ev = this.world.step(STEP, player ? player.input() : input);
+        player?.advance(ev);
         input.jumpPressed = false;
         if (ev.length) this.handle(ev);
         this.acc -= STEP;
@@ -950,6 +984,8 @@ export class Game extends Phaser.Scene {
     this.deaths++;
     this.refreshHearts();
     this.time.delayedCall(950, () => {
+      // Should not happen (the plan was checked by the solver): hand the level back anyway
+      if (this.bot) return this.endBotRun();
       if (this.lives > 0) {
         this.scene.restart({
           index: this.index,
@@ -964,6 +1000,13 @@ export class Game extends Phaser.Scene {
         this.scene.launch('Overlay', { mode: 'gameover', index: this.index, custom: this.custom });
       }
     });
+  }
+
+  /** After watching the bot: a panel that hands the level back to the player. */
+  private endBotRun() {
+    controls.enableGestures(false);
+    this.scene.pause();
+    this.scene.launch('Overlay', { mode: 'watched', index: this.index, custom: this.custom });
   }
 
   private onWin() {
@@ -981,6 +1024,14 @@ export class Game extends Phaser.Scene {
       ease: 'Quad.in',
     });
     this.burst(C.accent, ex.x, ex.y, 24, 220);
+    if (this.bot) {
+      // A win by the bot is not the player's: no record, no stars
+      this.time.delayedCall(750, () => {
+        this.ball.setVisible(false);
+        this.endBotRun();
+      });
+      return;
+    }
     const time = this.world.s.time;
     const stars = 1 + (this.deaths === 0 ? 1 : 0) + (time <= this.level.par ? 1 : 0);
     let prevBest: number | undefined;

@@ -106,3 +106,28 @@ test('a returning player opens on the menu', async ({ page }) => {
   await page.goto('./play/');
   await expectScene(page, 'Menu');
 });
+
+test('out of lives, the bot shows how the level is done and nothing is recorded', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, 'keyboard flow');
+  const errors = trackErrors(page);
+  // Spikes: holding right runs into them, three times
+  await page.goto('./play/?level=1-8');
+  await expectScene(page, 'Game');
+  await page.keyboard.down('ArrowRight');
+  await expect(page.locator('body')).toHaveAttribute('data-scene', 'Overlay', { timeout: 30_000 });
+  await page.keyboard.up('ArrowRight');
+  // "Try again" is focused first; "Watch the bot" is the next button
+  for (const key of ['Enter', 'ArrowDown', 'Enter']) {
+    await page.keyboard.press(key);
+    await page.waitForTimeout(150);
+  }
+  await expectScene(page, 'Game');
+  // The solver runs in a worker, then the level is played in real time
+  await expect(page.locator('body')).toHaveAttribute('data-scene', 'Overlay', { timeout: 40_000 });
+  const save = await page.evaluate(() => localStorage.getItem('pongui:save'));
+  expect(save === null || !('w1-08' in JSON.parse(save).levels)).toBe(true);
+  expect(errors).toEqual([]);
+});
