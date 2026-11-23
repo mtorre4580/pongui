@@ -1,0 +1,28 @@
+{
+  "id": "w2-05",
+  "name": {
+    "en": "Key chain",
+    "es": "Cadena de llaves",
+    "pt-BR": "Corrente de chaves"
+  },
+  "hint": {
+    "en": "One key opens one group of locks. Some keys are locked away too!",
+    "es": "Cada llave abre un grupo de candados. ¡Algunas llaves también están encerradas!",
+    "pt-BR": "Cada chave abre um grupo de cadeados. Algumas chaves também estão trancadas!"
+  },
+  "par": 18,
+  "map": [
+    "####################",
+    "#.......L.....L....#",
+    "#.......L.....L....#",
+    "#.......L.....L....#",
+    "#k......L.....L....#",
+    "###.....L.....L....#",
+    "#.......L.....L....#",
+    "#.......LLLL..L..g.#",
+    "#...##..L.gL..L....#",
+    "#.......L..L..L....#",
+    "#.P.....Lk.L..L...E#",
+    "####################"
+  ]
+}

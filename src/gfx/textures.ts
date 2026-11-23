@@ -1,16 +1,13 @@
 // Every texture is drawn with vectors at 2× resolution (used at scale 0.5).
 import Phaser from 'phaser';
 import { BALL_R, TILE } from '../game/constants';
+import { THEMES, type Theme } from './themes';
 
 export const TEX = 2; // texture resolution factor
 const S = TILE * TEX; // 64 px per tile
 
 export const C = {
-  bgTop: 0x23285a,
-  bgBottom: 0x0d1024,
-  solidTop: 0x5ee6d6,
-  solid: 0x2a9d8f,
-  solidDark: 0x1d6f66,
+  // Background and solid block colors depend on the world: see themes.ts
   ash: 0x4a4e69,
   ashTop: 0x6c7090,
   fragile: 0xf6d365,
@@ -41,6 +38,15 @@ export const C = {
   drop: 0x4895ef,
   dropLight: 0xbfe0ff,
   hammerHead: 0xffd166,
+  key: 0xffc53d,
+  keyLight: 0xffe8a3,
+  keyDark: 0xb7791f,
+  lock: 0x6c7a99,
+  lockTop: 0xa9b6d3,
+  lockDark: 0x48536e,
+  moss: 0x40916c,
+  mossTop: 0x95d5b2,
+  mossDark: 0x1b4332,
   hammerHandle: 0x9c6644,
   heart: 0xff4d6d,
   exit: 0x80ed99,
@@ -177,6 +183,38 @@ export function createTextures(scene: Phaser.Scene) {
     for (let i = 0; i < 4; i++) g.fillTriangle(i * 16 + 8, 40, i * 16 + 16, 40, i * 16 + 8, 6);
   });
 
+  make(scene, 'lockblock', S, S, (g) => {
+    block(g, C.lock, C.lockTop, C.lockDark);
+    // Rivets and a gold plate with a keyhole
+    g.fillStyle(C.lockDark, 1);
+    for (const [x, y] of [
+      [9, 21],
+      [55, 21],
+      [9, 49],
+      [55, 49],
+    ])
+      g.fillCircle(x, y, 3);
+    g.fillStyle(C.keyDark, 1).fillCircle(32, 35, 14);
+    g.fillStyle(C.key, 1).fillCircle(32, 34, 12);
+    g.fillStyle(C.ink, 1).fillCircle(32, 31, 4.5);
+    g.fillTriangle(28, 42, 36, 42, 32, 31);
+  });
+  make(scene, 'moss', S, S, (g) => {
+    g.fillStyle(C.mossDark, 1).fillRoundedRect(0, 0, S, S, 10);
+    g.fillStyle(C.moss, 1).fillRoundedRect(0, 0, S, S - 6, 10);
+    // A soft, bumpy cushion on top
+    g.fillStyle(C.mossTop, 1).fillRoundedRect(0, 0, S, 14, { tl: 10, tr: 10, bl: 0, br: 0 });
+    for (let x = 6; x < S; x += 13) g.fillCircle(x, 14, 6);
+    g.fillStyle(C.mossDark, 0.35);
+    for (const [x, y] of [
+      [14, 34],
+      [36, 44],
+      [50, 30],
+      [24, 50],
+    ])
+      g.fillCircle(x, y, 3);
+  });
+
   // --- Ball ---
   const BR = BALL_R * TEX + 2;
   make(scene, 'ball', BR * 2, BR * 2, (g) => {
@@ -229,6 +267,14 @@ export function createTextures(scene: Phaser.Scene) {
     g.fillStyle(C.hammerHandle, 1).fillRoundedRect(17, 12, 7, 26, 3);
     g.fillStyle(C.hammerHead, 1).fillRoundedRect(4, 4, 32, 14, 5);
     g.fillStyle(0xffe8a3, 1).fillRoundedRect(6, 6, 12, 4, 2);
+  });
+  make(scene, 'key', 40, 40, (g) => {
+    g.fillStyle(C.keyDark, 1).fillCircle(12, 21, 11);
+    g.fillStyle(C.key, 1).fillCircle(12, 20, 10);
+    g.fillStyle(C.ink, 1).fillCircle(12, 20, 4);
+    g.fillStyle(C.key, 1).fillRoundedRect(19, 17, 19, 7, 3);
+    g.fillRect(29, 22, 4, 9).fillRect(35, 22, 3, 6);
+    g.fillStyle(C.keyLight, 1).fillEllipse(8, 15, 6, 4);
   });
   make(scene, 'life', 36, 34, (g) => {
     g.fillStyle(C.heart, 1);
@@ -286,6 +332,7 @@ function drawSolids(
   rows: number,
   isSolid: (t: number) => boolean,
   ash: number,
+  theme: Theme,
 ) {
   const at = (c: number, r: number) =>
     c < 0 || c >= cols || r < 0 || r >= rows ? -1 : tiles[r * cols + c];
@@ -298,9 +345,9 @@ function drawSolids(
       const y = r * TILE * k;
       const T2 = TILE * k;
       const isAsh = t === ash;
-      const body = isAsh ? C.ash : C.solid;
-      const dark = isAsh ? 0x34364a : C.solidDark;
-      const top = isAsh ? C.ashTop : C.solidTop;
+      const body = isAsh ? C.ash : theme.solid;
+      const dark = isAsh ? 0x34364a : theme.solidDark;
+      const top = isAsh ? C.ashTop : theme.solidTop;
       g.fillStyle(body, 1).fillRect(x, y, T2, T2);
       if (!isSolid(at(c, r + 1))) g.fillStyle(dark, 1).fillRect(x, y + T2 - 3 * k, T2, 3 * k);
       if (!isSolid(at(c - 1, r))) g.fillStyle(dark, 0.5).fillRect(x, y, 2 * k, T2);
@@ -309,11 +356,24 @@ function drawSolids(
         g.fillStyle(top, 1).fillRect(x, y, T2, 6 * k);
         g.fillStyle(0xffffff, 0.18).fillRect(x, y, T2, 2 * k);
       }
-      // subtle texture
-      g.fillStyle(dark, 0.35);
+      // subtle texture: pebbles, or crystal shards in some worlds
       const seed = (c * 7 + r * 13) % 5;
-      g.fillCircle(x + (8 + seed * 3) * k, y + (18 + (seed % 3) * 3) * k, 1.6 * k);
-      g.fillCircle(x + (22 - seed) * k, y + (24 - (seed % 2) * 4) * k, 1.2 * k);
+      if (theme.crystals && !isAsh) {
+        const cx = x + (9 + seed * 3) * k;
+        const cy = y + (20 + (seed % 3) * 2) * k;
+        g.fillStyle(theme.speck, 0.55);
+        g.fillTriangle(cx - 2 * k, cy, cx + 2 * k, cy, cx, cy - 6 * k);
+        g.fillTriangle(cx + 1 * k, cy, cx + 4 * k, cy, cx + 3 * k, cy - 4 * k);
+        g.fillStyle(dark, 0.35).fillCircle(
+          x + (23 - seed) * k,
+          y + (25 - (seed % 2) * 4) * k,
+          1.2 * k,
+        );
+      } else {
+        g.fillStyle(isAsh ? dark : theme.speck, 0.35);
+        g.fillCircle(x + (8 + seed * 3) * k, y + (18 + (seed % 3) * 3) * k, 1.6 * k);
+        g.fillCircle(x + (22 - seed) * k, y + (24 - (seed % 2) * 4) * k, 1.2 * k);
+      }
     }
   }
 }
@@ -330,10 +390,11 @@ export function bakeSolids(
   rows: number,
   isSolid: (t: number) => boolean,
   ash: number,
+  theme: Theme = THEMES[1],
 ) {
   if (scene.textures.exists(key)) scene.textures.remove(key);
   const g = scene.make.graphics({ x: 0, y: 0 }, false);
-  drawSolids(g, tiles, cols, rows, isSolid, ash);
+  drawSolids(g, tiles, cols, rows, isSolid, ash, theme);
   g.generateTexture(key, cols * TILE * TEX, rows * TILE * TEX);
   g.destroy();
 }
@@ -350,8 +411,14 @@ export function sparkTexture(scene: Phaser.Scene, color: number) {
  * the w×h world (3× wide, 2× tall, centered on it) so it fills the screen at any aspect ratio.
  * It is soft, so it is baked at 1 texture pixel per world unit to save memory.
  */
-export function drawBackground(scene: Phaser.Scene, w: number, h: number, seed = 1) {
-  const key = `bg-${seed}-${w}x${h}`;
+export function drawBackground(
+  scene: Phaser.Scene,
+  w: number,
+  h: number,
+  seed = 1,
+  theme: Theme = THEMES[1],
+) {
+  const key = `bg-${theme.bgTop.toString(16)}-${seed}-${w}x${h}`;
   const x0 = -w;
   const y0 = -h / 2;
   const W = w * 3;
@@ -363,8 +430,8 @@ export function drawBackground(scene: Phaser.Scene, w: number, h: number, seed =
       `rgba(${(c >> 16) & 255}, ${(c >> 8) & 255}, ${c & 255}, ${a})`;
     // Same gradient as before over the world (top → bottom); beyond it the end colors continue
     const grad = ctx.createLinearGradient(0, -y0, 0, h - y0);
-    grad.addColorStop(0, css(C.bgTop));
-    grad.addColorStop(1, css(C.bgBottom));
+    grad.addColorStop(0, css(theme.bgTop));
+    grad.addColorStop(1, css(theme.bgBottom));
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, W, H);
     let s = seed * 9301 + 49297;
@@ -375,7 +442,7 @@ export function drawBackground(scene: Phaser.Scene, w: number, h: number, seed =
       ctx.fill();
     };
     const bubble = (i: number, x: number, y: number) => {
-      const color = i % 3 === 0 ? 0x4cc9f0 : i % 3 === 1 ? 0xc77dff : 0xff6b6b;
+      const color = theme.bubbles[i % 3];
       ctx.fillStyle = css(color, 0.05 + rnd() * 0.05);
       circle(x, y, 20 + rnd() * 60);
     };

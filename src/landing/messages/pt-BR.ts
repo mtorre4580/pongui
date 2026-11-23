@@ -68,9 +68,9 @@ export const ptBR: LandingMessages = {
   'install.ios.title': 'iPhone e iPad',
   'install.ios.text':
     'Abra o jogo no Safari, toque em Compartilhar e depois em “Adicionar à Tela de Início”.',
-  'levels.title': 'Mundo 1 · Vale Saltitante',
-  'levels.text': 'Dez fases, do seu primeiro quique até o grande final.',
-  'levels.soon': 'O Mundo 2 está a caminho.',
+  'levels.title': 'Mundos',
+  'levels.text': 'Dez fases feitas à mão por mundo, e cada mundo traz truques novos.',
+  'levels.soon': 'Mais mundos estão a caminho.',
   'faq.title': 'Perguntas',
   'faq.free.q': 'O Boinky é grátis?',
   'faq.free.a': 'Sim. Jogue no seu navegador sem pagar nada e sem criar conta.',

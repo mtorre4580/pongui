@@ -15,11 +15,12 @@ import type { ParsedLevel } from '../game/level';
 import { World, type WorldEvent } from '../game/physics';
 import { isStatic, T } from '../game/tiles';
 import { bakeSolids, C, drawBackground, sparkTexture } from '../gfx/textures';
+import { themeOf, type Theme } from '../gfx/themes';
 import { setupCamera, text } from '../gfx/ui';
 import { localized, t } from '../i18n';
 import { controls } from '../input/controls';
 import { haptic } from '../native';
-import { LEVELS } from '../levels';
+import { levelLabel, LEVELS, worldOf } from '../levels';
 import { loadSave, recordWin } from '../save';
 
 export interface GameData {
@@ -35,7 +36,7 @@ const OY = 0;
 
 // The whole level must stay visible: there are no on-screen buttons to leave room for (touch
 // play uses gestures over the level), so it takes all the free space, centered
-const ITEM_TEX = { gem: 'gem', drop: 'drop', hammer: 'hammer', life: 'life' } as const;
+const ITEM_TEX = { gem: 'gem', drop: 'drop', hammer: 'hammer', life: 'life', key: 'key' } as const;
 const TILE_TEX: Record<number, string> = {
   [T.FRAGILE]: 'fragile',
   [T.FRAGILE3]: 'fragile3-0',
@@ -45,9 +46,11 @@ const TILE_TEX: Record<number, string> = {
   [T.RAMP_R]: 'rampR',
   [T.WALL]: 'wall',
   [T.SPIKE]: 'spike',
+  [T.LOCK]: 'lockblock',
+  [T.MOSS]: 'moss',
 };
+// Particle colors per tile (solid blocks use the world's color)
 const TILE_COLOR: Record<number, number> = {
-  [T.SOLID]: C.solidTop,
   [T.ASH]: C.ashTop,
   [T.FRAGILE]: C.fragile,
   [T.FRAGILE3]: C.fragile3,
@@ -56,11 +59,14 @@ const TILE_COLOR: Record<number, number> = {
   [T.RAMP_L]: C.rampLight,
   [T.RAMP_R]: C.rampLight,
   [T.WALL]: C.brick,
+  [T.LOCK]: C.key,
+  [T.MOSS]: C.mossTop,
 };
 
 export class Game extends Phaser.Scene {
   private index = 0;
   private level!: ParsedLevel;
+  private theme!: Theme;
   private world!: World;
   private lives = START_LIVES;
   private deaths = 0;
@@ -87,6 +93,7 @@ export class Game extends Phaser.Scene {
   private hudGems!: Phaser.GameObjects.Text;
   private hudDrops?: Phaser.GameObjects.Text;
   private hudHammers?: Phaser.GameObjects.Text;
+  private hudKeys?: Phaser.GameObjects.Text;
   private hudTime!: Phaser.GameObjects.Text;
   private hudHearts: Phaser.GameObjects.Image[] = [];
   private banner?: Phaser.GameObjects.Container;
@@ -98,6 +105,7 @@ export class Game extends Phaser.Scene {
   init(data: GameData) {
     this.index = Phaser.Math.Clamp(data.index ?? 0, 0, LEVELS.length - 1);
     this.level = LEVELS[this.index];
+    this.theme = themeOf(worldOf(this.index).n);
     this.lives = data.lives ?? START_LIVES;
     this.deaths = data.deaths ?? 0;
     this.takenLives = new Set(data.takenLives ?? []);
@@ -114,6 +122,7 @@ export class Game extends Phaser.Scene {
     this.hudHearts = [];
     this.hudDrops = undefined;
     this.hudHammers = undefined;
+    this.hudKeys = undefined;
   }
 
   create() {
@@ -123,7 +132,7 @@ export class Game extends Phaser.Scene {
     controls.enableGestures(true);
     this.world = new World(this.level, this.takenLives);
 
-    drawBackground(this, GAME_W, GAME_H, this.index + 11);
+    drawBackground(this, GAME_W, GAME_H, this.index + 11, this.theme);
     this.redrawSolids();
     this.buildTiles();
     this.buildItems();
@@ -154,7 +163,7 @@ export class Game extends Phaser.Scene {
     // A new key per version: the old texture is removed once the image no longer uses it
     const old = this.solids?.texture.key;
     const key = `solids-${this.index}-${++this.solidsVersion}`;
-    bakeSolids(this, key, this.world.s.tiles, COLS, ROWS, isStatic, T.ASH);
+    bakeSolids(this, key, this.world.s.tiles, COLS, ROWS, isStatic, T.ASH, this.theme);
     if (this.solids) this.solids.setTexture(key);
     else this.solids = this.add.image(0, OY, key).setOrigin(0).setScale(0.5);
     if (old && old !== key) this.textures.remove(old);
@@ -260,7 +269,7 @@ export class Game extends Phaser.Scene {
       this,
       TILE + 6,
       HUD_H / 2,
-      `${this.index + 1}. ${localized(this.level.name)}`,
+      `${levelLabel(this.index)} · ${localized(this.level.name)}`,
       14,
       '#ffffff',
     )
@@ -288,6 +297,13 @@ export class Game extends Phaser.Scene {
     if (this.level.items.some((i) => i.kind === 'hammer')) {
       icon('hammer', 0.36);
       this.hudHammers = text(this, x + 11, HUD_H / 2, '', 14)
+        .setOrigin(0, 0.5)
+        .setDepth(11);
+      x += 46;
+    }
+    if (this.level.items.some((i) => i.kind === 'key')) {
+      icon('key', 0.4);
+      this.hudKeys = text(this, x + 11, HUD_H / 2, '', 14)
         .setOrigin(0, 0.5)
         .setDepth(11);
     }
@@ -329,6 +345,7 @@ export class Game extends Phaser.Scene {
     this.hudGems.setText(`${s.gemsTaken}/${s.gemsTotal}`);
     this.hudDrops?.setText(String(s.drops));
     this.hudHammers?.setText(String(s.hammers));
+    this.hudKeys?.setText(String(s.keys));
   }
 
   private showBanner() {
@@ -344,7 +361,7 @@ export class Game extends Phaser.Scene {
       this,
       0,
       hasHint ? -20 : 0,
-      t('game.level', { n: this.index + 1, name: localized(this.level.name) }),
+      t('game.level', { n: levelLabel(this.index), name: localized(this.level.name) }),
       22,
       '#ffffff',
       { fontStyle: '700' },
@@ -469,7 +486,13 @@ export class Game extends Phaser.Scene {
           if (e.kind === 'spring' || e.kind === 'ramp') haptic('medium');
           else if (e.kind === 'high') haptic('light');
           const t = e.idx >= 0 ? this.level.tiles[e.idx] : T.SOLID;
-          this.burst(TILE_COLOR[t] ?? C.solidTop, e.x, e.y + OY, e.kind === 'low' ? 3 : 6, 90);
+          this.burst(
+            TILE_COLOR[t] ?? this.theme.solidTop,
+            e.x,
+            e.y + OY,
+            e.kind === 'low' ? 3 : 6,
+            90,
+          );
           const spr = this.tileSprites.get(e.idx);
           if (spr && e.kind === 'spring')
             this.tweens.add({ targets: spr, scaleY: 0.32, duration: 70, yoyo: true });
@@ -502,13 +525,14 @@ export class Game extends Phaser.Scene {
           break;
         }
         case 'break': {
+          // Walls and locks open as a wave from where the ball touched them
+          const spread = e.tile === T.WALL || e.tile === T.LOCK;
           const first = this.cellCenter(e.idxs[0]);
           e.idxs.forEach((idx) => {
             const p = this.cellCenter(idx);
-            const delay =
-              e.tile === T.WALL
-                ? Phaser.Math.Distance.Between(first.x, first.y, p.x, p.y) * 1.2
-                : 0;
+            const delay = spread
+              ? Phaser.Math.Distance.Between(first.x, first.y, p.x, p.y) * 1.2
+              : 0;
             const spr = this.tileSprites.get(idx);
             this.tileSprites.delete(idx);
             this.time.delayedCall(delay, () => {
@@ -524,11 +548,16 @@ export class Game extends Phaser.Scene {
                 });
             });
           });
-          sfx.break();
+          if (e.tile === T.LOCK) {
+            sfx.unlock();
+            haptic('medium');
+          } else sfx.break();
           if (e.tile === T.WALL) {
             this.cameras.main.shake(140, 0.004);
             haptic('heavy');
           }
+          // A hammer or a key was used up
+          if (spread) this.refreshHud();
           break;
         }
         case 'extinguish':
@@ -565,7 +594,13 @@ export class Game extends Phaser.Scene {
               duration: 220,
               onComplete: () => spr.destroy(),
             });
-            const color = { gem: C.gem, drop: C.drop, hammer: C.hammerHead, life: C.heart }[e.kind];
+            const color = {
+              gem: C.gem,
+              drop: C.drop,
+              hammer: C.hammerHead,
+              life: C.heart,
+              key: C.key,
+            }[e.kind];
             this.burst(color, spr.x, spr.y, 12, 150);
           }
           if (e.kind === 'gem') sfx.gem();

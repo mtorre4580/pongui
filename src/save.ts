@@ -42,6 +42,16 @@ export function persist(mutate: (s: SaveData) => void) {
   }
 }
 
+/**
+ * A level is open when it is the first one, when the one before it was beaten, or when an older
+ * save had it unlocked. Records decide (not only `unlocked`), so adding a world opens it for
+ * players who already finished the previous one.
+ */
+export function isUnlocked(index: number, ids: readonly string[]): boolean {
+  const s = loadSave();
+  return index === 0 || index <= s.unlocked || ids[index - 1] in s.levels;
+}
+
 export function recordWin(
   levelId: string,
   levelIndex: number,

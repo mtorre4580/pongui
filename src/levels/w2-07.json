@@ -1,0 +1,28 @@
+{
+  "id": "w2-07",
+  "name": {
+    "en": "Crystal well",
+    "es": "Pozo de cristal",
+    "pt-BR": "Poço de cristal"
+  },
+  "hint": {
+    "en": "There is no bouncing high on moss: choose where you break through.",
+    "es": "Sobre el musgo no hay rebote alto: elegí bien dónde romper.",
+    "pt-BR": "No musgo não há quique alto: escolha bem onde quebrar."
+  },
+  "par": 28,
+  "map": [
+    "####################",
+    "#..................#",
+    "#.P................#",
+    "#####xxxxxxxxxx#####",
+    "#..................#",
+    "#.g..............g.#",
+    "#####.XXXXXXXX.#####",
+    "#..................#",
+    "#........g.........#",
+    "#..................#",
+    "#.............s...E#",
+    "#mmmmmmmmmmmmmmmmmm#"
+  ]
+}

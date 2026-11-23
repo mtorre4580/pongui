@@ -1,0 +1,28 @@
+{
+  "id": "w2-01",
+  "name": {
+    "en": "First key",
+    "es": "Primera llave",
+    "pt-BR": "Primeira chave"
+  },
+  "hint": {
+    "en": "Grab the key: it opens a whole group of lock blocks.",
+    "es": "Agarrá la llave: abre todo un grupo de candados.",
+    "pt-BR": "Pegue a chave: ela abre um grupo inteiro de cadeados."
+  },
+  "par": 12,
+  "map": [
+    "####################",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..............LLLL#",
+    "#..............L...#",
+    "#.......g......L.E.#",
+    "#..............L...#",
+    "#.P...k........L...#",
+    "####################"
+  ]
+}

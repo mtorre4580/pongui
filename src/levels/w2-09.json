@@ -1,0 +1,28 @@
+{
+  "id": "w2-09",
+  "name": {
+    "en": "Spring vault",
+    "es": "Bóveda de resortes",
+    "pt-BR": "Cofre de molas"
+  },
+  "hint": {
+    "en": "Locks open from any side, even from below.",
+    "es": "Los candados se abren desde cualquier lado, incluso desde abajo.",
+    "pt-BR": "Os cadeados abrem de qualquer lado, até por baixo."
+  },
+  "par": 25,
+  "map": [
+    "####################",
+    "#..................#",
+    "#..................#",
+    "#...g...........g..#",
+    "#.........g........#",
+    "#LLLLLLLLLLLLLLLLLL#",
+    "#..................#",
+    "#.........k........#",
+    "#........###.......#",
+    "#..................#",
+    "#.P.s..........s..E#",
+    "####################"
+  ]
+}

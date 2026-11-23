@@ -102,7 +102,22 @@ export class ButtonGroup {
     private buttons: Button[],
     private cols = 1,
     private onBack?: () => void,
+    /** Called instead of moving when left/right is pressed at the edge of a row (paging). */
+    private onEdge?: (dir: -1 | 1, focus: number) => void,
   ) {}
+
+  /** Index of the focused button, or -1. */
+  get focused(): number {
+    return this.focus;
+  }
+
+  /** Focuses a button without a click sound (e.g. after changing page). */
+  focusOn(i: number) {
+    if (!this.buttons[i]) return;
+    if (this.focus >= 0) this.buttons[this.focus]?.setFocus(false);
+    this.focus = i;
+    this.buttons[i].setFocus(true);
+  }
 
   setButtons(b: Button[]) {
     this.buttons = b;
@@ -119,13 +134,22 @@ export class ButtonGroup {
     if (prev !== this.focus) sfx.click();
   }
 
+  private side(d: -1 | 1) {
+    const col = this.focus % this.cols;
+    const atEdge =
+      this.focus >= 0 &&
+      (d < 0 ? col === 0 : col === this.cols - 1 || this.focus === this.buttons.length - 1);
+    if (atEdge && this.onEdge) this.onEdge(d, this.focus);
+    else this.move(d);
+  }
+
   update() {
     controls.poll();
     if (controls.consume('down')) this.move(this.cols);
     if (controls.consume('up')) this.move(-this.cols);
     if (this.cols > 1) {
-      if (controls.consume('right')) this.move(1);
-      if (controls.consume('left')) this.move(-1);
+      if (controls.consume('right')) this.side(1);
+      if (controls.consume('left')) this.side(-1);
     }
     if (controls.consume('confirm')) {
       if (this.focus < 0) this.move(0);

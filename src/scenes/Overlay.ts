@@ -5,7 +5,7 @@ import { C } from '../gfx/textures';
 import { button, ButtonGroup, setupCamera, text, type Button } from '../gfx/ui';
 import { t } from '../i18n';
 import { controls } from '../input/controls';
-import { LEVELS } from '../levels';
+import { LEVELS, worldOf } from '../levels';
 
 export interface OverlayData {
   mode: 'pause' | 'complete' | 'gameover';
@@ -33,7 +33,10 @@ export class Overlay extends Phaser.Scene {
     setupCamera(this);
     controls.clearEdges();
     const d = this.data_;
-    const last = d.index >= LEVELS.length - 1;
+    const world = worldOf(d.index);
+    // The last level of a world: "World complete!" and a button to the next world, if any
+    const last = d.index === world.first + world.count - 1;
+    const hasNext = d.index < LEVELS.length - 1;
 
     const dim = this.add
       // Larger than the world: it dims the whole screen at any aspect ratio
@@ -127,9 +130,14 @@ export class Overlay extends Phaser.Scene {
             '#a9b8ff',
           ),
         );
-      if (!last) add(t('overlay.next'), () => this.startLevel(d.index + 1), 0xe85d75);
+      if (hasNext)
+        add(
+          t(last ? 'overlay.nextWorld' : 'overlay.next'),
+          () => this.startLevel(d.index + 1),
+          0xe85d75,
+        );
       add(t('overlay.replay'), () => this.startLevel(d.index));
-      add(t('overlay.levels'), () => this.toLevels(), last ? 0xe85d75 : undefined);
+      add(t('overlay.levels'), () => this.toLevels(), hasNext ? undefined : 0xe85d75);
       layout(-h / 2 + 190);
       this.group = new ButtonGroup(buttons, 1, () => this.toLevels());
     }
@@ -148,7 +156,7 @@ export class Overlay extends Phaser.Scene {
 
   private toLevels() {
     this.scene.stop('Game');
-    this.scene.start('LevelSelect');
+    this.scene.start('LevelSelect', { world: worldOf(this.data_.index).n });
   }
 
   update() {

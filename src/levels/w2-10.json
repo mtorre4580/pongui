@@ -1,0 +1,28 @@
+{
+  "id": "w2-10",
+  "name": {
+    "en": "Cave finale",
+    "es": "Final de la caverna",
+    "pt-BR": "Final da caverna"
+  },
+  "hint": {
+    "en": "Hammer, drop, key and spring: the caves' last test.",
+    "es": "Martillo, gota, llave y resorte: la última prueba de las cuevas.",
+    "pt-BR": "Martelo, gota, chave e mola: o último teste das cavernas."
+  },
+  "par": 33,
+  "map": [
+    "####################",
+    "#..............L...#",
+    "#..g...........L.E.#",
+    "######.........L.g.#",
+    "#..............L...#",
+    "#.....XXXX.....L####",
+    "#.....w............#",
+    "#...g.w............#",
+    "#.....w...k........#",
+    "#...d.w............#",
+    "#.Ph..w......s.....#",
+    "#mm##m#^^^^^^#######"
+  ]
+}

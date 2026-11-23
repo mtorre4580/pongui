@@ -3,8 +3,9 @@ import '@fontsource/fredoka/latin-400.css';
 import '@fontsource/fredoka/latin-600.css';
 import '@fontsource/fredoka/latin-700.css';
 import './landing.css';
-import { getLocale, LOCALES, localized, setLocale, type Locale } from '../i18n';
-import { LEVELS } from '../levels';
+import { getLocale, LOCALES, setLocale, t, type Locale, type MessageKey } from '../i18n';
+// Only the world count: the level maps stay out of the landing page's bundle
+import { WORLD_COUNT } from '../levels/worlds';
 import {
   canInstall,
   isIOS,
@@ -40,16 +41,17 @@ function renderLevels() {
   const list = document.getElementById('level-list');
   if (!list) return;
   list.replaceChildren(
-    ...LEVELS.map((level, i) => {
+    ...Array.from({ length: WORLD_COUNT }, (_, i) => {
       const li = document.createElement('li');
       const link = document.createElement('a');
-      link.href = `./play/?level=${i + 1}`;
+      // Opens the world's first level
+      link.href = `./play/?level=${i + 1}-1`;
       const num = document.createElement('span');
       num.className = 'level-num';
       num.textContent = String(i + 1);
       num.setAttribute('aria-hidden', 'true');
       const name = document.createElement('span');
-      name.textContent = localized(level.name);
+      name.textContent = t(`world.${i + 1}` as MessageKey);
       link.append(num, name);
       li.append(link);
       return li;

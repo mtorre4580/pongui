@@ -109,6 +109,10 @@ export default defineConfig(({ mode }) => {
       chunkSizeWarningLimit: 2000,
       rollupOptions: {
         input,
+        output: {
+          // Level maps in their own chunk: play.js is mostly Phaser and has little room left
+          manualChunks: (id) => (/\/src\/levels\/[^/]+\.json$/.test(id) ? 'levels' : undefined),
+        },
       },
     },
     test: { include: ['tests/**/*.test.ts'], testTimeout: 120000 },

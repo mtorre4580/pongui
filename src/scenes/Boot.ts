@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { createTextures } from '../gfx/textures';
+import { levelFromParam } from '../levels';
 import { hideSplash } from '../native';
 
 export class Boot extends Phaser.Scene {
@@ -13,8 +14,8 @@ export class Boot extends Phaser.Scene {
     // stops right away, so its own timers would be cancelled)
     setTimeout(hideSplash, 100);
     const params = new URLSearchParams(location.search);
-    const lvl = params.get('level');
-    if (lvl) this.scene.start('Game', { index: Math.max(0, Number(lvl) - 1) });
+    const index = levelFromParam(params.get('level'));
+    if (index !== null) this.scene.start('Game', { index });
     else this.scene.start('Menu');
   }
 }

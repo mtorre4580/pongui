@@ -1,0 +1,28 @@
+{
+  "id": "w2-08",
+  "name": {
+    "en": "Hammer or key?",
+    "es": "¿Martillo o llave?",
+    "pt-BR": "Martelo ou chave?"
+  },
+  "hint": {
+    "en": "The key opens locks, the hammer breaks walls.",
+    "es": "La llave abre candados, el martillo rompe paredes.",
+    "pt-BR": "A chave abre cadeados, o martelo quebra paredes."
+  },
+  "par": 27,
+  "map": [
+    "####################",
+    "#..........w.......#",
+    "#..........w.......#",
+    "#..g.......w.......#",
+    "####.......w.......#",
+    "#.....##...w.....g.#",
+    "#..........w.......#",
+    "#..........w.......#",
+    "#...LLL....w...#####",
+    "#...LhL....w.......#",
+    "#.P.LLL.ks.w.E.....#",
+    "####################"
+  ]
+}
