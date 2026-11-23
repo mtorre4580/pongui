@@ -68,9 +68,10 @@ come from `assets/` (`pnpm icons` then `pnpm native:assets`).
 
 ## Features
 
-- **20 levels in two worlds**, each level teaching one idea. Bouncy Valley brings high bounces,
+- **30 levels in three worlds**, each level teaching one idea. Bouncy Valley brings high bounces,
   fragile floors, ramps, springs, fire and water, walls and hammers and spikes; Crystal Caves adds
-  keys that open lock blocks and soft moss that never bounces you high. More worlds are coming.
+  keys that open lock blocks and soft moss that never bounces you high; Cloud Peaks adds one-way
+  clouds and updrafts that lift you. More worlds are coming.
 - **Solvable by construction**: an automatic solver plays every level with the real physics in CI,
   so no level ships without a proven solution.
 - **Keyboard, touch gestures and gamepad**, with menus you can drive from any of them.
