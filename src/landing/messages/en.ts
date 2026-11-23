@@ -57,7 +57,8 @@ export const en = {
   'faq.offline.a':
     'Yes. After your first visit the whole game is stored on your device, so it plays without a connection.',
   'faq.progress.q': 'Where is my progress saved?',
-  'faq.progress.a': 'Only in your browser, on your device. Nothing is sent anywhere.',
+  'faq.progress.a':
+    'Only in your browser, on your device. The site only counts anonymous visits and levels played, with no cookies and no personal data.',
   'faq.devices.q': 'Which devices can I use?',
   'faq.devices.a':
     'Any modern browser on a computer, tablet or phone. On a phone, turn it sideways to play.',
@@ -66,6 +67,7 @@ export const en = {
     'English, Spanish and Portuguese. It follows your browser, and you can switch it from the menu.',
   'cta.title': 'Ready to bounce?',
   'cta.play': 'Play Pongui',
+  'footer.privacy': 'Privacy',
   'footer.rights': 'All rights reserved.',
   'nav.worlds': 'Worlds',
   'nav.create': 'Create',

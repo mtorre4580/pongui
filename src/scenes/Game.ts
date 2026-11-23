@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { track, trackLevelStart } from '../analytics';
 import { sfx, unlockAudio } from '../audio/sfx';
 import {
   BALL_R,
@@ -163,6 +164,7 @@ export class Game extends Phaser.Scene {
     this.cameras.main.fadeIn(180, 13, 16, 36);
     controls.clearEdges();
     controls.enableGestures(true);
+    if (!this.custom) trackLevelStart(this.level.id);
     this.world = new World(this.level, this.takenLives);
 
     drawBackground(this, GAME_W, GAME_H, this.index + 11, this.theme);
@@ -993,6 +995,7 @@ export class Game extends Phaser.Scene {
     } else {
       prevBest = loadSave().levels[this.level.id]?.bestTime;
       recordWin(this.level.id, this.index, stars, time, LEVELS.length);
+      track('level_complete', { level: this.level.id, stars });
     }
     this.time.delayedCall(750, () => {
       this.ball.setVisible(false);

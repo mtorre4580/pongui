@@ -2,6 +2,7 @@
 // copying a link and showing a QR code. Native <dialog> elements: focus stays inside, Escape
 // closes them, and screen readers announce them.
 import { decodeLevel, encodeLevel, NAME_MAX, type CustomLevelData } from '../game/custom';
+import { track } from '../analytics';
 import { t } from '../i18n';
 import { IS_NATIVE } from '../native';
 
@@ -139,6 +140,7 @@ async function drawQr(url: string): Promise<HTMLCanvasElement> {
 
 /** Link, WhatsApp, the system share sheet and a QR code to scan with a phone. */
 export async function showShare(level: CustomLevelData): Promise<void> {
+  track('level_shared');
   const url = shareUrl(level);
   const message = t('share.message', { name: level.name, url });
 

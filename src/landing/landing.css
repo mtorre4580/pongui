@@ -751,6 +751,33 @@ details p {
   flex-wrap: wrap;
   gap: 6px;
 }
+.footer a {
+  margin-left: auto;
+  color: var(--text);
+}
+
+/* --- Privacy page: one plain column of text --- */
+.legal {
+  max-width: 760px;
+  padding: 56px 0 72px;
+}
+.legal h2 {
+  margin-top: 48px;
+}
+.legal p,
+.legal li {
+  color: var(--muted);
+}
+.legal a {
+  color: var(--text);
+}
+.legal-langs {
+  display: flex;
+  gap: 18px;
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+}
 
 /* --- Responsive --- */
 @media (max-width: 900px) {

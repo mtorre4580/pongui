@@ -69,6 +69,7 @@ capacitor.config.ts    # native app id, name, start page and plugin settings
 ios/  android/         # native projects (Capacitor); generated web files are git-ignored
 assets/                # sources for native icons and splash screens
 play/index.html        # the game page
+privacy/index.html     # privacy page (static, three languages)
 public/landing/        # landing videos and screenshots, recorded by `pnpm media`
 src/
   main.ts              # Phaser config, scenes, font loading, resize observer
@@ -93,6 +94,7 @@ src/
   levels/              # w<world>-<nn>.json (numeric order), index.ts (LEVELS, WORLDS), worlds.ts
   save.ts              # progress in localStorage (`pongui:save`)
   pwa.ts               # install prompt, iOS detection, fullscreen
+  analytics.ts         # anonymous usage statistics (Umami), off without VITE_UMAMI_ID
 tests/                 # Vitest: physics, levels, i18n
 e2e/                   # Playwright: smoke, PWA/offline, axe
 scripts/               # validate-levels, check-bundle, capture-media, make-icons
@@ -265,6 +267,19 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
   and the generated `robots.txt` and `sitemap.xml` (`siteFiles` in `vite.config.ts`).
 - The service worker is registered from `src/pwa.ts` with a URL resolved from the bundle, so both
   pages register `/sw.js` with the root scope. Landing media is excluded from the precache.
+
+## Analytics and privacy
+
+- `src/analytics.ts` is the only file that knows the provider (Umami Cloud: no cookies, so no
+  consent banner). It is off in development, in tests, in the native apps, when `VITE_UMAMI_ID`
+  is empty and for browsers that send Do Not Track; the script is only counted on the
+  `VITE_SITE_URL` host. With no id the build contains no tracker code.
+- Events are a closed list (`AnalyticsEvent`): `play_click`, `level_start` (once per level per
+  visit), `level_complete`, `install`, `editor_open`, `level_shared`, `shared_level_opened`.
+  Scenes and the landing call `track()`; never `src/game`. Every event counts against the plan's
+  quota, so do not report things that happen many times per level.
+- Whatever is measured must be listed in `privacy/index.html` (static, three languages) and in
+  the landing FAQ.
 
 ## Native apps
 

@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { track } from '../analytics';
 import { createTextures } from '../gfx/textures';
 import { decodeLevel } from '../game/custom';
 import { levelFromParam } from '../levels';
@@ -24,8 +25,10 @@ export class Boot extends Phaser.Scene {
       params.delete('c');
       const rest = params.toString();
       history.replaceState(null, '', location.pathname + (rest ? `?${rest}` : '') + location.hash);
-      if (data) this.scene.start('MyLevels', { focus: addReceived(data).id, open: true });
-      else this.scene.start('MyLevels', { badLink: true });
+      if (data) {
+        track('shared_level_opened');
+        this.scene.start('MyLevels', { focus: addReceived(data).id, open: true });
+      } else this.scene.start('MyLevels', { badLink: true });
       return;
     }
     const index = levelFromParam(params.get('level'));

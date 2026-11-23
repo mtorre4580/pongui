@@ -1,4 +1,5 @@
 // Landing page: plain DOM, no game engine. Texts, videos, world names and install button.
+import { initAnalytics, track } from '../analytics';
 import { getLocale, LOCALES, setLocale, t, type Locale, type MessageKey } from '../i18n';
 import {
   canInstall,
@@ -126,6 +127,12 @@ function setupLanguage() {
 }
 
 registerServiceWorker();
+initAnalytics();
+// Which button sends people to the game: the hero, the menu, a world card or the last call
+document.querySelectorAll<HTMLAnchorElement>('a[href^="./play/"]').forEach((link) => {
+  const from = link.closest('section, header')?.id || link.closest('section, header')?.className;
+  link.addEventListener('click', () => track('play_click', { from: from ?? 'page' }));
+});
 document.querySelectorAll<HTMLElement>('.screen').forEach(setupClip);
 setupInstall();
 setupLanguage();
