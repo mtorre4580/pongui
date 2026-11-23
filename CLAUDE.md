@@ -109,6 +109,9 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
 - JSON in `src/levels/`: `id`, `name` and `hint` as `{ en, es, pt-BR }`, `par` (seconds for the
   time star) and `map` (12 strings of 20 characters). The legend is in `CONTRIBUTING.md`.
 - Every level teaches or tests one idea, introduced in its hint the first time it appears.
+- Borders: row 0 and columns 0 and 19 must be plain walls (`#`); `parseLevel` rejects anything
+  else. The HUD is drawn over row 0 and the touch controls may cover the side columns. The floor
+  row (11) is free and may hold hazards.
 - `pnpm validate:levels` must pass: the map parses, every text exists in all languages, the solver
   beats it and the par time is above the solver's time (rule of thumb: 2.5× + 5 s).
 - Fairness rules learnt the hard way: ramps at least 2 tiles wide with a low ceiling before them,
@@ -163,7 +166,12 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
 - Full bleed: the canvas always covers the whole screen (`Phaser.Scale.EXPAND`, 1280×832
   minimum game area). `gfx/layout.ts` zooms the 640×416 world (about 2×) and centers it in the
   free area: the screen minus safe areas (notch, Dynamic Island) and the touch-control strips,
-  read from the invisible `#layout-probe` element whose padding CSS sets. Backgrounds, the HUD
+  read from the invisible `#layout-probe` element whose padding CSS sets (the larger of the safe
+  area and the strip on each side, never the sum; no bottom inset, the floor may run under the
+  home indicator). Each scene says which world rectangle must stay visible: the game fits its
+  12 rows, and all 20 columns on desktop but only the inner 18 with touch controls (the side
+  walls slip under them), sticking to the top edge. The HUD has no band of its own: it is a
+  translucent bar over the level's top wall row. Backgrounds, the HUD
   bar and overlay dimming extend far past the world so the screen never shows empty bars.
   Textures are drawn at 2× and shown at 0.5.
 - **Canvas renderer rules**: no `tint` (use `sparkTexture(color)`), no `fillGradientStyle` (bake
