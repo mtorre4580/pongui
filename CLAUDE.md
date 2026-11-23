@@ -354,6 +354,13 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
      out): a ball under it is caught and pulled up unless it shakes loose (4 to 6 changes of
      direction), which makes the beam fail for 2.2 s. While it is down, a high bounce from
      beside the beam lands on its dome.
+  9. **Gloom** (5 hits): a specter on the clock of the phase blocks. It is not there most of
+     the time: its eyes glow at the spot nearest the ball (drawn over the darkness: `glow`
+     art) for 3 halves of the cycle (2 in the last two phases), and it turns solid exactly
+     when the `%` blocks open, for one half (1.2 s), sweeping towards the ball at 50 to 130
+     px/s. Over each of its four spots is a `%` platform at the height of its head: a ball
+     waiting on it drops on the specter when the platform opens. From its second phase the
+     light is out (`setDark`). It throws nothing.
 - To add one: `src/bosses/wN-name.ts` (brain, `BossDef`, arena, theme) and its entry in
   `BOSSES`; its world in `BOSS_WORLDS`; its art in `gfx/bossArt.ts` and sounds in `sfx.ts`;
   `boss.N` and `game.bossHint.N` in the three languages; its script in `bosses/scripts.ts`;
