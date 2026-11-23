@@ -19,8 +19,9 @@ Guía de trabajo para publicar el juego y darlo a conocer. Los videos se generan
 
 ## Perfiles
 
-- Usuario: `@pongui` en Instagram, TikTok y YouTube (alternativa: `@playpongui`).
+- Usuario: `@playpongui` en Instagram, TikTok y YouTube.
 - Foto: `public/icons/icon-512.png`.
+- Banner de YouTube: `docs/social/youtube-banner.png` (se genera con `pnpm media banner`).
 - Link: `https://pongui.com/?utm_source=instagram` (cambiar `instagram` por `tiktok` o
   `youtube`): Umami muestra cuánta gente llega de cada red.
 - Bio (ES): "🔴 100 niveles de rebotes · Gratis, sin descargar nada · Creá y compartí tus niveles 👇"

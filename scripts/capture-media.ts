@@ -8,6 +8,7 @@
  * solver's solution in real time inside the real game. Needs ffmpeg on the PATH.
  * Usage: pnpm media          everything above
  *        pnpm media editor   only the landing's editor clip
+ *        pnpm media banner   only the YouTube channel banner in docs/social/
  *        pnpm media:social   vertical videos for social networks in docs/social/ (not committed)
  */
 import { execFileSync } from 'node:child_process';
@@ -308,6 +309,48 @@ function vertical(card: string, raw: string, from: number, to: number, out: stri
   );
 }
 
+/**
+ * Channel banner for YouTube: 2048×1152, with everything that matters inside the centered
+ * 1235×338 area, the only part every device shows (phones crop the rest).
+ */
+async function drawBanner(browser: Browser, out: string, site: string, tagline: string) {
+  const context = await browser.newContext({ viewport: { width: 2048, height: 1152 } });
+  const page = await context.newPage();
+  const font = (weight: number) =>
+    `url(data:font/woff2;base64,${readFileSync(
+      `node_modules/@fontsource/fredoka/files/fredoka-latin-${weight}-normal.woff2`,
+    ).toString('base64')})`;
+  await page.setContent(`<!doctype html><meta charset="utf-8"><style>
+    @font-face { font-family: Fredoka; font-weight: 700; src: ${font(700)}; }
+    @font-face { font-family: Fredoka; font-weight: 500; src: ${font(500)}; }
+    * { margin: 0; box-sizing: border-box; }
+    body { width: 2048px; height: 1152px; overflow: hidden; color: #f1f2ff;
+      font-family: Fredoka, sans-serif; display: grid; place-items: center;
+      background: radial-gradient(1100px 800px at 12% 10%, #2a2f7a 0, transparent 70%),
+        radial-gradient(1100px 900px at 90% 95%, #4a2360 0, transparent 70%), #0d1024; }
+    .bubble { position: absolute; border-radius: 50%; background: #ffffff0f; }
+    .safe { width: 1235px; height: 338px; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 14px; text-align: center; }
+    .brand { display: flex; align-items: center; gap: 30px; font: 700 150px/1 Fredoka; }
+    .ball { width: 150px; height: 150px; border-radius: 50%; background: #ff6b6b;
+      position: relative; }
+    .ball::before, .ball::after { content: ''; position: absolute; top: 42px; width: 36px;
+      height: 46px; border-radius: 50%; background: #fff; box-shadow: inset 9px 7px 0 9px #161a33; }
+    .ball::before { left: 32px; } .ball::after { right: 32px; }
+    p { font: 500 50px/1.2 Fredoka; color: #b8bde8; }
+    .site { font: 700 50px/1.2 Fredoka; color: #5ee6d6; }
+  </style>
+  <div class="bubble" style="width:520px;height:520px;left:-120px;top:560px"></div>
+  <div class="bubble" style="width:300px;height:300px;left:330px;top:90px"></div>
+  <div class="bubble" style="width:420px;height:420px;right:120px;top:-90px"></div>
+  <div class="bubble" style="width:260px;height:260px;right:380px;bottom:60px"></div>
+  <div class="safe"><div class="brand"><span class="ball"></span>Pongui</div>
+    <p>${escapeHtml(tagline)}</p><div class="site">${escapeHtml(site)}</div></div>`);
+  await page.evaluate(() => document.fonts.ready);
+  await page.screenshot({ path: out });
+  await context.close();
+}
+
 async function social(browser: Browser) {
   const { loadEnv } = await import('vite');
   const site = new URL(loadEnv('production', process.cwd()).VITE_SITE_URL).hostname;
@@ -363,6 +406,8 @@ async function social(browser: Browser) {
     vertical(card, editor.raw, editor.from, editor.to, join(SOCIAL, lang, 'editor.mp4'));
   }
   await context.close();
+  // The game is international: the banner speaks English
+  await drawBanner(browser, join(SOCIAL, 'youtube-banner.png'), site, landing.en['hero.kicker']);
   rmSync(cards, { recursive: true, force: true });
   rmSync(TMP, { recursive: true, force: true });
   console.log(`Social videos written to ${SOCIAL}/`);
@@ -483,7 +528,13 @@ const browser = await chromium.launch();
 
 try {
   if (only === 'social') await social(browser);
-  else if (only === 'editor') {
+  else if (only === 'banner') {
+    mkdirSync(SOCIAL, { recursive: true });
+    const { loadEnv } = await import('vite');
+    const site = new URL(loadEnv('production', process.cwd()).VITE_SITE_URL).hostname;
+    const { en } = await import('../src/landing/messages/en');
+    await drawBanner(browser, join(SOCIAL, 'youtube-banner.png'), site, en['hero.kicker']);
+  } else if (only === 'editor') {
     const editor = await recordEditor(browser);
     clip(editor.raw, editor.from, editor.to, join(LANDING, 'editor'), 960);
     rmSync(TMP, { recursive: true, force: true });
