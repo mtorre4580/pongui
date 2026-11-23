@@ -40,6 +40,7 @@
     "test:e2e": "playwright test",
     "lhci": "lhci autorun",
     "media": "tsx scripts/capture-media.ts",
+    "media:social": "tsx scripts/capture-media.ts social",
     "icons": "node scripts/make-icons.mjs",
     "prepare": "husky",
     "build:native": "tsc --noEmit && vite build --mode native && cap sync",

@@ -118,6 +118,7 @@ pnpm dev
 | `pnpm test:e2e` | Playwright + axe on desktop and phone (after `pnpm build`) |
 | `pnpm lhci` | Lighthouse CI on the built game |
 | `pnpm media` | Regenerates the README media, the landing page videos and screenshots, and the social image (needs ffmpeg) |
+| `pnpm media:social` | Records vertical videos for Instagram, TikTok and YouTube Shorts into `docs/social/` (not committed) |
 | `pnpm icons` | Regenerates the web app icons in `public/icons` and the native sources in `assets/` |
 | `pnpm build:native` | Builds the game for the iOS/Android apps and syncs it into `ios/` and `android/` |
 | `pnpm native:assets` | Generates every iOS and Android icon and splash size from `assets/` |
