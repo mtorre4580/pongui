@@ -11,7 +11,7 @@ export interface Theme {
   /** Small marks drawn on solid blocks (pebbles, crystals…). */
   speck: number;
   /** What the marks look like: round pebbles by default. */
-  pattern?: 'crystals' | 'rivets' | 'coral';
+  pattern?: 'crystals' | 'rivets' | 'coral' | 'snow';
 }
 
 export const THEMES: Record<number, Theme> = {
@@ -67,6 +67,17 @@ export const THEMES: Record<number, Theme> = {
     solidDark: 0x9c4a3a,
     speck: 0xffe5d9,
     pattern: 'coral',
+  },
+  // 6 · Frost Peaks: snow-capped blue rock under a cold night sky
+  6: {
+    bgTop: 0x2f4f86,
+    bgBottom: 0x0a1430,
+    bubbles: [0xffffff, 0xcaf0f8, 0x90e0ef],
+    solidTop: 0xf4fbff,
+    solid: 0x5f7fa3,
+    solidDark: 0x3d5675,
+    speck: 0xdcecff,
+    pattern: 'snow',
   },
 };
 

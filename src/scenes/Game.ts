@@ -58,6 +58,8 @@ const TILE_TEX: Record<number, string> = {
   [T.PORTAL_1]: 'portal1',
   [T.PORTAL_2]: 'portal2',
   [T.PORTAL_3]: 'portal3',
+  [T.ICE]: 'ice',
+  [T.THIN_ICE]: 'thinice',
 };
 // Particle colors per tile (solid blocks use the world's color)
 const TILE_COLOR: Record<number, number> = {
@@ -80,6 +82,8 @@ const TILE_COLOR: Record<number, number> = {
   [T.PORTAL_1]: C.portal1,
   [T.PORTAL_2]: C.portal2,
   [T.PORTAL_3]: C.portal3,
+  [T.ICE]: C.iceLight,
+  [T.THIN_ICE]: C.iceLight,
 };
 
 export class Game extends Phaser.Scene {
@@ -582,6 +586,7 @@ export class Game extends Phaser.Scene {
         case 'bounce': {
           this.squash = 1;
           sfx.bounce(e.kind);
+          if (e.idx >= 0 && this.level.tiles[e.idx] === T.ICE) sfx.ice();
           // A double tap's queued high bounce is spent on this landing
           controls.disarmJump();
           // Low bounces happen constantly: only the bigger ones vibrate on phones
@@ -652,6 +657,9 @@ export class Game extends Phaser.Scene {
           });
           if (e.tile === T.LOCK) {
             sfx.unlock();
+            haptic('medium');
+          } else if (e.tile === T.THIN_ICE) {
+            sfx.shatter();
             haptic('medium');
           } else sfx.break();
           if (e.tile === T.WALL) {

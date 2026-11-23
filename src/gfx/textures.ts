@@ -65,6 +65,9 @@ export const C = {
   portal1: 0xff4d9d,
   portal2: 0xa7f432,
   portal3: 0xff9e00,
+  ice: 0x9bdcf5,
+  iceLight: 0xe6f8ff,
+  iceDark: 0x5aa7cf,
   water: 0x3fa7d6,
   waterLight: 0xb8f2ff,
   hammerHandle: 0x9c6644,
@@ -333,6 +336,27 @@ export function createTextures(scene: Phaser.Scene) {
     });
   });
 
+  // --- Frost Peaks: ice and thin ice ---
+  make(scene, 'ice', S, S, (g) => {
+    block(g, C.ice, C.iceLight, C.iceDark);
+    // Diagonal shine streaks: smooth and slippery
+    g.fillStyle(C.white, 0.75);
+    g.fillTriangle(10, 44, 18, 44, 30, 20);
+    g.fillTriangle(30, 20, 38, 20, 18, 44);
+    g.fillStyle(C.white, 0.45);
+    g.fillTriangle(34, 50, 40, 50, 50, 30);
+    g.fillTriangle(50, 30, 56, 30, 40, 50);
+  });
+  make(scene, 'thinice', S, S, (g) => {
+    // A see-through slab with cracks: it will not take a high bounce
+    g.fillStyle(C.ice, 0.45).fillRoundedRect(0, 0, S, 24, 8);
+    g.fillStyle(C.iceLight, 0.9).fillRoundedRect(0, 0, S, 7, { tl: 8, tr: 8, bl: 0, br: 0 });
+    g.lineStyle(2.5, C.white, 0.85);
+    g.beginPath().moveTo(12, 6).lineTo(20, 14).lineTo(16, 22).strokePath();
+    g.beginPath().moveTo(20, 14).lineTo(32, 12).lineTo(42, 20).strokePath();
+    g.beginPath().moveTo(42, 20).lineTo(52, 8).strokePath();
+  });
+
   // --- Ball ---
   const BR = BALL_R * TEX + 2;
   make(scene, 'ball', BR * 2, BR * 2, (g) => {
@@ -487,6 +511,14 @@ function drawSolids(
           y + (25 - (seed % 2) * 4) * k,
           1.2 * k,
         );
+      } else if (theme.pattern === 'snow' && !isAsh) {
+        // Snowflakes: small plus signs
+        g.fillStyle(theme.speck, 0.6);
+        const fx = x + (9 + seed * 3) * k;
+        const fy = y + (18 + (seed % 3) * 3) * k;
+        g.fillRect(fx - 2.5 * k, fy - 0.6 * k, 5 * k, 1.2 * k);
+        g.fillRect(fx - 0.6 * k, fy - 2.5 * k, 1.2 * k, 5 * k);
+        g.fillCircle(x + (23 - seed) * k, y + (25 - (seed % 2) * 4) * k, 1.1 * k);
       } else if (theme.pattern === 'coral' && !isAsh) {
         // Little coral polyps: rings of different sizes
         g.lineStyle(1.2 * k, theme.speck, 0.55);

@@ -117,6 +117,16 @@ export const sfx = {
     [660, 880, 1175].forEach((f, i) => tone(f, f, 0.14, 'triangle', 0.15, 0.06 + i * 0.06));
   },
   wind: () => noise(0.4, 0.16, 650, 0.6),
+  /** A glassy clink on ice. */
+  ice: () => {
+    tone(2200, 2000, 0.07, 'sine', 0.08);
+    tone(3300, 3100, 0.05, 'sine', 0.05, 0.02);
+  },
+  /** Thin ice giving way. */
+  shatter: () => {
+    noise(0.3, 0.35, 4200, 0.8, 0, 'highpass');
+    [1800, 2600, 2100].forEach((f, i) => tone(f, f * 0.8, 0.06, 'triangle', 0.07, i * 0.04));
+  },
   /** A rising shimmer. */
   portal: () => {
     tone(300, 1200, 0.18, 'sine', 0.16);
