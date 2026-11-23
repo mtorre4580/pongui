@@ -48,6 +48,10 @@ export const es: Messages = {
   'overlay.toEditor': 'Volver al editor',
   'overlay.toMine': 'Mis niveles',
   'overlay.verified': 'Nivel verificado: ya podés compartirlo',
+  'overlay.share': 'Compartir mi tiempo',
+  'overlay.shareCopied': '¡Copiado!',
+  'overlay.shareText':
+    'Pasé el nivel {level} de Pongui en {t} s con {stars}. ¿Lo hacés mejor? {url}',
   'mine.title': 'Mis niveles',
   'mine.new': '+ Nuevo nivel',
   'mine.openCode': 'Abrir un link',

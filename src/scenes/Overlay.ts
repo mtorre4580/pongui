@@ -6,7 +6,9 @@ import { button, ButtonGroup, setupCamera, text, type Button } from '../gfx/ui';
 import { t } from '../i18n';
 import { controls } from '../input/controls';
 import { LEVELS, worldOf } from '../levels';
+import { track } from '../analytics';
 import { leaveCustom, type CustomRun } from '../custom/run';
+import { gamePage, levelUrl, shareText, starsText } from '../share';
 
 export interface OverlayData {
   mode: 'pause' | 'complete' | 'gameover';
@@ -55,7 +57,9 @@ export class Overlay extends Phaser.Scene {
     this.tweens.add({ targets: dim, fillAlpha: 0.6, duration: 200 });
 
     const w = 340;
-    const h = d.mode === 'complete' ? 300 : 250;
+    // Finished levels of the game can be shared: one more button
+    const shareable = d.mode === 'complete' && !custom;
+    const h = d.mode === 'complete' ? (shareable ? 344 : 300) : 250;
     const panel = this.add.container(GAME_W / 2, GAME_H / 2 + 20).setAlpha(0);
     const bg = this.add.graphics();
     bg.fillStyle(0x000000, 0.3).fillRoundedRect(-w / 2, -h / 2 + 6, w, h, 22);
@@ -149,6 +153,22 @@ export class Overlay extends Phaser.Scene {
         );
       if (custom?.from === 'editor') add(backLabel, () => this.toLevels(), 0xe85d75);
       add(t('overlay.replay'), () => this.startLevel(d.index));
+      if (shareable) {
+        const share = add(t('overlay.share'), () => {
+          const level = `${world.n}-${d.index - world.first + 1}`;
+          const message = t('overlay.shareText', {
+            level,
+            t: (d.time ?? 0).toFixed(1),
+            stars: starsText(stars),
+            url: levelUrl(gamePage(), level),
+          });
+          track('result_shared', { level });
+          void shareText(message).then((outcome) => {
+            // The share sheet speaks for itself; a silent copy needs a word
+            if (outcome === 'copied' && share.active) share.setLabel(t('overlay.shareCopied'));
+          });
+        });
+      }
       if (custom?.from !== 'editor')
         add(backLabel, () => this.toLevels(), hasNext ? undefined : 0xe85d75);
       layout(-h / 2 + 190);
