@@ -113,6 +113,7 @@ export class Game extends Phaser.Scene {
   private prevX = 0;
   private prevY = 0;
   private squash = 0;
+  private lastBonk = 0;
 
   private solids!: Phaser.GameObjects.Image;
   private solidsVersion = 0;
@@ -721,7 +722,9 @@ export class Game extends Phaser.Scene {
           this.burst(C.ballLight, this.world.s.x, this.world.s.y + OY + BALL_R, 5, 80);
           break;
         case 'bonk':
-          sfx.bonk();
+          // A ball held against a ceiling (by an updraft) bonks every step: play it once
+          if (this.time.now - this.lastBonk > 150) sfx.bonk();
+          this.lastBonk = this.time.now;
           break;
         case 'crack': {
           const spr = this.tileSprites.get(e.idx);
