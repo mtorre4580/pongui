@@ -160,14 +160,19 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
 - Modern flat vector look: navy gradient background with soft bubbles, teal solid blocks, a coral
   ball with eyes, bright tiles that read at a glance (yellow fragile, orange strong fragile, fire,
   purple spring, blue ramp, brick wall, steel spikes). Font: Fredoka (Latin subset, bundled).
-- The canvas is 1280×832 with a 2× camera zoom over a 640×416 world, scaled with
-  `Phaser.Scale.FIT`. Textures are drawn at 2× and shown at 0.5.
+- Full bleed: the canvas always covers the whole screen (`Phaser.Scale.EXPAND`, 1280×832
+  minimum game area). `gfx/layout.ts` zooms the 640×416 world (about 2×) and centers it in the
+  free area: the screen minus safe areas (notch, Dynamic Island) and the touch-control strips,
+  read from the invisible `#layout-probe` element whose padding CSS sets. Backgrounds, the HUD
+  bar and overlay dimming extend far past the world so the screen never shows empty bars.
+  Textures are drawn at 2× and shown at 0.5.
 - **Canvas renderer rules**: no `tint` (use `sparkTexture(color)`), no `fillGradientStyle` (bake
   gradients with a 2D canvas), and bake static layers (background, solid blocks) into textures
   instead of redrawing Graphics every frame.
-- Touch controls are HTML buttons. While a level is open, `body.touch-ui` reserves room so the
-  controls never cover the level: side strips on wide screens (phones), a bottom strip on screens
-  narrower than 3:2 (tablets). The room stays during pause so the canvas does not resize.
+- Touch controls are HTML buttons over the canvas. While a level is open, `body.touch-ui` keeps
+  room for them in `#layout-probe` so they never cover the level: side strips on wide screens
+  (phones), a bottom strip on screens narrower than 3:2 (tablets). The room stays during pause
+  so the level does not jump.
 - Portrait on touch screens shows a "rotate your device" notice.
 
 ## Performance

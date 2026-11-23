@@ -249,8 +249,10 @@ export class Game extends Phaser.Scene {
 
   private buildHud() {
     const g = this.add.graphics().setDepth(10);
-    g.fillStyle(0x0b0e22, 0.85).fillRect(0, 0, GAME_W, HUD_H);
-    g.fillStyle(C.uiLight, 0.6).fillRect(0, HUD_H - 1, GAME_W, 1);
+    // The bar spans the whole screen width and reaches the top edge, past the world's edges
+    // (see gfx/layout.ts), so no strip of background shows above it
+    g.fillStyle(0x0b0e22, 0.85).fillRect(-GAME_W, -GAME_H, GAME_W * 3, GAME_H + HUD_H);
+    g.fillStyle(C.uiLight, 0.6).fillRect(-GAME_W, HUD_H - 1, GAME_W * 3, 1);
     text(this, 10, HUD_H / 2, `${this.index + 1}. ${localized(this.level.name)}`, 14, '#ffffff')
       .setOrigin(0, 0.5)
       .setDepth(11);

@@ -54,3 +54,14 @@ test('the language follows the browser and can be saved', async ({ page }) => {
   await expect(page.locator('html')).toHaveAttribute('lang', 'es');
   await expect(page.locator('#rotate-text')).toHaveText('Girá el dispositivo para jugar');
 });
+
+test('the game fills the whole screen, with no empty bars', async ({ page }) => {
+  await page.goto('./play/?level=1');
+  await expectScene(page, 'Game');
+  const viewport = page.viewportSize()!;
+  const box = (await page.locator('#game canvas').boundingBox())!;
+  expect(Math.round(box.x)).toBe(0);
+  expect(Math.round(box.y)).toBe(0);
+  expect(Math.round(box.width)).toBe(viewport.width);
+  expect(Math.round(box.height)).toBe(viewport.height);
+});

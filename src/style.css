@@ -33,10 +33,22 @@ body {
   position: fixed;
   inset: 0;
 }
-/* With touch controls visible, the game shrinks so they never cover it */
-body.touch-ui #game {
-  left: var(--lz);
-  right: var(--rz);
+/*
+ * The canvas always fills the screen. This invisible element's padding is the space the level
+ * must keep clear: safe areas (notch, Dynamic Island) plus the touch-control strips. The game
+ * reads it to place the level (gfx/layout.ts); the background still reaches every edge.
+ */
+#layout-probe {
+  position: fixed;
+  inset: 0;
+  visibility: hidden;
+  pointer-events: none;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
+    env(safe-area-inset-left);
+}
+body.touch-ui #layout-probe {
+  padding-left: var(--lz);
+  padding-right: var(--rz);
 }
 #game canvas {
   display: block;
@@ -165,10 +177,10 @@ body.touch-ui #game {
     --j: calc(var(--b) * 1.25);
     --bz: calc(env(safe-area-inset-bottom) + var(--b) * 1.25 + var(--gap) * 2);
   }
-  body.touch-ui #game {
-    left: 0;
-    right: 0;
-    bottom: var(--bz);
+  body.touch-ui #layout-probe {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    padding-bottom: var(--bz);
   }
   #tc-l,
   #tc-r,

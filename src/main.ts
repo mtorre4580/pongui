@@ -33,7 +33,9 @@ async function start() {
     backgroundColor: '#0d1024',
     width: CANVAS_W,
     height: CANVAS_H,
-    scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
+    // EXPAND: the canvas fills the screen at any aspect ratio; 1280×832 is the minimum game area
+    // and the extra space shows more of each scene's background (see gfx/layout.ts)
+    scale: { mode: Phaser.Scale.EXPAND, autoCenter: Phaser.Scale.CENTER_BOTH },
     input: { activePointers: 4 },
     render: { antialias: true, roundPixels: false },
     disableContextMenu: true,

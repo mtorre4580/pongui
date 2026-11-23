@@ -1,6 +1,8 @@
 // Unified input: keyboard, touch (HTML buttons) and gamepad.
 // Scenes poll it every frame: `held` for continuous actions and `consume()` for presses.
 
+import { LAYOUT_EVENT } from '../gfx/layout';
+
 export type Action =
   'jump' | 'pause' | 'restart' | 'confirm' | 'back' | 'up' | 'down' | 'left' | 'right';
 
@@ -126,7 +128,12 @@ class Controls {
   private refreshTouchUi() {
     if (!this.touchEl) return;
     this.touchEl.hidden = !(this.wantTouchUi && this.touchMode);
-    document.body.classList.toggle('touch-ui', this.layoutReserved && this.touchMode);
+    const reserved = this.layoutReserved && this.touchMode;
+    if (document.body.classList.contains('touch-ui') !== reserved) {
+      document.body.classList.toggle('touch-ui', reserved);
+      // The free area for the level changed: scenes re-place their cameras
+      window.dispatchEvent(new Event(LAYOUT_EVENT));
+    }
     if (this.touchEl.hidden) {
       for (const ids of this.touch.values()) ids.clear();
       this.touchEl.querySelectorAll('.on').forEach((n) => n.classList.remove('on'));

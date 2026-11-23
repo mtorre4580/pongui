@@ -345,38 +345,52 @@ export function sparkTexture(scene: Phaser.Scene, color: number) {
   return key;
 }
 
-/** Background with a gradient, soft bubbles and dots, baked once per seed. */
+/**
+ * Background with a gradient, soft bubbles and dots, baked once per seed. It covers far more than
+ * the w×h world (3× wide, 2× tall, centered on it) so it fills the screen at any aspect ratio.
+ * It is soft, so it is baked at 1 texture pixel per world unit to save memory.
+ */
 export function drawBackground(scene: Phaser.Scene, w: number, h: number, seed = 1) {
   const key = `bg-${seed}-${w}x${h}`;
+  const x0 = -w;
+  const y0 = -h / 2;
+  const W = w * 3;
+  const H = h * 2;
   if (!scene.textures.exists(key)) {
-    const tex = scene.textures.createCanvas(key, w * TEX, h * TEX)!;
+    const tex = scene.textures.createCanvas(key, W, H)!;
     const ctx = tex.getContext();
     const css = (c: number, a = 1) =>
       `rgba(${(c >> 16) & 255}, ${(c >> 8) & 255}, ${c & 255}, ${a})`;
-    const grad = ctx.createLinearGradient(0, 0, 0, h * TEX);
+    // Same gradient as before over the world (top → bottom); beyond it the end colors continue
+    const grad = ctx.createLinearGradient(0, -y0, 0, h - y0);
     grad.addColorStop(0, css(C.bgTop));
     grad.addColorStop(1, css(C.bgBottom));
     ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, w * TEX, h * TEX);
+    ctx.fillRect(0, 0, W, H);
     let s = seed * 9301 + 49297;
     const rnd = () => (s = (s * 9301 + 49297) % 233280) / 233280;
     const circle = (x: number, y: number, r: number) => {
       ctx.beginPath();
-      ctx.arc(x * TEX, y * TEX, r * TEX, 0, Math.PI * 2);
+      ctx.arc(x - x0, y - y0, r, 0, Math.PI * 2);
       ctx.fill();
     };
-    for (let i = 0; i < 14; i++) {
+    const bubble = (i: number, x: number, y: number) => {
       const color = i % 3 === 0 ? 0x4cc9f0 : i % 3 === 1 ? 0xc77dff : 0xff6b6b;
       ctx.fillStyle = css(color, 0.05 + rnd() * 0.05);
-      circle(rnd() * w, rnd() * h, 20 + rnd() * 60);
+      circle(x, y, 20 + rnd() * 60);
+    };
+    // The world area keeps its bubbles; the extended area gets its own
+    for (let i = 0; i < 14; i++) bubble(i, rnd() * w, rnd() * h);
+    for (let i = 0; i < 40; i++) {
+      const x = x0 + rnd() * W;
+      const y = y0 + rnd() * H;
+      if (x > 0 && x < w && y > 0 && y < h) continue;
+      bubble(i, x, y);
     }
     ctx.fillStyle = css(0xffffff, 0.05);
-    for (let y = 16; y < h; y += 32) for (let x = 16; x < w; x += 32) circle(x, y, 1);
+    for (let y = y0 + 16; y < y0 + H; y += 32)
+      for (let x = x0 + 16; x < x0 + W; x += 32) circle(x, y, 1);
     tex.refresh();
   }
-  return scene.add
-    .image(0, 0, key)
-    .setOrigin(0)
-    .setScale(1 / TEX)
-    .setDepth(-10);
+  return scene.add.image(x0, y0, key).setOrigin(0).setDepth(-10);
 }
