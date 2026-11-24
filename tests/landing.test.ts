@@ -1,10 +1,10 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { en, type LandingKey } from '../src/landing/messages/en';
 import { es } from '../src/landing/messages/es';
 import { ptBR } from '../src/landing/messages/pt-BR';
 import { en as game } from '../src/i18n/messages/en';
-import { WORLD_COUNT } from '../src/levels/worlds';
+import { BOSS_WORLDS, WORLD_COUNT } from '../src/levels/worlds';
 
 const html = readFileSync('index.html', 'utf8');
 const squash = (s: string) => s.replace(/\s+/g, ' ').trim();
@@ -38,6 +38,17 @@ describe('landing page texts', () => {
     for (const [, pairs] of html.matchAll(/data-i18n-attr="([^"]+)"/g)) {
       for (const pair of pairs.split(',')) expect(en).toHaveProperty([pair.split(':')[1].trim()]);
     }
+  });
+
+  it('index.html names the boss of every world like the game names it', () => {
+    const bosses = [...html.matchAll(/data-boss="(\d+)"\s*>([^<]+)</g)];
+    for (const [, n, name] of bosses)
+      expect(squash(name), `boss ${n}`).toBe(game[`boss.${n}` as keyof typeof game]);
+    // One on each world's card, plus the ones pictured in the bosses section
+    const onCards = new Set(bosses.map(([, n]) => Number(n)));
+    expect([...onCards].sort((a, b) => a - b)).toEqual([...BOSS_WORLDS]);
+    for (const [, src] of html.matchAll(/src="\/landing\/(boss-\d+\.jpg)"/g))
+      expect(existsSync(`public/landing/${src}`), src).toBe(true);
   });
 
   it('index.html has one card per world, named like the game names it', () => {

@@ -3,7 +3,7 @@
 export const en = {
   'meta.title': 'Pongui · A bouncing puzzle game for every screen',
   'meta.description':
-    'Pongui is a free bouncing-ball puzzle game with 100 levels in 10 worlds: collect every gem, dodge the spikes and find the exit. Plays in your browser on computer, tablet and phone, installs like an app, works offline and lets you make your own levels.',
+    'Pongui is a free bouncing-ball puzzle game with 100 levels in 10 worlds and a boss at the end of each: collect every gem, dodge the spikes, find the exit and beat the boss. Plays in your browser on computer, tablet and phone, installs like an app, works offline and lets you make your own levels.',
   skip: 'Skip to content',
   'nav.label': 'Main',
   'nav.how': 'How to play',
@@ -14,10 +14,10 @@ export const en = {
   'hero.kicker': 'A bouncing puzzle game',
   'hero.title': 'The ball never stops bouncing. You decide where it lands.',
   'hero.text':
-    'Steer a bouncy ball through 100 hand-made puzzle levels in 10 worlds: collect every gem, dodge spikes, ride the wind, jump through portals and find the exit. Free, in your browser, on any device.',
+    'Steer a bouncy ball through 100 hand-made puzzle levels in 10 worlds, each guarded by a boss: collect every gem, dodge spikes, ride the wind, jump through portals and find the exit. Free, in your browser, on any device.',
   'hero.play': 'Play now, it’s free',
   'hero.install': 'Install the app',
-  'hero.meta': 'No sign-up · 100 levels · Works offline · English, Español, Português',
+  'hero.meta': 'No sign-up · 100 levels · 10 bosses · Works offline · English, Español, Português',
   'hero.video':
     'Pongui playing the last level of the game, Rainbow Summit: gems, a key, vents, crumbling blocks and a rainbow bridge to the exit',
   'video.pause': 'Pause video',
@@ -71,9 +71,9 @@ export const en = {
   'footer.rights': 'All rights reserved.',
   'nav.worlds': 'Worlds',
   'nav.create': 'Create',
-  'worlds.title': '10 worlds, 100 levels, a new trick every time',
+  'worlds.title': '10 worlds, 100 levels, a boss at the end of each world',
   'worlds.text':
-    'Every world has its own look and two new mechanics, taught one level at a time. Pick a world to start playing.',
+    'Every world has its own look, two new mechanics taught one level at a time, and a boss waiting after its tenth level. Pick a world to start playing.',
   'create.title': 'Build your own levels',
   'create.text':
     'The level editor has every tile from the ten worlds. Paint a level, beat it and send it to your friends.',
@@ -96,6 +96,27 @@ export const en = {
   'faq.create.q': 'Can I make my own levels?',
   'faq.create.a':
     'Yes. On a computer, open “My levels” in the game menu and create one. Once you beat it you can share it as a link or a QR code, and anyone can play it on any device.',
+  'worlds.boss': 'Boss',
+  'bosses.title': 'Ten bosses, ten different fights',
+  'bosses.text':
+    'Beat the ten levels of a world and its boss shows up. Each one fights its own way, with its own music, and the next world opens when it goes down.',
+  'bosses.1.title': 'Read the warning',
+  'bosses.1.text':
+    'Every attack shows where it will land before it does. Nothing hits without notice.',
+  'bosses.2.title': 'Find the opening',
+  'bosses.2.text':
+    'A shield drops, arms pull back, a bridge appears: every boss has a moment when it can be hit.',
+  'bosses.3.title': 'Land on its head',
+  'bosses.3.text': 'Bounce on top of it. Touch it anywhere else and you lose a life.',
+  'bosses.pic.2': 'Comes up through the moss and brings the ceiling down.',
+  'bosses.pic.3': 'Calls lightning and blows you off the clouds.',
+  'bosses.pic.5': 'Grabs the ball: shake left and right to get loose.',
+  'bosses.pic.6': 'Charges across the snow, until it slips on its own ice.',
+  'bosses.pic.7': 'Its fire cracks the floor until there is none left.',
+  'bosses.pic.10': 'The last one. He brings back what all the others did.',
+  'faq.bosses.q': 'Are there bosses?',
+  'faq.bosses.a':
+    'Yes, one at the end of each world. Beat its ten levels and the boss appears; beat the boss and the next world opens. Bosses give no stars and the bot does not show how to beat them: they are for you to work out.',
   'world.1.text': 'Ramps, springs, fragile floors, fire to put out and walls to knock down.',
   'world.2.text': 'Find the key to open the locks, and land softly on moss.',
   'world.3.text': 'Jump up through the clouds and ride the updrafts.',

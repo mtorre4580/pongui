@@ -416,6 +416,11 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
   clip, and encodes small MP4 clips with JPEG posters (`pnpm media editor` records only that one).
 - World cards are static HTML (`data-world="N"`); their names come from the game's dictionary
   (`world.N`) and `tests/landing.test.ts` checks there is one card per world.
+- Bosses: every world card names its boss (`data-boss="N"`, filled from the game's `boss.N` like
+  the world names; the test checks them too), and the `#bosses` section shows six of them. Its
+  pictures (`public/landing/boss-N.jpg`, 640×416) are the phase captures `pnpm play:boss N`
+  saves in `docs/bosses/`, scaled down with ffmpeg: recorded from the real fight, like the rest
+  of the media. Only `.screen` figures that hold a video are wired as clips.
 - `VITE_SITE_URL` in `.env` feeds the canonical link, Open Graph tags, the `VideoGame` JSON-LD
   and the generated `robots.txt` and `sitemap.xml` (`siteFiles` in `vite.config.ts`).
 - The service worker is registered from `src/pwa.ts` with a URL resolved from the bundle, so both

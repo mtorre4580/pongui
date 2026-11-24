@@ -13,6 +13,10 @@ test('the landing page loads without errors and links to the game', async ({ pag
   const play = page.getByRole('link', { name: /Play now/ });
   await expect(play).toHaveAttribute('href', './play/');
   await expect(page.locator('#worlds .card')).toHaveCount(WORLD_COUNT);
+  // Every world's card names its boss, and the bosses have a section of their own
+  await expect(page.locator('#worlds .card-boss')).toHaveCount(WORLD_COUNT);
+  await expect(page.locator('#worlds .card').first()).toContainText('Boss: Grumble');
+  await expect(page.locator('#bosses img')).toHaveCount(6);
   expect(errors).toEqual([]);
 });
 
@@ -32,6 +36,8 @@ test('the language selector translates the page and is remembered', async ({ pag
     'A bola nunca para de quicar. Você decide onde ela cai.',
   );
   await expect(page.locator('#worlds .card').first()).toContainText('Vale Saltitante');
+  await expect(page.locator('#worlds .card').first()).toContainText('Chefe: Rabugento');
+  await expect(page.locator('#bosses h2')).toHaveText('Dez chefes, dez lutas diferentes');
   await page.reload();
   await expect(page.locator('html')).toHaveAttribute('lang', 'pt-BR');
 });

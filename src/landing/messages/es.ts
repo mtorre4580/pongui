@@ -3,7 +3,7 @@ import type { LandingMessages } from './en';
 export const es: LandingMessages = {
   'meta.title': 'Pongui · Un puzzle de rebotes para cualquier pantalla',
   'meta.description':
-    'Pongui es un juego gratis de puzzles con una pelota que rebota, con 100 niveles en 10 mundos: juntá todas las gemas, esquivá los pinchos y encontrá la salida. Se juega en el navegador de la compu, la tablet y el celular, se instala como una app, funciona sin conexión y te deja crear tus propios niveles.',
+    'Pongui es un juego gratis de puzzles con una pelota que rebota, con 100 niveles en 10 mundos y un jefe al final de cada uno: juntá todas las gemas, esquivá los pinchos, encontrá la salida y vencé al jefe. Se juega en el navegador de la compu, la tablet y el celular, se instala como una app, funciona sin conexión y te deja crear tus propios niveles.',
   skip: 'Saltar al contenido',
   'nav.label': 'Principal',
   'nav.how': 'Cómo se juega',
@@ -14,10 +14,11 @@ export const es: LandingMessages = {
   'hero.kicker': 'Un puzzle de rebotes',
   'hero.title': 'La pelota nunca deja de rebotar. Vos decidís dónde cae.',
   'hero.text':
-    'Guiá una pelota saltarina por 100 niveles de puzzle hechos a mano en 10 mundos: juntá todas las gemas, esquivá pinchos, volá con el viento, cruzá portales y encontrá la salida. Gratis, en tu navegador, en cualquier dispositivo.',
+    'Guiá una pelota saltarina por 100 niveles de puzzle hechos a mano en 10 mundos, cada uno con su jefe: juntá todas las gemas, esquivá pinchos, volá con el viento, cruzá portales y encontrá la salida. Gratis, en tu navegador, en cualquier dispositivo.',
   'hero.play': 'Jugá ahora, es gratis',
   'hero.install': 'Instalar la app',
-  'hero.meta': 'Sin registro · 100 niveles · Funciona sin conexión · English, Español, Português',
+  'hero.meta':
+    'Sin registro · 100 niveles · 10 jefes · Funciona sin conexión · English, Español, Português',
   'hero.video':
     'Pongui jugando el último nivel del juego, Cumbre Arcoíris: gemas, una llave, respiraderos, bloques que se desmoronan y un puente arcoíris hasta la salida',
   'video.pause': 'Pausar video',
@@ -71,9 +72,9 @@ export const es: LandingMessages = {
   'footer.rights': 'Todos los derechos reservados.',
   'nav.worlds': 'Mundos',
   'nav.create': 'Crear',
-  'worlds.title': '10 mundos, 100 niveles, un truco nuevo cada vez',
+  'worlds.title': '10 mundos, 100 niveles, un jefe al final de cada mundo',
   'worlds.text':
-    'Cada mundo tiene su propio estilo y dos mecánicas nuevas, que se enseñan de a un nivel. Elegí un mundo y empezá a jugar.',
+    'Cada mundo tiene su propio estilo, dos mecánicas nuevas que se enseñan de a un nivel, y un jefe que espera después del décimo. Elegí un mundo y empezá a jugar.',
   'create.title': 'Creá tus propios niveles',
   'create.text':
     'El editor de niveles tiene todas las piezas de los diez mundos. Pintá un nivel, pasalo y mandáselo a tus amigos.',
@@ -97,6 +98,26 @@ export const es: LandingMessages = {
   'faq.create.q': '¿Puedo crear mis propios niveles?',
   'faq.create.a':
     'Sí. En una computadora, abrí “Mis niveles” en el menú del juego y creá uno. Cuando lo pases vas a poder compartirlo como link o código QR, y cualquiera lo puede jugar en cualquier dispositivo.',
+  'worlds.boss': 'Jefe',
+  'bosses.title': 'Diez jefes, diez peleas distintas',
+  'bosses.text':
+    'Pasá los diez niveles de un mundo y aparece su jefe. Cada uno pelea a su manera, con su propia música, y el mundo siguiente se abre cuando cae.',
+  'bosses.1.title': 'Mirá el aviso',
+  'bosses.1.text': 'Cada ataque muestra dónde va a caer antes de caer. Nada pega sin avisar.',
+  'bosses.2.title': 'Encontrá el momento',
+  'bosses.2.text':
+    'Se apaga un escudo, se recogen los brazos, aparece un puente: cada jefe tiene un momento en que se le puede pegar.',
+  'bosses.3.title': 'Caele en la cabeza',
+  'bosses.3.text': 'Rebotale encima. Si lo tocás en cualquier otro lado, perdés una vida.',
+  'bosses.pic.2': 'Sale de entre el musgo y hace caer el techo.',
+  'bosses.pic.3': 'Llama rayos y te sopla de las nubes.',
+  'bosses.pic.5': 'Atrapa la pelota: sacudite a izquierda y derecha para soltarte.',
+  'bosses.pic.6': 'Embiste por la nieve, hasta que resbala en su propio hielo.',
+  'bosses.pic.7': 'Su fuego agrieta el piso hasta que no queda nada.',
+  'bosses.pic.10': 'El último. Trae de vuelta lo que hicieron todos los demás.',
+  'faq.bosses.q': '¿Hay jefes?',
+  'faq.bosses.a':
+    'Sí, uno al final de cada mundo. Pasá sus diez niveles y aparece el jefe; vencelo y se abre el mundo siguiente. Los jefes no dan estrellas y el bot no muestra cómo ganarles: son para que los descubras vos.',
   'world.1.text': 'Rampas, resortes, pisos frágiles, fuego para apagar y muros para derribar.',
   'world.2.text': 'Encontrá la llave para abrir los candados y aterrizá suave sobre el musgo.',
   'world.3.text': 'Saltá a través de las nubes y dejate llevar por el viento.',
