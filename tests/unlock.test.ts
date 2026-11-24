@@ -86,6 +86,23 @@ describe('worlds behind a boss', () => {
     expect(save.isUnlocked(last + 1, IDS)).toBe(true);
   });
 
+  it('records the last boss without opening anything past the last level', async () => {
+    const last = Math.max(...BOSS_WORLDS);
+    if (last < WORLD_COUNT) return;
+    const save = await withSave({
+      unlocked: IDS.length - 1,
+      sound: true,
+      levels: beaten(IDS.length),
+      bosses: BOSS_WORLDS.filter((n) => n < last),
+    });
+    expect(save.bossOpen(last, IDS)).toBe(true);
+    save.recordBossWin(last, IDS.length);
+    expect(save.bossBeaten(last)).toBe(true);
+    expect(save.loadSave().unlocked).toBe(IDS.length - 1);
+    // Every world has one by now
+    expect([...BOSS_WORLDS]).toEqual(Array.from({ length: WORLD_COUNT }, (_, i) => i + 1));
+  });
+
   // The same rules for every boss after the first
   for (const world of BOSS_WORLDS.filter((n) => n > 1 && n < WORLD_COUNT)) {
     const first = world * 10; // the first level of the world behind this boss

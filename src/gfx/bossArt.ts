@@ -454,6 +454,49 @@ const ART: Record<number, BossArt> = {
       g.fillTriangle(W * 0.8, eyeY - 10, W * 0.54, eyeY + 2, W * 0.76, eyeY + 10);
     },
   },
+  // King Prism: a cut crystal with a facet of every color, a gold crown and a stern face.
+  // 'eyes': only his eyes and the jewel of his crown, which show in the dark
+  10: {
+    top: 26,
+    side: 6,
+    glow: 'eyes',
+    draw(g, W, H, pose) {
+      const TOP = 26;
+      const eyeY = TOP + H * 0.42;
+      if (pose !== 'eyes') {
+        // The crystal: a long hexagon, one facet per color
+        const mid = W / 2;
+        const waist = TOP + H * 0.3;
+        const facets = [C.rainbow[0], C.rainbow[1], C.rainbow[2], C.rainbow[3], C.rainbow[4]];
+        g.fillStyle(0x3c2a6b, 1);
+        g.fillTriangle(0, waist, W, waist, mid, TOP + H);
+        g.fillTriangle(0, waist, W, waist, mid, TOP);
+        facets.forEach((color, i) => {
+          const x0 = (i * W) / facets.length;
+          const x1 = ((i + 1) * W) / facets.length;
+          g.fillStyle(color, 0.9);
+          g.fillTriangle(x0, waist, x1, waist, mid, TOP + H - 4);
+          g.fillStyle(color, 0.6);
+          g.fillTriangle(x0, waist, x1, waist, mid, TOP + 6);
+        });
+        g.fillStyle(C.white, 0.5).fillTriangle(W * 0.2, waist, W * 0.34, waist, mid, TOP + 8);
+        // The dark of his face
+        g.fillStyle(0x1b1235, 0.85).fillRoundedRect(W * 0.16, eyeY - 18, W * 0.68, 54, 14);
+        g.fillStyle(C.white, 1).fillRoundedRect(W * 0.34, eyeY + 20, W * 0.32, 6, 3);
+        // Crown
+        g.fillStyle(0xffd166, 1).fillRect(W * 0.22, TOP - 4, W * 0.56, 14);
+        for (let i = 0; i < 3; i++) {
+          const x = W * 0.22 + i * W * 0.187;
+          g.fillTriangle(x, TOP - 4, x + W * 0.187, TOP - 4, x + W * 0.093, 0);
+        }
+      }
+      // Eyes, and the jewel of the crown
+      g.fillStyle(C.white, 1);
+      g.fillTriangle(W * 0.22, eyeY - 8, W * 0.44, eyeY + 2, W * 0.24, eyeY + 10);
+      g.fillTriangle(W * 0.78, eyeY - 8, W * 0.56, eyeY + 2, W * 0.76, eyeY + 10);
+      g.fillStyle(0xff5964, 1).fillCircle(W / 2, TOP + 3, 6);
+    },
+  },
 };
 
 /** A round shot: a ball of one color with a lighter core. */
@@ -549,6 +592,8 @@ const WARNS: Record<string, WarnArt> = {
   beam: { color: 0x80ffdb },
   tractor: { color: 0x80ffdb },
   eyes: { color: 0x7d6bb0, shape: 'spot' },
+  hole: { color: 0xff5964 },
+  fade: { color: 0xffffff },
   'gust-left': { color: 0xffffff, shape: 'wind', dir: -1, soft: true },
   'gust-right': { color: 0xffffff, shape: 'wind', dir: 1, soft: true },
   'blow-left': { color: 0xffffff, shape: 'wind', dir: -1 },

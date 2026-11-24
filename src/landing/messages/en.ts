@@ -89,6 +89,7 @@ export const en = {
   'devices.native':
     'The iPhone and Android apps are still in development. Meanwhile, play in your browser on any computer, tablet or phone, or install the game from the browser: it works just like an app.',
   'feat.editor': 'Level editor, with sharing by link and QR code',
+  'feat.bosses': 'A boss at the end of every world, each with its own music',
   'faq.stores.q': 'Is there an app in the App Store or Google Play?',
   'faq.stores.a':
     'Not yet: the iPhone and Android apps are in development. Until then, install the game from your browser. It works the same, even offline.',

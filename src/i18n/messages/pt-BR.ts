@@ -54,6 +54,7 @@ export const ptBR: Messages = {
   'boss.7': 'Brasa',
   'boss.8': 'Órbita',
   'boss.9': 'Sombra',
+  'boss.10': 'Rei Prisma',
   'select.boss': 'Chefe: {name}',
   'select.bossLocked': 'Termine as dez fases para enfrentar o chefe',
   'select.lockedBoss': 'Vença o chefe do mundo {n} para abrir este',
@@ -74,9 +75,12 @@ export const ptBR: Messages = {
     'Fique longe dos orbes. Quando ele descer, fique fora do raio e quique alto para cair na cúpula dele.',
   'game.bossHint.9':
     'Os olhos dela brilham onde vai aparecer. Espere no bloco de cima: quando ele abrir, você cai na cabeça dela!',
+  'game.bossHint.10':
+    'Aguente cada um dos ataques dele. Quando a ponte arco-íris aparecer, suba e caia na coroa dele!',
   'overlay.toBoss': 'Enfrentar o chefe',
   'overlay.bossDown': 'Chefe derrotado!',
   'overlay.bossDownText': 'O mundo {n} foi aberto.',
+  'overlay.bossFinal': 'Era o último. Você zerou o Pongui!',
   'overlay.fightAgain': 'Lutar de novo',
   'menu.daily': 'Fase do dia',
   'menu.dailyDone': 'Fase do dia ✓',

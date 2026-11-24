@@ -8,6 +8,7 @@ import type { Serpent } from './w2-serpstone';
 import type { Giant } from './w6-flurry';
 import type { Saucer } from './w8-orbit';
 import type { Specter } from './w9-gloom';
+import type { King } from './w10-prism';
 import type { InputState } from '../game/physics';
 
 /** What the script wants held right now (`jumpPressed` is left to whoever presses the keys). */
@@ -356,6 +357,44 @@ const gloom: BossScript = () => (f) => {
   return { jump: solid, ...steer(s.x, boss.x + side * 52) };
 };
 
+/**
+ * King Prism: through each wave, hop on the left side away from what is about to land and
+ * from the floor that is about to open, shaking loose if caught. When the bridge appears,
+ * bounce high from the floor beside it onto it, and from its inner end onto his crown.
+ */
+const prism: BossScript = () => {
+  const hop = hopper((f, x) => {
+    const s = f.world.s;
+    const col = Math.floor(x / 32);
+    const gone = s.tiles[11 * 20 + col] !== 1;
+    const marked = f.warns.some(
+      (w) => w.kind === 'hole' && Math.floor(w.x / 32) === col && w.left < 0.7,
+    );
+    const falling = [...f.warns, ...f.shots].some(
+      (w) => (w.kind === 'fire' || w.kind === 'bolt') && Math.abs(w.x - x) < 28,
+    );
+    // Not under him, and off the wall
+    const out = x < 50 || x > 262 ? 1e4 : 0;
+    return (gone || marked ? 1e6 : 0) + (falling ? 1e5 : 0) + out;
+  });
+  return (f) => {
+    const s = f.world.s;
+    const { boss } = f;
+    const beat = Math.floor(s.time * 5) % 2 === 0;
+    if (f.grab) return { jump: false, left: beat, right: !beat };
+    const top = 8 * 32; // the top of the bridge (its left half goes from x = 128 to x = 256)
+    const bottom = s.y + BALL_R;
+    const bridge = (f.brain as King).mode === 'bridge' && !f.dazed;
+    if (!bridge) return { jump: false, ...hop(f, 108) };
+    if (canStomp(f)) return { jump: false, ...steer(s.x, boss.x) };
+    // On the bridge: to its inner end, and up
+    if (bottom <= top + 1 && s.x > 120 && s.x < 264) return { jump: true, ...steer(s.x, 246) };
+    // Over its top: onto it. Otherwise a high bounce from the floor beside it
+    if (bottom < top - 2) return { jump: true, ...steer(s.x, 170) };
+    return { jump: true, ...steer(s.x, 108) };
+  };
+};
+
 export const SCRIPTS: Record<number, BossScript> = {
   1: grumble,
   2: serpstone,
@@ -366,4 +405,5 @@ export const SCRIPTS: Record<number, BossScript> = {
   7: cinder,
   8: orbit,
   9: gloom,
+  10: prism,
 };

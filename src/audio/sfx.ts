@@ -298,4 +298,10 @@ const BOSS_FX: Record<string, (() => void) | undefined> = {
     noise(0.3, 0.25, 400, 0.6, 0, 'lowpass');
     tone(110, 220, 0.3, 'triangle', 0.14);
   },
+  // King Prism: the bridge appearing and about to go, and the floor about to open
+  bridge: () =>
+    [523, 659, 784, 1046, 1318].forEach((f, i) => tone(f, f, 0.2, 'triangle', 0.1, i * 0.06)),
+  'warn-fade': () =>
+    [1046, 784, 523].forEach((f, i) => tone(f, f, 0.14, 'triangle', 0.08, i * 0.12)),
+  'warn-hole': () => noise(0.4, 0.3, 180, 1, 0, 'lowpass'),
 };

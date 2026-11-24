@@ -90,6 +90,7 @@ export const es: LandingMessages = {
   'devices.native':
     'Las apps para iPhone y Android todavía están en desarrollo. Mientras tanto, jugá en el navegador de cualquier compu, tablet o celular, o instalá el juego desde el navegador: funciona igual que una app.',
   'feat.editor': 'Editor de niveles, para compartir por link y código QR',
+  'feat.bosses': 'Un jefe al final de cada mundo, cada uno con su música',
   'faq.stores.q': '¿Hay una app en el App Store o en Google Play?',
   'faq.stores.a':
     'Todavía no: las apps para iPhone y Android están en desarrollo. Hasta entonces, instalá el juego desde tu navegador. Funciona igual, incluso sin conexión.',

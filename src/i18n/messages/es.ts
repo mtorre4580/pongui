@@ -55,6 +55,7 @@ export const es: Messages = {
   'boss.7': 'Brasa',
   'boss.8': 'Órbita',
   'boss.9': 'Sombra',
+  'boss.10': 'Rey Prisma',
   'select.boss': 'Jefe: {name}',
   'select.bossLocked': 'Terminá los diez niveles para enfrentar al jefe',
   'select.lockedBoss': 'Vencé al jefe del mundo {n} para abrir este',
@@ -76,9 +77,12 @@ export const es: Messages = {
     'Alejate de sus orbes. Cuando baje, quedate fuera del rayo y rebotá alto para caerle en la cúpula.',
   'game.bossHint.9':
     'Sus ojos brillan donde va a aparecer. Esperá en el bloque de arriba: cuando se abra, ¡le caés en la cabeza!',
+  'game.bossHint.10':
+    'Aguantá cada uno de sus ataques. Cuando aparezca el puente arcoíris, ¡subí y caele en la corona!',
   'overlay.toBoss': 'Enfrentar al jefe',
   'overlay.bossDown': '¡Jefe derrotado!',
   'overlay.bossDownText': 'Se abrió el mundo {n}.',
+  'overlay.bossFinal': 'Era el último. ¡Terminaste Pongui!',
   'overlay.fightAgain': 'Pelear de nuevo',
   'menu.daily': 'Nivel del día',
   'menu.dailyDone': 'Nivel del día ✓',
