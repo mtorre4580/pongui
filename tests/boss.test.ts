@@ -8,6 +8,7 @@ import { SWITCH, type Robot } from '../src/bosses/w4-sprocket';
 import type { Octopus } from '../src/bosses/w5-inkwell';
 import { LEDGES, type Giant } from '../src/bosses/w6-flurry';
 import type { Dragon } from '../src/bosses/w7-cinder';
+import type { Saucer } from '../src/bosses/w8-orbit';
 import { BossFight, MIN_WARN, seeded, type BossBrain, type BossDef } from '../src/game/boss';
 import { BALL_R, COLS, STEP, TILE, V_LOW } from '../src/game/constants';
 import { World, type InputState } from '../src/game/physics';
@@ -1028,6 +1029,162 @@ describe('Cinder (world 7)', () => {
     expect(head).toBeLessThan(3 * TILE + 115);
     // And its turns stop short of a ball standing on a ledge
     expect(def.minX - def.width / 2).toBeGreaterThan(4 * TILE + BALL_R);
+  });
+});
+
+describe('Orbit (world 8)', () => {
+  const { def } = BOSSES[8];
+  const brain = (f: BossFight) => f.brain as Saucer;
+  const FAR = { x: 560, y: 300 };
+  /** Steps until the saucer is in `mode`, with the ball kept at `at` and no orbs let out. */
+  const until = (
+    f: BossFight,
+    mode: Saucer['mode'],
+    at?: { x: number; y: number },
+    seconds = 15,
+  ) => {
+    const all = [];
+    for (
+      let i = 0;
+      i < seconds / STEP && brain(f).mode !== mode && f.world.s.status === 'playing';
+      i++
+    ) {
+      if (at) Object.assign(f.world.s, { ...at, vx: 0, vy: 0 });
+      brain(f).orb = 9;
+      all.push(...f.step(STEP, idle).boss);
+    }
+    return all;
+  };
+
+  it('cannot be touched while it hovers, and follows the ball', () => {
+    const { f, s } = fightOf(8);
+    expect(f.boss.away).toBe(true);
+    let highest = Infinity;
+    for (let i = 0; i < 3.5 / STEP; i++) {
+      brain(f).orb = 9;
+      f.step(STEP, { ...idle, jump: true, right: s.x < 420 });
+      highest = Math.min(highest, s.y - BALL_R);
+    }
+    // In low gravity the ball bounces right through where it hovers: nothing happens
+    expect(highest).toBeLessThan(def.floorY - def.high);
+    expect(s.status).toBe('playing');
+    expect(f.boss.hp).toBe(def.hp);
+    expect(Math.abs(f.boss.x - s.x)).toBeLessThan(40);
+  });
+
+  it('lets out orbs that chase the ball slowly: announced, deadly, and they burn out', () => {
+    const still = fightOf(8);
+    const events = [];
+    for (let i = 0; i < 12 / STEP && still.s.status === 'playing'; i++) {
+      brain(still.f).t = 9; // no beam meanwhile
+      events.push(...still.f.step(STEP, idle).boss);
+    }
+    expect(events).toContainEqual(expect.objectContaining({ type: 'boss-warn', kind: 'orb' }));
+    expect(still.s.status).toBe('dead');
+    // Walking away from it, off the walls: it never catches up, and it goes out
+    const away = fightOf(8);
+    let out = false;
+    let dir = 1;
+    for (let i = 0; i < 12 / STEP && !out && away.s.status === 'playing'; i++) {
+      brain(away.f).t = 9;
+      const orb = away.f.shots[0];
+      if (orb && Math.abs(orb.x - away.s.x) < 70) dir = away.s.x > orb.x ? 1 : -1;
+      if (away.s.x > 520) dir = -1;
+      if (away.s.x < 120) dir = 1;
+      if (orb) brain(away.f).orb = 9;
+      out = away.f
+        .step(STEP, { ...idle, left: dir < 0, right: dir > 0 })
+        .boss.some((e) => e.type === 'boss-shot-end' && e.why === 'time');
+    }
+    expect(out).toBe(true);
+    expect(away.s.status).toBe('playing');
+    expect(Math.max(...def.orbSpeed)).toBeLessThan(160 / 2);
+  });
+
+  it('lights the beam column up while it comes down, and puts its orbs out', () => {
+    const { f, s } = fightOf(8);
+    const events = until(f, 'aim', FAR);
+    expect(events).toContainEqual(expect.objectContaining({ type: 'boss-warn', kind: 'beam' }));
+    const x = f.boss.x;
+    const t0 = s.time;
+    f.shoot({ kind: 'orb', x: 100, y: 100, life: 9, wall: 'pass' });
+    until(f, 'beam', FAR);
+    expect(s.time - t0).toBeGreaterThanOrEqual(def.beamWarn[0] - 2 * STEP);
+    expect(f.boss.x).toBe(x);
+    expect(f.boss.lift).toBe(def.low);
+    expect(f.boss.away).toBe(false);
+    expect(f.shots).toHaveLength(0);
+    // Left alone it goes back up after a while
+    until(f, 'hover', FAR);
+    expect(f.boss.lift).toBe(def.high);
+    expect(f.boss.away).toBe(true);
+    expect(s.time - t0).toBeGreaterThan(def.beamWarn[0] + def.beam[0]);
+  });
+
+  it('catches a ball under the beam and pulls it up, unless it shakes loose', () => {
+    const lost = fightOf(8);
+    until(lost.f, 'beam', FAR);
+    Object.assign(lost.s, { x: lost.f.boss.x, y: 320, vx: 0, vy: 0 });
+    const caught = [];
+    for (let i = 0; i < 0.1 / STEP; i++) caught.push(...lost.f.step(STEP, idle).boss);
+    expect(caught).toContainEqual({ type: 'boss-grab' });
+    for (let i = 0; i < 8 / STEP && lost.s.status === 'playing'; i++)
+      lost.f.step(STEP, { ...idle, right: true });
+    expect(lost.s.status).toBe('dead');
+    // Shaking: let go, and the saucer hangs there with its beam off
+    const free = fightOf(8);
+    until(free.f, 'beam', FAR);
+    Object.assign(free.s, { x: free.f.boss.x, y: 320, vx: 0, vy: 0 });
+    for (let i = 0; i < 4 / STEP && brain(free.f).mode !== 'stall'; i++) {
+      const right = Math.floor(i / 24) % 2 === 1; // five changes a second
+      free.f.step(STEP, { ...idle, left: !right, right });
+    }
+    expect(brain(free.f).mode).toBe('stall');
+    expect(free.f.grab).toBeNull();
+    expect(free.f.warns.some((w) => w.kind === 'tractor')).toBe(false);
+    // Under it now, nothing catches the ball
+    for (let i = 0; i < 0.5 / STEP; i++) free.f.step(STEP, idle);
+    expect(free.f.grab).toBeNull();
+    expect(free.s.status).toBe('playing');
+  });
+
+  it('is hit while it is down by a high bounce from beside the beam', () => {
+    const { f, s } = fightOf(8);
+    until(f, 'beam', FAR);
+    Object.assign(s, { x: f.boss.x - 62, y: def.floorY - BALL_R - 1, vx: 0, vy: 100 });
+    let hit = false;
+    for (let i = 0; i < def.beam[0] / STEP && !hit && s.status === 'playing'; i++) {
+      const over = s.y + BALL_R < f.box[1] - 2;
+      hit = f
+        .step(STEP, { ...idle, jump: true, right: over && s.x < f.boss.x })
+        .boss.some((e) => e.type === 'boss-hit');
+    }
+    expect(hit).toBe(true);
+    // A low bounce there never gets over its dome
+    expect(def.low + def.height).toBeGreaterThan(113 + 8);
+  });
+
+  it('throws the ball back off the bumpers on its walls', () => {
+    const { f, s } = fightOf(8);
+    let bumped = false;
+    for (let i = 0; i < 4 / STEP && !bumped; i++) {
+      brain(f).orb = 9;
+      brain(f).t = 9;
+      bumped = f.step(STEP, { ...idle, right: true }).events.some((e) => e.type === 'bump');
+    }
+    expect(bumped).toBe(true);
+    expect(s.vx).toBeLessThan(-200);
+  });
+
+  it('lets out more orbs and leaves less time with each phase', () => {
+    for (const up of [def.orbs, def.orbSpeed, def.shakes])
+      expect([...up]).toEqual([...up].sort((a, b) => a - b));
+    for (const down of [def.hover, def.orbEvery, def.beamWarn, def.beam])
+      expect([...down]).toEqual([...down].sort((a, b) => b - a));
+    expect(Math.min(...def.beamWarn, def.orbWarn)).toBeGreaterThanOrEqual(MIN_WARN);
+    // At four changes of direction a second, a ball caught on the floor gets loose in time
+    const reach = (def.low - 2 * BALL_R) / def.pull;
+    def.shakes.forEach((n) => expect(n / 4).toBeLessThan(reach));
   });
 });
 

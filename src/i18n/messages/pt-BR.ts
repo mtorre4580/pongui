@@ -52,6 +52,7 @@ export const ptBR: Messages = {
   'boss.5': 'Tinta',
   'boss.6': 'Nevasca',
   'boss.7': 'Brasa',
+  'boss.8': 'Órbita',
   'select.boss': 'Chefe: {name}',
   'select.bossLocked': 'Termine as dez fases para enfrentar o chefe',
   'select.lockedBoss': 'Vença o chefe do mundo {n} para abrir este',
@@ -68,6 +69,8 @@ export const ptBR: Messages = {
     'As bolas de neve dele deixam gelo. Espere numa plataforma quando ele avançar: se escorregar, caia na cabeça dele!',
   'game.bossHint.7':
     'O fogo dele racha a rocha: o que rachou aguenta um quique só. De uma plataforma, quique alto e caia na cabeça dele!',
+  'game.bossHint.8':
+    'Fique longe dos orbes. Quando ele descer, fique fora do raio e quique alto para cair na cúpula dele.',
   'overlay.toBoss': 'Enfrentar o chefe',
   'overlay.bossDown': 'Chefe derrotado!',
   'overlay.bossDownText': 'O mundo {n} foi aberto.',

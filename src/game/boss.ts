@@ -45,7 +45,7 @@ export interface BossState {
   hold: boolean;
   /** Seconds since its last hop (or since the phase began). */
   sinceHop: number;
-  /** Not there at all: nothing touches it. */
+  /** Not there at all: nothing touches it (and it is not drawn, or only faintly). */
   away: boolean;
   /** Shielded: landing on its head is a bounce, not a hit (its sides still kill). */
   armor: boolean;
