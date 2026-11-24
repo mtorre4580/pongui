@@ -280,7 +280,8 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
     never put on the ball: toggle blocks wait for it to leave, anything else is refused.
   - `seize(x, y, need)`: grabs the ball; it goes where `fight.grab` goes until the player
     changes direction `need` times. A grabbed ball is out of reach of shots.
-  - `setDark(on)`: the veil of the dark levels, over a boss fight.
+  - `setDark(on)`: the veil of the dark levels, over a boss fight. `flipSwitch()`: flips the
+    A/B blocks like a bounce on a switch.
   - `world.s.drift`: a sideways push on the ball (a gust), in px/s on top of its own speed.
   - `boss.away` (not there), `boss.armor` (its head bounces without a hit), `boss.spiked`
     (deadly from above too, e.g. while it bursts out of the ground), `boss.alpha` and
@@ -312,6 +313,12 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
      Lightning strikes the ball's column after it lights up (1, 2, then 3 columns); from the
      second phase gusts push the ball sideways. Ride an updraft to a cloud and walk off its
      edge onto the bird; after a hit it flees to its far turn.
+  4. **Sprocket** (4 hits): a robot behind a shield, in a lane the ball should stay out of
+     (screws fly along its floor and stop at the step; pushers throw the ball at the robot).
+     Gears come straight down on the ball's spot, so the step is no place to wait. The switch
+     turns the shield off (the robot stands still, short-circuited) and closes the bridge of A
+     blocks to its head, for 6 to 4.5 s. After a hit the shield is back at once, the bridge
+     opens 2.4 s later, and the switch is locked away (a plain block) for 2.5 to 4 s.
 - To add one: `src/bosses/wN-name.ts` (brain, `BossDef`, arena, theme) and its entry in
   `BOSSES`; its world in `BOSS_WORLDS`; its art in `gfx/bossArt.ts` and sounds in `sfx.ts`;
   `boss.N` and `game.bossHint.N` in the three languages; its script in `bosses/scripts.ts`;

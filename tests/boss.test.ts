@@ -4,6 +4,7 @@ import { SCRIPTS } from '../src/bosses/scripts';
 import { arena } from '../src/bosses/types';
 import type { Serpent } from '../src/bosses/w2-serpstone';
 import type { Bird } from '../src/bosses/w3-squall';
+import { SWITCH, type Robot } from '../src/bosses/w4-sprocket';
 import { BossFight, MIN_WARN, seeded, type BossBrain, type BossDef } from '../src/game/boss';
 import { BALL_R, COLS, STEP, TILE, V_LOW } from '../src/game/constants';
 import { World, type InputState } from '../src/game/physics';
@@ -465,6 +466,147 @@ describe('Squall (world 3)', () => {
       gusty.f.step(STEP, idle);
     }
     expect(s.drift).toBe(0);
+  });
+});
+
+describe('Sprocket (world 4)', () => {
+  const { def } = BOSSES[4];
+  const brain = (f: BossFight) => f.brain as Robot;
+  const STEP_TOP = 10 * TILE;
+  /** Brings the switch back and puts the ball on it: the next step is a bounce that flips it. */
+  const onSwitch = (f: BossFight) => {
+    brain(f).lock = STEP / 2;
+    f.step(STEP, idle);
+    expect(f.world.s.tiles[SWITCH]).toBe(T.SWITCH);
+    Object.assign(f.world.s, { x: 5 * TILE + 16, y: STEP_TOP - BALL_R - 1, vx: 0, vy: 200 });
+  };
+
+  it('locks the switch away at first and after every time its shield comes back', () => {
+    const { f, s, run } = fightOf(4);
+    f.step(STEP, idle);
+    expect(s.tiles[SWITCH]).toBe(T.SOLID);
+    const events = run(def.lock[0] + 0.5, () => s.tiles[SWITCH] === T.SWITCH, { x: 100, y: 200 });
+    expect(s.tiles[SWITCH]).toBe(T.SWITCH);
+    expect(events).toContainEqual({ type: 'boss-tiles', idxs: [SWITCH] });
+    expect(s.time).toBeGreaterThan(def.lock[0] - 0.1);
+  });
+
+  it('is shielded: a ball landing on its head bounces off', () => {
+    const { f, s } = fightOf(4);
+    expect(f.boss.armor).toBe(true);
+    Object.assign(s, { x: f.boss.x, y: f.box[1] - BALL_R - 1, vy: 300 });
+    expect(f.step(STEP, idle).boss).toContainEqual({ type: 'boss-bonk' });
+    expect(f.boss.hp).toBe(def.hp);
+    expect(s.status).toBe('playing');
+  });
+
+  it('loses its shield to the switch, stands still, and gets it back after a warning', () => {
+    const { f, s } = fightOf(4);
+    f.shoot({ kind: 'screw', x: 400, y: 340, vx: -100 });
+    onSwitch(f);
+    const events = [];
+    for (let i = 0; i < 0.1 / STEP; i++) events.push(...f.step(STEP, idle).boss);
+    expect(f.world.s.switchOn).toBe(true);
+    expect(f.boss.armor).toBe(false);
+    expect(events).toContainEqual(expect.objectContaining({ type: 'boss-fx', name: 'shield-off' }));
+    // What it had fired is gone, and it neither walks nor attacks meanwhile
+    expect(f.shots).toHaveLength(0);
+    const x0 = f.boss.x;
+    const t0 = s.time;
+    const during = [];
+    let warned = -1;
+    for (let i = 0; i < 10 / STEP && !f.boss.armor; i++) {
+      Object.assign(s, { x: 100, y: 200, vx: 0, vy: 0 });
+      const now = f.step(STEP, idle).boss;
+      if (warned < 0 && now.some((e) => e.type === 'boss-warn' && e.kind === 'shield'))
+        warned = s.time;
+      during.push(...now);
+    }
+    expect(f.boss.x).toBe(x0);
+    expect(during.some((e) => e.type === 'boss-shot')).toBe(false);
+    expect(s.time - t0).toBeGreaterThan(def.open[0] - 0.2);
+    // The shield flickers before it is back, and the switch goes off with it
+    expect(s.time - warned).toBeGreaterThanOrEqual(MIN_WARN - STEP);
+    expect(f.world.s.switchOn).toBe(false);
+  });
+
+  it('closes the bridge with the switch: the way to its head', () => {
+    const { f, s } = fightOf(4);
+    const bridge = 8 * COLS + 9;
+    expect(f.world.isOpen(T.BLOCK_A, bridge)).toBe(true);
+    onSwitch(f);
+    f.step(STEP, idle);
+    expect(f.world.isOpen(T.BLOCK_A, bridge)).toBe(false);
+    // From the end of the bridge, a drop on its head
+    Object.assign(s, { x: 400, y: 8 * TILE - BALL_R - 1, vx: 0, vy: 0 });
+    let hit = false;
+    for (let i = 0; i < 2 / STEP && !hit && s.status === 'playing'; i++)
+      hit = f
+        .step(STEP, { ...idle, right: s.x < f.boss.x - 3 })
+        .boss.some((e) => e.type === 'boss-hit');
+    expect(hit).toBe(true);
+    // Hit, its shield is back as soon as it wakes; the bridge stays a little longer
+    for (let i = 0; i < 3 / STEP && f.dazed; i++) f.step(STEP, { ...idle, left: s.x > 380 });
+    expect(f.boss.armor).toBe(true);
+    expect(f.world.isOpen(T.BLOCK_A, bridge)).toBe(false);
+    for (let i = 0; i < (def.reopen + 0.2) / STEP; i++) f.step(STEP, { ...idle, left: s.x > 150 });
+    expect(f.world.isOpen(T.BLOCK_A, bridge)).toBe(true);
+    expect(s.status).toBe('playing');
+  });
+
+  it('fires screws along the lane after a warning: deadly there, stopped by the step', () => {
+    const lane = fightOf(4);
+    brain(lane.f).gear = 99;
+    const events = [];
+    for (let i = 0; i < 10 / STEP && lane.s.status === 'playing'; i++) {
+      // Kept on the floor of the lane, where the screws fly
+      Object.assign(lane.s, { x: 250, y: def.floorY - BALL_R, vx: 0, vy: 0 });
+      brain(lane.f).gear = 99;
+      events.push(...lane.f.step(STEP, idle).boss);
+    }
+    expect(events).toContainEqual(expect.objectContaining({ type: 'boss-warn', kind: 'screw' }));
+    expect(lane.s.status).toBe('dead');
+    // On the step they never arrive
+    const step = fightOf(4);
+    const ends = [];
+    for (let i = 0; i < 10 / STEP && step.s.status === 'playing'; i++) {
+      brain(step.f).gear = 99;
+      ends.push(...step.f.step(STEP, idle).boss.filter((e) => e.type === 'boss-shot-end'));
+    }
+    expect(step.s.status).toBe('playing');
+    expect(ends.length).toBeGreaterThan(0);
+    ends.forEach((e) => expect(e).toMatchObject({ kind: 'screw', why: 'wall' }));
+  });
+
+  it('lobs a gear at where the ball is: deadly to wait for, easy to step away from', () => {
+    const still = fightOf(4);
+    const events = still.run(12);
+    expect(events).toContainEqual(expect.objectContaining({ type: 'boss-warn', kind: 'gear' }));
+    expect(still.s.status).toBe('dead');
+    const moved = fightOf(4);
+    const x0 = moved.s.x;
+    let landed = false;
+    for (let i = 0; i < 12 / STEP && !landed && moved.s.status === 'playing'; i++) {
+      const busy =
+        moved.f.warns.some((w) => w.kind === 'gear') ||
+        moved.f.shots.some((g) => g.kind === 'gear');
+      const goal = busy ? x0 + 60 : x0;
+      landed = moved.f
+        .step(STEP, { ...idle, left: moved.s.x > goal + 3, right: moved.s.x < goal - 3 })
+        .boss.some((e) => e.type === 'boss-shot-end' && e.kind === 'gear');
+    }
+    expect(landed).toBe(true);
+    expect(moved.s.status).toBe('playing');
+  });
+
+  it('gives less time and throws more with each phase', () => {
+    for (const list of [def.open, def.boltEvery, def.gearEvery]) {
+      expect(list).toHaveLength(def.hp);
+      expect([...list]).toEqual([...list].sort((a, b) => b - a));
+    }
+    expect(def.boltCount[3]).toBeGreaterThan(def.boltCount[0]);
+    expect(def.gearCount[3]).toBeGreaterThan(def.gearCount[0]);
+    expect(Math.min(def.boltWarn, def.gearWarn)).toBeGreaterThanOrEqual(MIN_WARN);
   });
 });
 

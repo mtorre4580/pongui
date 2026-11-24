@@ -161,6 +161,44 @@ const ART: Record<number, BossArt> = {
       );
     },
   },
+  // Sprocket: a bronze robot with an antenna and a grille mouth, under a dome of light while
+  // its shield is on ('open': no dome, its eyes dim)
+  4: {
+    top: 20,
+    side: 14,
+    draw(g, W, H, pose) {
+      const TOP = 20;
+      const metal = { body: 0xc98a4b, dark: 0x8a5a2b, light: 0xf0c08a, steel: 0x5b6b82 };
+      // Antenna
+      g.fillStyle(metal.steel, 1).fillRect(W / 2 - 3, 4, 6, TOP);
+      g.fillStyle(pose === 'open' ? 0x8d99ae : 0xff5964, 1).fillCircle(W / 2, 6, 6);
+      // Treads
+      g.fillStyle(metal.steel, 1).fillRoundedRect(4, TOP + H - 22, W - 8, 22, 10);
+      g.fillStyle(C.ink, 1);
+      for (let x = 14; x < W - 10; x += 18) g.fillCircle(x, TOP + H - 11, 5);
+      // Body
+      g.fillStyle(metal.dark, 1).fillRoundedRect(0, TOP, W, H - 14, 12);
+      g.fillStyle(metal.body, 1).fillRoundedRect(0, TOP, W, H - 22, 12);
+      g.fillStyle(metal.light, 1).fillRoundedRect(6, TOP + 5, W - 12, 10, 5);
+      // Rivets
+      g.fillStyle(metal.dark, 1);
+      for (const x of [10, W - 10]) for (const y of [TOP + 26, TOP + H - 34]) g.fillCircle(x, y, 4);
+      // A visor with two eyes
+      const eyeY = TOP + H * 0.36;
+      g.fillStyle(C.ink, 1).fillRoundedRect(W * 0.14, eyeY - 14, W * 0.72, 28, 10);
+      g.fillStyle(pose === 'open' ? 0x8d99ae : 0x7ae7ff, 1)
+        .fillCircle(W * 0.34, eyeY, 8)
+        .fillCircle(W * 0.66, eyeY, 8);
+      // Grille mouth
+      g.fillStyle(C.ink, 1).fillRoundedRect(W * 0.26, TOP + H * 0.58, W * 0.48, 16, 4);
+      g.fillStyle(metal.light, 1);
+      for (let i = 0; i < 4; i++) g.fillRect(W * 0.3 + i * W * 0.11, TOP + H * 0.58 + 3, 5, 10);
+      if (pose === 'open') return;
+      // The shield: a dome of light around it
+      g.lineStyle(6, 0x7ae7ff, 0.9).strokeRoundedRect(-11, 3, W + 22, H + TOP - 6, 34);
+      g.fillStyle(0x7ae7ff, 0.18).fillRoundedRect(-11, 3, W + 22, H + TOP - 6, 34);
+    },
+  },
 };
 
 /** What bosses throw, by the shot's kind. */
@@ -189,6 +227,26 @@ const SHOTS: Record<string, ShotArt> = {
       }
     },
   },
+  // A screw flying point first, and a spinning gear
+  screw: {
+    draw(g, w, h) {
+      g.fillStyle(0x5b6b82, 1).fillRect(w * 0.3, h * 0.25, w * 0.7, h * 0.5);
+      g.fillStyle(0xd9e2ec, 1).fillTriangle(0, h / 2, w * 0.34, 0, w * 0.34, h);
+      g.fillStyle(0x8d99ae, 1);
+      for (let x = w * 0.45; x < w; x += 8) g.fillRect(x, h * 0.25, 3, h * 0.5);
+    },
+  },
+  gear: {
+    draw(g, w, h) {
+      g.fillStyle(0x8a5a2b, 1);
+      for (let i = 0; i < 8; i++) {
+        const a = (i * Math.PI) / 4;
+        g.fillCircle(w / 2 + Math.cos(a) * w * 0.4, h / 2 + Math.sin(a) * h * 0.4, w * 0.12);
+      }
+      g.fillStyle(0xc98a4b, 1).fillCircle(w / 2, h / 2, w * 0.38);
+      g.fillStyle(0x23285a, 1).fillCircle(w / 2, h / 2, w * 0.14);
+    },
+  },
 };
 
 /** The color (and shape) of each kind of warning. */
@@ -196,6 +254,9 @@ const WARNS: Record<string, WarnArt> = {
   burrow: { color: 0xffd166, shape: 'spot' },
   stalactite: { color: 0xcdb8ff },
   bolt: { color: 0xffe66d },
+  screw: { color: 0xff5964 },
+  gear: { color: 0xffb703, shape: 'spot' },
+  shield: { color: 0x7ae7ff },
   'gust-left': { color: 0xffffff, shape: 'wind', dir: -1, soft: true },
   'gust-right': { color: 0xffffff, shape: 'wind', dir: 1, soft: true },
   'blow-left': { color: 0xffffff, shape: 'wind', dir: -1 },
