@@ -18,6 +18,7 @@ interface Report {
   status: string;
   lives: number;
   time: number;
+  busy: boolean;
 }
 
 mkdirSync(out, { recursive: true });
@@ -42,6 +43,9 @@ for (let attempt = 1; attempt <= tries && !won; attempt++) {
   const held = { left: false, right: false, jump: false };
   let hp = -1;
   let lives = -1;
+  let since = 0;
+  let busyAt = -1;
+  const taken = new Set<number>();
   const t0 = Date.now();
   while (Date.now() - t0 < 240_000) {
     const r = await page.evaluate(
@@ -59,12 +63,21 @@ for (let attempt = 1; attempt <= tries && !won; attempt++) {
     }
     def = Math.max(def, r.hp);
     if (r.keys && (r.hp !== hp || r.lives !== lives) && r.time > 0.3) {
-      if (r.hp !== hp) await shot(`phase-${def - r.hp + 1}`);
       hp = r.hp;
       lives = r.lives;
+      since = r.time;
       console.log(
         `attempt ${attempt}: ${r.time.toFixed(1)} s, hits left ${r.hp}, lives ${r.lives}`,
       );
+    }
+    // One picture per phase: a moment after the boss is in sight with an attack under way (or a few seconds in, if that
+    // never comes)
+    const phase = def - r.hp + 1;
+    if (r.busy && busyAt < since) busyAt = r.time;
+    const ready = busyAt >= since && r.time - busyAt > 0.4;
+    if (r.keys && !taken.has(phase) && (ready || r.time - since > 4)) {
+      taken.add(phase);
+      await shot(`phase-${phase}`);
     }
     for (const k of Object.keys(KEYS) as (keyof typeof KEYS)[]) {
       const want = r.keys?.[k] ?? false;

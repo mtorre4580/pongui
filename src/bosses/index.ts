@@ -2,11 +2,13 @@
 // brain (pure logic, no Phaser: `tests/boss.test.ts` plays every one), its arena and its music.
 import type { Boss } from './types';
 import { GRUMBLE } from './w1-grumble';
+import { SERPSTONE } from './w2-serpstone';
 
 export type { Boss } from './types';
 
 export const BOSSES = {
   1: GRUMBLE,
+  2: SERPSTONE,
 } satisfies Record<number, Boss>;
 
 /** The boss of a world, if it has one. */

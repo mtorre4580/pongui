@@ -2,7 +2,7 @@
 import type Phaser from 'phaser';
 import type { BossFight } from '../game/boss';
 import { GAME_W, HUD_H } from '../game/constants';
-import { artOf, bossTexture, shotTexture, warnArt } from './bossArt';
+import { artOf, bossTexture, shotTexture, warnArt, type BossArt } from './bossArt';
 import { TEX } from './textures';
 
 export class BossView {
@@ -15,6 +15,7 @@ export class BossView {
   private pose = '';
   private shownHp = -1;
   private gone = false;
+  private readonly art: BossArt;
 
   constructor(
     private readonly scene: Phaser.Scene,
@@ -23,13 +24,14 @@ export class BossView {
     private readonly oy: number,
   ) {
     const { def } = fight;
+    this.art = artOf(world);
     this.pose = fight.boss.pose;
     // The texture is taller than the body by its horns: anchor it by the feet
     this.body = scene.add
       .image(0, 0, bossTexture(scene, world, def.width, def.height, this.pose))
       .setOrigin(0.5, 1)
       .setScale(1 / TEX)
-      .setDepth(artOf(world).depth ?? 4);
+      .setDepth(this.art.depth ?? 4);
     this.marks = scene.add.graphics().setDepth(3);
     this.bar = scene.add.graphics().setDepth(11);
     this.update();
@@ -49,6 +51,11 @@ export class BossView {
     this.body.setVisible(!boss.away && boss.alpha > 0);
     this.body.setPosition(boss.x, bottom + this.oy);
     this.body.setFlipX(boss.dir > 0);
+    // Coming out of the ground: only what is above its floor shows
+    if (this.art.buried) {
+      const shown = (def.height + Math.min(0, boss.lift)) * TEX + this.art.top;
+      this.body.setCrop(0, 0, this.body.width, Math.max(0, shown));
+    }
     // Dazed: it blinks (the Canvas renderer has no tint) and sags a little
     const blink = dazed ? (Math.floor(fight.world.s.time * 12) % 2 ? 0.35 : 0.8) : 1;
     this.body.setAlpha(blink * boss.alpha);

@@ -210,4 +210,13 @@ const BOSS_FX: Record<string, (() => void) | undefined> = {
     noise(0.15, 0.2, 500, 2);
   },
   release: () => tone(240, 720, 0.14, 'triangle', 0.16),
+  // Serpstone: the ground shaking, the serpent bursting out, rock cracking loose and landing
+  'warn-burrow': () => noise(0.6, 0.3, 90, 0.8, 0, 'lowpass'),
+  'serpent-rise': () => {
+    noise(0.25, 0.4, 500, 0.7);
+    tone(90, 240, 0.25, 'sawtooth', 0.14);
+  },
+  'warn-stalactite': () =>
+    [1500, 1100].forEach((f, i) => tone(f, f * 0.9, 0.05, 'square', 0.06, i * 0.09)),
+  'end-stalactite': () => noise(0.14, 0.3, 2400, 1.2),
 };

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { LOCALES } from '../src/i18n';
 import { parseLevel } from '../src/game/level';
 import { levelFromParam, LEVELS, levelLabel, parseId, WORLDS } from '../src/levels';
-import { WORLD_COUNT } from '../src/levels/worlds';
+import { BOSS_WORLDS, WORLD_COUNT } from '../src/levels/worlds';
 import { isUnlocked, persist, recordWin } from '../src/save';
 
 // Solvability is checked by `pnpm validate:levels` (slower: it runs the solver on every level).
@@ -76,22 +76,31 @@ describe('level top row', () => {
 
 describe('unlocking', () => {
   const ids = LEVELS.map((l) => l.id);
+  // The first world that does not end with a boss: its records alone open the next one. Once
+  // every world has a boss there is none left (worlds behind a boss: unlock.test.ts)
+  const free = WORLDS.map((w) => w.n).find((n) => n < WORLD_COUNT && !BOSS_WORLDS.includes(n));
+  const last = (free ?? 1) * 10 - 1;
 
-  it('opens the next world for a save that finished the previous one', () => {
-    // A save from when a world was the last one: `unlocked` stopped at its last level. World 2
-    // has no boss, so its records alone open world 3 (worlds behind a boss: unlock.test.ts)
-    persist((s) => {
-      s.unlocked = 19;
-      s.levels = { 'w2-10': { stars: 3, bestTime: 20 } };
-    });
-    expect(isUnlocked(19, ids)).toBe(true);
-    expect(isUnlocked(20, ids)).toBe(true);
-    expect(isUnlocked(21, ids)).toBe(false);
-  });
+  it.skipIf(free === undefined)(
+    'opens the next world for a save that finished the previous one',
+    () => {
+      // A save from when a world was the last one: `unlocked` stopped at its last level
+      persist((s) => {
+        s.unlocked = last;
+        s.levels = { [ids[last]]: { stars: 3, bestTime: 20 } };
+      });
+      expect(isUnlocked(last, ids)).toBe(true);
+      expect(isUnlocked(last + 1, ids)).toBe(true);
+      expect(isUnlocked(last + 2, ids)).toBe(false);
+    },
+  );
 
   it('opens each level after beating the one before', () => {
-    recordWin(ids[20], 20, 2, 30, ids.length);
-    expect(isUnlocked(21, ids)).toBe(true);
-    expect(isUnlocked(22, ids)).toBe(false);
+    persist((s) => {
+      s.unlocked = Math.max(s.unlocked, last + 1);
+    });
+    recordWin(ids[last + 1], last + 1, 2, 30, ids.length);
+    expect(isUnlocked(last + 2, ids)).toBe(true);
+    expect(isUnlocked(last + 3, ids)).toBe(false);
   });
 });
