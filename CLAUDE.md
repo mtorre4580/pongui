@@ -308,6 +308,10 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
   2. **Serpstone** (3 hits): comes up through the moss where a burrow shakes (deadly while it
      bursts out or dives back) and drops stalactites on the ball's column, two at once in the
      last phase. Moss only gives low bounces, so its head is reached from the two stones.
+  3. **Squall** (3 hits): flies under the clouds, out of reach of any bounce from the floor.
+     Lightning strikes the ball's column after it lights up (1, 2, then 3 columns); from the
+     second phase gusts push the ball sideways. Ride an updraft to a cloud and walk off its
+     edge onto the bird; after a hit it flees to its far turn.
 - To add one: `src/bosses/wN-name.ts` (brain, `BossDef`, arena, theme) and its entry in
   `BOSSES`; its world in `BOSS_WORLDS`; its art in `gfx/bossArt.ts` and sounds in `sfx.ts`;
   `boss.N` and `game.bossHint.N` in the three languages; its script in `bosses/scripts.ts`;

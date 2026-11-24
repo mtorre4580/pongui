@@ -1,8 +1,8 @@
 // A boss on screen: its body, what it throws, the warnings of its attacks and its hit bar.
 import type Phaser from 'phaser';
-import type { BossFight } from '../game/boss';
+import type { BossFight, Warn } from '../game/boss';
 import { GAME_W, HUD_H } from '../game/constants';
-import { artOf, bossTexture, shotTexture, warnArt, type BossArt } from './bossArt';
+import { artOf, bossTexture, shotTexture, warnArt, type BossArt, type WarnArt } from './bossArt';
 import { TEX } from './textures';
 
 export class BossView {
@@ -113,6 +113,10 @@ export class BossView {
     marks.clear();
     for (const w of fight.warns) {
       const art = warnArt(w.kind);
+      if (art.shape === 'wind') {
+        this.drawWind(w, art);
+        continue;
+      }
       const k = 1 - w.left / w.total;
       const pulse = 0.5 + 0.5 * Math.sin(k * k * 40);
       marks.fillStyle(art.color, 0.12 + 0.3 * k + 0.12 * pulse);
@@ -124,6 +128,21 @@ export class BossView {
       const [left, top, right, bottom] = fight.box;
       marks.lineStyle(5, warnArt('grab').color, 0.9);
       marks.lineBetween((left + right) / 2, (top + bottom) / 2 + this.oy, g.x, g.y + this.oy);
+    }
+  }
+
+  /** Streaks of air crossing the warning's area: faint and slow before the gust, then fast. */
+  private drawWind(w: Warn, art: WarnArt) {
+    const { marks } = this;
+    const dir = art.dir ?? 1;
+    const speed = art.soft ? 120 : 420;
+    const t = this.scene.time.now / 1000;
+    marks.lineStyle(art.soft ? 2 : 3, art.color, art.soft ? 0.35 : 0.6);
+    for (let i = 0; i < 9; i++) {
+      const y = w.y - w.h / 2 + ((i + 0.5) * w.h) / 9 + this.oy;
+      const at = (((t * speed * dir + i * 137) % w.w) + w.w) % w.w;
+      const x = w.x - w.w / 2 + at;
+      marks.lineBetween(x, y, Math.max(w.x - w.w / 2, Math.min(w.x + w.w / 2, x - dir * 46)), y);
     }
   }
 

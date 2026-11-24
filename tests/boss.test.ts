@@ -3,6 +3,7 @@ import { BOSSES, bossOf } from '../src/bosses';
 import { SCRIPTS } from '../src/bosses/scripts';
 import { arena } from '../src/bosses/types';
 import type { Serpent } from '../src/bosses/w2-serpstone';
+import type { Bird } from '../src/bosses/w3-squall';
 import { BossFight, MIN_WARN, seeded, type BossBrain, type BossDef } from '../src/game/boss';
 import { BALL_R, COLS, STEP, TILE, V_LOW } from '../src/game/constants';
 import { World, type InputState } from '../src/game/physics';
@@ -355,6 +356,115 @@ describe('Serpstone (world 2)', () => {
     const last = fightOf(2, 1);
     last.run(20, () => last.f.shots.length > 0, { x: 300, y: 100 });
     expect(last.f.shots).toHaveLength(2);
+  });
+});
+
+describe('Squall (world 3)', () => {
+  const { def } = BOSSES[3];
+  const brain = (f: BossFight) => f.brain as Bird;
+
+  it('flies too high for any bounce from the floor', () => {
+    const { f, s } = fightOf(3);
+    // Right under it all the time, bouncing as high as the floor allows
+    for (let i = 0; i < 3 / STEP; i++) {
+      s.x = f.boss.x;
+      brain(f).bolt = 9;
+      f.step(STEP, { ...idle, jump: true });
+    }
+    expect(s.status).toBe('playing');
+    expect(f.boss.hp).toBe(3);
+    expect(f.box[3]).toBeLessThan(def.floorY - 115 - 2 * BALL_R);
+  });
+
+  it('is hit by a ball that walks off the cloud onto it, and then flies away fast', () => {
+    const { f, s } = fightOf(3);
+    f.boss.x = 200;
+    f.boss.dir = 1;
+    Object.assign(s, { x: 150, y: 3 * TILE - BALL_R - 1, vy: 0 });
+    let hit = false;
+    for (let i = 0; i < 2 / STEP && !hit; i++) {
+      brain(f).bolt = 9;
+      hit = f
+        .step(STEP, { ...idle, right: s.x < f.boss.x })
+        .boss.some((e) => e.type === 'boss-hit');
+    }
+    expect(hit).toBe(true);
+    // The ball lands back on the cloud: the bird wakes up and leaves at more than its speed
+    for (let i = 0; i < 3 / STEP && f.dazed; i++) f.step(STEP, { ...idle, left: s.x > 130 });
+    expect(f.dazed).toBe(false);
+    const x0 = f.boss.x;
+    for (let i = 0; i < 0.5 / STEP; i++) {
+      brain(f).bolt = 9;
+      f.step(STEP, { ...idle, left: s.x > 130 });
+    }
+    expect(f.boss.dir).toBe(1);
+    expect(f.boss.x - x0).toBeGreaterThan(def.speeds[1] * 0.5 * 1.5);
+  });
+
+  it('lights a column up before lightning strikes it: deadly to stay, easy to leave', () => {
+    const still = fightOf(3);
+    const events = still.run(10, () => still.f.shots.length > 0);
+    expect(events).toContainEqual(expect.objectContaining({ type: 'boss-warn', kind: 'bolt' }));
+    expect(Math.abs(still.f.shots[0].x - still.s.x)).toBeLessThanOrEqual(TILE / 2);
+    still.run(1);
+    expect(still.s.status).toBe('dead');
+    // One column to the side when it lights up
+    const moved = fightOf(3);
+    const x0 = moved.s.x;
+    let struck = false;
+    for (let i = 0; i < 10 / STEP && !struck && moved.s.status === 'playing'; i++) {
+      const goal = moved.f.warns.length || moved.f.shots.length ? x0 + 40 : x0;
+      struck = moved.f
+        .step(STEP, { ...idle, left: moved.s.x > goal + 3, right: moved.s.x < goal - 3 })
+        .boss.some((e) => e.type === 'boss-shot-end');
+    }
+    expect(struck).toBe(true);
+    expect(moved.s.status).toBe('playing');
+  });
+
+  it('strikes more columns at once with each phase', () => {
+    expect([...def.boltCount]).toEqual([1, 2, 3]);
+    for (const hp of [2, 1]) {
+      const { f, run } = fightOf(3, hp);
+      run(10, () => f.shots.length > 0, { x: 320, y: 40 });
+      expect(f.shots).toHaveLength(def.boltCount[f.phase]);
+      expect(new Set(f.shots.map((b) => b.x)).size).toBe(f.shots.length);
+    }
+  });
+
+  it('blows gusts from its second phase on: announced, and the ball can hold against them', () => {
+    const calm = fightOf(3);
+    const first = calm.run(12, undefined, { x: 320, y: 40 });
+    expect(first.some((e) => e.type === 'boss-warn' && e.kind.startsWith('gust'))).toBe(false);
+    // Second phase: the wind is announced, then pushes a ball that does nothing
+    const gusty = fightOf(3, 2);
+    const s = gusty.s;
+    const warned = gusty.run(10, () => s.drift !== 0, { x: 320, y: 300 });
+    const warning = warned.find((e) => e.type === 'boss-warn' && e.kind.startsWith('gust'));
+    expect(warning).toBeDefined();
+    expect(def.gustWarn).toBeGreaterThanOrEqual(MIN_WARN);
+    expect(Math.abs(s.drift)).toBe(def.gustPush);
+    const dir = Math.sign(s.drift);
+    const x0 = s.x;
+    for (let i = 0; i < 0.5 / STEP; i++) {
+      brain(gusty.f).bolt = 9;
+      gusty.f.step(STEP, idle);
+    }
+    expect((s.x - x0) * dir).toBeGreaterThan(def.gustPush * 0.4);
+    // Steering against it wins ground back
+    const x1 = s.x;
+    for (let i = 0; i < 0.5 / STEP; i++) {
+      brain(gusty.f).bolt = 9;
+      gusty.f.step(STEP, { ...idle, left: dir > 0, right: dir < 0 });
+    }
+    expect((s.x - x1) * dir).toBeLessThan(0);
+    // And it dies down
+    for (let i = 0; i < 2 / STEP; i++) {
+      brain(gusty.f).bolt = 9;
+      brain(gusty.f).gust = 9;
+      gusty.f.step(STEP, idle);
+    }
+    expect(s.drift).toBe(0);
   });
 });
 

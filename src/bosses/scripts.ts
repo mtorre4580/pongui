@@ -40,14 +40,23 @@ export function canStomp(f: BossFight, slack = 0.8): boolean {
 
 /**
  * Where to head for on the way to `goal` without walking under what is coming down: x of
- * every warning and shot of these kinds is kept `near` px away. With something in the way it
- * waits where it is, or steps out from under it.
+ * every warning and shot of these kinds is kept `near` px away. Under one, it steps out to the
+ * nearest clear spot; with one in the way, it waits where it is.
  */
 export function around(f: BossFight, kinds: readonly string[], goal: number, near = 24): number {
   const x = f.world.s.x;
   const xs = [...f.warns, ...f.shots].filter((w) => kinds.includes(w.kind)).map((w) => w.x);
-  const over = xs.find((d) => Math.abs(d - x) < near);
-  if (over !== undefined) return over + (x >= over ? near + 6 : -near - 6);
+  const clear = (at: number) => xs.every((d) => Math.abs(d - at) >= near);
+  if (!clear(x)) {
+    for (let d = 4; d < 200; d += 4) {
+      // The side of the goal first
+      const first = goal >= x ? x + d : x - d;
+      const second = goal >= x ? x - d : x + d;
+      for (const at of [first, second])
+        if (at > 44 && at < 596 && clear(at)) return at + (at > x ? 6 : -6);
+    }
+    return goal;
+  }
   const lo = Math.min(x, goal) - near;
   const hi = Math.max(x, goal) + near;
   return xs.some((d) => d > lo && d < hi) ? x : goal;
@@ -87,7 +96,36 @@ const serpstone: BossScript = () => (f) => {
   return { jump: up, ...steer(s.x, around(f, ['stalactite'], goal)) };
 };
 
+/**
+ * Squall: ride the left updraft to the cloud beside it, keep out of the columns that light
+ * up, and walk off the cloud's edge onto the bird when it flies by underneath.
+ */
+const squall: BossScript = () => (f) => {
+  const s = f.world.s;
+  const { boss } = f;
+  const [, top] = f.box;
+  const cloud = 3 * 32; // the top of the cloud; its cells go from x = 64 to x = 160
+  const onCloud = s.y + BALL_R <= cloud + 1 && s.x > 58 && s.x < 170;
+  // In the air below the cloud's top but over the bird: keep over its head
+  if (!onCloud && !f.dazed && canStomp(f)) return { jump: false, ...steer(s.x, boss.x) };
+  if (onCloud) {
+    // The bird about to be right past the edge of the cloud: walk off onto it
+    const soon = boss.x + boss.dir * 30;
+    const near = !f.dazed && soon > 178 && soon < 236 && top > cloud;
+    const goal = near ? Math.max(boss.x, 196) : 128;
+    return { jump: false, ...steer(s.x, around(f, ['bolt'], goal, 22)) };
+  }
+  // Up the left updraft, then right onto the cloud from over its top
+  if (s.wind || (s.x < 64 && s.y < cloud))
+    return { jump: false, left: false, right: s.y < cloud - 14 };
+  // Back on the floor: to the updraft, stopping for lightning in the way. After a hit the
+  // bounce off the bird's head is enough to steer straight back onto the cloud
+  const goal = s.y < cloud ? 128 : around(f, ['bolt'], 48, 22);
+  return { jump: false, ...steer(s.x, goal) };
+};
+
 export const SCRIPTS: Record<number, BossScript> = {
   1: grumble,
   2: serpstone,
+  3: squall,
 };

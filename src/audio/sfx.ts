@@ -219,4 +219,13 @@ const BOSS_FX: Record<string, (() => void) | undefined> = {
   'warn-stalactite': () =>
     [1500, 1100].forEach((f, i) => tone(f, f * 0.9, 0.05, 'square', 0.06, i * 0.09)),
   'end-stalactite': () => noise(0.14, 0.3, 2400, 1.2),
+  // Squall: the air crackling, thunder, and the wind picking up and blowing
+  'warn-bolt': () => tone(900, 2200, 0.3, 'sawtooth', 0.05),
+  'shot-bolt': () => {
+    noise(0.35, 0.5, 1800, 0.5, 0, 'highpass');
+    tone(160, 40, 0.4, 'sawtooth', 0.2);
+  },
+  'warn-gust-left': () => noise(0.5, 0.18, 700, 0.6),
+  'warn-gust-right': () => noise(0.5, 0.18, 700, 0.6),
+  gust: () => noise(1.4, 0.3, 1100, 0.5),
 };
