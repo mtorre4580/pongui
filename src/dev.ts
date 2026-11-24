@@ -5,6 +5,8 @@ import { unlockAudio } from './audio/sfx';
 import { STEP } from './game/constants';
 import { endsStep, solve } from './game/solver';
 import type { World } from './game/physics';
+import type { BossFight } from './game/boss';
+import { SCRIPTS, type Keys } from './bosses/scripts';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyGame = Record<string, any>;
@@ -119,5 +121,28 @@ export function installDevTools(game: Phaser.Game) {
     }
   };
 
-  Object.assign(window, { game, tick, replay, demo, unlockAudio });
+  /**
+   * The boss fight on screen, for `pnpm play:boss`: what its script would hold right now and
+   * how the fight is going. Null when no boss is being fought.
+   */
+  const players = new WeakMap<BossFight, (f: BossFight) => Keys>();
+  const boss = () => {
+    const sc = game.scene.getScene('Game') as unknown as AnyGame;
+    const fight = sc['fight'] as BossFight | null;
+    const world = sc['bossN'] as number | undefined;
+    if (!fight || !world || !game.scene.isActive('Game')) return null;
+    let player = players.get(fight);
+    if (!player) players.set(fight, (player = SCRIPTS[world]()));
+    const s = fight.world.s;
+    return {
+      keys: sc['started'] && s.status === 'playing' && !fight.won ? player(fight) : null,
+      hp: fight.boss.hp,
+      won: fight.won,
+      status: s.status,
+      lives: sc['lives'] as number,
+      time: s.time,
+    };
+  };
+
+  Object.assign(window, { game, tick, replay, demo, unlockAudio, boss });
 }

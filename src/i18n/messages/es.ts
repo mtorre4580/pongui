@@ -51,7 +51,7 @@ export const es: Messages = {
   'select.bossLocked': 'Terminá los diez niveles para enfrentar al jefe',
   'select.lockedBoss': 'Vencé al jefe del mundo {n} para abrir este',
   'game.boss': 'Jefe · {name}',
-  'game.bossHint': 'Rebotale en la cabeza tres veces. ¡Nunca lo toques de costado!',
+  'game.bossHint.1': 'Rebotale en la cabeza tres veces. ¡Nunca lo toques de costado!',
   'overlay.toBoss': 'Enfrentar al jefe',
   'overlay.bossDown': '¡Jefe derrotado!',
   'overlay.bossDownText': 'Se abrió el mundo {n}.',

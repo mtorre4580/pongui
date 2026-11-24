@@ -50,7 +50,7 @@ export const ptBR: Messages = {
   'select.bossLocked': 'Termine as dez fases para enfrentar o chefe',
   'select.lockedBoss': 'Vença o chefe do mundo {n} para abrir este',
   'game.boss': 'Chefe · {name}',
-  'game.bossHint': 'Quique na cabeça dele três vezes. Nunca encoste nos lados!',
+  'game.bossHint.1': 'Quique na cabeça dele três vezes. Nunca encoste nos lados!',
   'overlay.toBoss': 'Enfrentar o chefe',
   'overlay.bossDown': 'Chefe derrotado!',
   'overlay.bossDownText': 'O mundo {n} foi aberto.',

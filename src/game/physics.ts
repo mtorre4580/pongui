@@ -106,6 +106,11 @@ export interface WorldState {
   ticks: number;
   /** Crumbling blocks counting down (their `hits` holds the steps left + 1). */
   crumbling: number;
+  /**
+   * A sideways push on the ball from outside (a boss's gust), in px/s on top of its own speed.
+   * Always 0 in levels.
+   */
+  drift: number;
 }
 
 interface Cell {
@@ -173,6 +178,7 @@ export class World {
       zone: false,
       ticks: 0,
       crumbling: 0,
+      drift: 0,
     };
     this.hasVents = level.tiles.some((t) => t === T.VENT);
     this.hasPhases = level.tiles.some((t) => t === T.PHASE_A || t === T.PHASE_B);
@@ -551,14 +557,15 @@ export class World {
 
     // X axis
     // Clouds never block sideways or from below
-    if (s.vx !== 0) {
-      s.x += s.vx * dt;
+    const moveX = s.vx + s.drift;
+    if (moveX !== 0) {
+      s.x += moveX * dt;
       const cells = this.overlaps().filter((c) => c.t !== T.CLOUD);
       if (cells.length) {
         const blocking = this.resolveContacts(cells, false, ev);
         if (!blocking) return ev;
         if (blocking.length) {
-          const dir = Math.sign(s.vx);
+          const dir = Math.sign(moveX);
           if (dir > 0) s.x = Math.min(...blocking.map((c) => c.c)) * TILE - BALL_R;
           else s.x = (Math.max(...blocking.map((c) => c.c)) + 1) * TILE + BALL_R;
           const bumper = blocking.find((c) => c.t === T.BUMPER);
@@ -570,7 +577,8 @@ export class World {
             s.vy = Math.min(s.vy, -BUMP_VY);
             s.grace = 0;
             ev.push({ type: 'bump', idx: bumper.idx });
-          } else {
+          } else if (Math.sign(s.vx) !== -dir) {
+            // (A ball steering away from a wall a gust pins it to keeps its own speed)
             s.vx = 0;
             s.lockVx = null;
           }

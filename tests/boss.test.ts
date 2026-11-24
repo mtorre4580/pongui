@@ -1,8 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { BOSSES } from '../src/bosses';
-import { BossFight } from '../src/game/boss';
-import { BALL_R, STEP } from '../src/game/constants';
+import { BOSSES, bossOf } from '../src/bosses';
+import { SCRIPTS } from '../src/bosses/scripts';
+import { arena } from '../src/bosses/types';
+import { BossFight, MIN_WARN, seeded, type BossBrain, type BossDef } from '../src/game/boss';
+import { BALL_R, COLS, STEP, TILE, V_LOW } from '../src/game/constants';
 import { World, type InputState } from '../src/game/physics';
+import { T } from '../src/game/tiles';
+import { BOSS_WORLDS } from '../src/levels/worlds';
 
 const idle: InputState = { left: false, right: false, jump: false, jumpPressed: false };
 
@@ -145,5 +149,283 @@ describe('boss fight', () => {
     }
     expect(min).toBeGreaterThanOrEqual(3 * 32);
     expect(max).toBeLessThanOrEqual(17 * 32);
+  });
+});
+
+/** Plays a boss with its script, like a person holding keys: jump presses are edges. */
+export function playScript(world: number, seconds: number, hp?: number) {
+  const { arena: level, def } = bossOf(world)!;
+  const f = new BossFight(new World(level), def, hp);
+  const player = SCRIPTS[world]();
+  const s = f.world.s;
+  const hits: number[] = [];
+  let jump = false;
+  for (let i = 0; i < seconds / STEP && s.status === 'playing' && !f.won; i++) {
+    const keys = player(f);
+    const input = { ...keys, jumpPressed: keys.jump && !jump };
+    jump = keys.jump;
+    for (const e of f.step(STEP, input).boss) if (e.type === 'boss-hit') hits.push(s.time);
+  }
+  return { f, status: s.status, won: f.won, hits, time: s.time };
+}
+
+describe('every boss', () => {
+  it('is in BOSS_WORLDS and has a script that beats it', () => {
+    expect(Object.keys(BOSSES).map(Number)).toEqual([...BOSS_WORLDS]);
+    for (const world of BOSS_WORLDS) {
+      const result = playScript(world, 240);
+      expect(result, `boss ${world}`).toMatchObject({ won: true, status: 'playing' });
+      expect(result.hits).toHaveLength(bossOf(world)!.def.hp - 1);
+    }
+  });
+
+  it('is taller than a low bounce climbs, or standing still would beat it', () => {
+    for (const world of BOSS_WORLDS) expect(bossOf(world)!.def.height).toBeGreaterThan(51);
+  });
+});
+
+// The frame every boss shares, with a boss that does only what each test tells it to
+describe('boss engine', () => {
+  const ROOM = [
+    '####################',
+    '#..................#',
+    '#..................#',
+    '#..................#',
+    '#..................#',
+    '#..................#',
+    '#..................#',
+    '#..................#',
+    '#..................#',
+    '#..................#',
+    '#P.................#',
+    'E###################',
+  ];
+  const still: BossBrain = { think: () => undefined };
+  const make = (brain: Partial<BossBrain> = {}, def: Partial<BossDef> = {}) => {
+    const full: BossDef = {
+      width: 40,
+      height: 60,
+      hp: 2,
+      floorY: 11 * TILE,
+      stun: 0.5,
+      brain: () => ({ ...still, ...brain }),
+      ...def,
+    };
+    const f = new BossFight(new World(arena(0, ROOM)), full);
+    f.boss.x = 16 * TILE;
+    return f;
+  };
+  const run = (f: BossFight, seconds: number, input: InputState = idle) => {
+    const all = [];
+    for (let i = 0; i < seconds / STEP && f.world.s.status === 'playing'; i++)
+      all.push(...f.step(STEP, input).boss);
+    return all;
+  };
+
+  it('gives the same random numbers in every fight', () => {
+    const a = make();
+    const b = make();
+    const first = [a.rand(), a.rand(), a.rand()];
+    expect([b.rand(), b.rand(), b.rand()]).toEqual(first);
+    expect(new Set(first).size).toBe(3);
+    expect(first.every((n) => n >= 0 && n < 1)).toBe(true);
+    expect(seeded(7)()).not.toBe(seeded(8)());
+  });
+
+  it('never announces an attack for less than the minimum', () => {
+    const f = make();
+    let fired = -1;
+    f.announce('test', { x: 100, y: 100, w: 32, h: 32 }, 0.1, () => (fired = f.world.s.time));
+    expect(f.warns).toHaveLength(1);
+    const events = run(f, 1);
+    expect(fired).toBeGreaterThanOrEqual(MIN_WARN - STEP);
+    expect(fired).toBeLessThan(MIN_WARN + 2 * STEP);
+    expect(f.warns).toHaveLength(0);
+    // The scene hears about it through the step that follows
+    f.announce('test', { x: 1, y: 1, w: 1, h: 1 }, 1, () => undefined);
+    expect([...events, ...f.step(STEP, idle).boss]).toContainEqual({
+      type: 'boss-warn',
+      kind: 'test',
+      x: 1,
+      y: 1,
+    });
+  });
+
+  it('kills with a shot, and lets it fly by when the ball is out of its way', () => {
+    const f = make();
+    const s = f.world.s;
+    // Along the floor, towards the ball
+    f.shoot({ kind: 'bolt', x: 300, y: 11 * TILE - 30, ry: 30, vx: -200, wall: 'pass' });
+    run(f, 2);
+    expect(s.status).toBe('dead');
+    // The same shot under a ball kept in the air
+    const g = make();
+    g.shoot({ kind: 'bolt', x: 300, y: 11 * TILE - 10, vx: -200, wall: 'stop' });
+    const ends = [];
+    for (let i = 0; i < 2 / STEP; i++) {
+      g.world.s.y = 200;
+      g.world.s.vy = 0;
+      ends.push(...g.step(STEP, idle).boss.filter((e) => e.type === 'boss-shot-end'));
+    }
+    expect(g.world.s.status).toBe('playing');
+    // It ended against the left wall
+    expect(ends).toHaveLength(1);
+    expect(ends[0]).toMatchObject({ kind: 'bolt', why: 'wall' });
+    expect(g.shots).toHaveLength(0);
+  });
+
+  it('lets the ball bounce on a shot that can be stomped', () => {
+    const f = make();
+    const s = f.world.s;
+    const shot = f.shoot({ kind: 'crate', x: s.x, y: 250, rx: 12, ry: 12, stomp: true });
+    s.y = shot.y - 12 - BALL_R - 2;
+    s.vy = 300;
+    const events = run(f, 0.05);
+    expect(events).toContainEqual(expect.objectContaining({ type: 'boss-shot-end', why: 'stomp' }));
+    expect(s.status).toBe('playing');
+    expect(s.vy).toBeLessThan(0);
+    expect(f.shots).toHaveLength(0);
+  });
+
+  it('pulls shots down with gravity, bounces them off walls and ends them in time', () => {
+    const f = make();
+    const lob = f.shoot({ kind: 'lob', x: 200, y: 100, vx: 60, g: 600, wall: 'bounce', life: 9 });
+    const timed = f.shoot({ kind: 'spark', x: 400, y: 100, life: 0.5, wall: 'pass' });
+    let lowest = 0;
+    let rose = false;
+    for (let i = 0; i < 3 / STEP; i++) {
+      f.world.s.x = 48;
+      f.world.s.y = 100;
+      f.world.s.vy = 0;
+      f.step(STEP, idle);
+      lowest = Math.max(lowest, lob.y);
+      rose ||= lob.vy < 0;
+    }
+    expect(lowest).toBeLessThan(11 * TILE + 8);
+    expect(rose).toBe(true);
+    expect(f.shots).toContain(lob);
+    expect(f.shots).not.toContain(timed);
+  });
+
+  it('changes arena tiles, tells the scene, and never puts a block on the ball', () => {
+    const f = make();
+    const s = f.world.s;
+    const under = 11 * COLS + 5;
+    expect(f.setTile(under, T.ICE)).toBe(true);
+    expect(s.tiles[under]).toBe(T.ICE);
+    expect(f.step(STEP, idle).boss).toContainEqual({ type: 'boss-tiles', idxs: [under] });
+    // The cell the ball is in: a block is refused, a toggle block waits for the ball to leave
+    const here = Math.floor(s.y / TILE) * COLS + Math.floor(s.x / TILE);
+    expect(f.setTile(here, T.SOLID)).toBe(false);
+    expect(s.tiles[here]).toBe(T.EMPTY);
+    expect(f.setTile(here, T.BRIDGE)).toBe(true);
+    expect(f.world.isOpen(T.BRIDGE, here)).toBe(true);
+    run(f, 0.5);
+    expect(s.status).toBe('playing');
+    // The floor taken from under the ball: it falls out of the arena
+    f.setTile(here, T.EMPTY);
+    for (let c = 1; c < 4; c++) f.setTile(11 * COLS + c, T.EMPTY);
+    run(f, 3);
+    expect(s.status).toBe('dead');
+  });
+
+  it('holds a grabbed ball until the player shakes it loose', () => {
+    const f = make();
+    const s = f.world.s;
+    f.seize(200, 200, 4);
+    const held = run(f, 1, { ...idle, right: true });
+    expect(held).toContainEqual({ type: 'boss-grab' });
+    expect([s.x, s.y]).toEqual([200, 200]);
+    expect(f.grab).not.toBeNull();
+    // Dragged along with the grab, and out of reach of shots meanwhile
+    f.grab!.x = 240;
+    f.shoot({ kind: 'bolt', x: 240, y: 200, wall: 'pass', life: 0.2 });
+    run(f, 0.3);
+    expect(s.x).toBe(240);
+    expect(s.status).toBe('playing');
+    // Left, right, left, right…
+    const events = [];
+    for (let i = 0; i < 12 && f.grab; i++)
+      events.push(...run(f, 0.1, { ...idle, left: i % 2 === 0, right: i % 2 === 1 }));
+    expect(f.grab).toBeNull();
+    expect(events).toContainEqual({ type: 'boss-release' });
+    expect(s.vy).toBeGreaterThanOrEqual(-V_LOW);
+  });
+
+  it('turns the light off and on once per change', () => {
+    const f = make();
+    f.setDark(true);
+    f.setDark(true);
+    expect(f.dark).toBe(true);
+    expect(f.step(STEP, idle).boss.filter((e) => e.type === 'boss-dark')).toEqual([
+      { type: 'boss-dark', on: true },
+    ]);
+    f.setDark(false);
+    expect(f.step(STEP, idle).boss).toContainEqual({ type: 'boss-dark', on: false });
+  });
+
+  it('bounces the ball off a shielded boss without hurting it, and lets it through one away', () => {
+    const f = make();
+    const s = f.world.s;
+    const drop = () => {
+      s.x = f.boss.x;
+      s.y = f.box[1] - BALL_R - 1;
+      s.vy = 400;
+    };
+    f.boss.armor = true;
+    drop();
+    expect(f.step(STEP, idle).boss).toEqual([{ type: 'boss-bonk' }]);
+    expect(f.boss.hp).toBe(2);
+    f.boss.armor = false;
+    f.boss.away = true;
+    s.y = f.def.floorY - 30;
+    run(f, 0.2);
+    expect(s.status).toBe('playing');
+    f.boss.away = false;
+    f.boss.hold = false;
+    s.x = f.boss.x;
+    s.y = f.def.floorY - 30;
+    run(f, 0.2);
+    expect(s.status).toBe('dead');
+  });
+
+  it('clears shots and warnings on a hit and tells the brain', () => {
+    let hits = 0;
+    let woke = 0;
+    const f = make({ hit: () => hits++, wake: () => woke++ });
+    const s = f.world.s;
+    f.shoot({ kind: 'bolt', x: 100, y: 40, wall: 'pass' });
+    f.announce('test', { x: 0, y: 0, w: 1, h: 1 }, 1, () => {
+      throw new Error('a cleared warning must not fire');
+    });
+    s.x = f.boss.x;
+    s.y = f.box[1] - BALL_R - 1;
+    s.vy = 400;
+    expect(f.step(STEP, idle).boss).toContainEqual({ type: 'boss-hit', hp: 1 });
+    expect([f.shots.length, f.warns.length, hits]).toEqual([0, 0, 1]);
+    expect(f.phase).toBe(1);
+    // Back on the ground, away from it: it wakes up
+    s.x = 48;
+    run(f, 3);
+    expect(woke).toBe(1);
+    expect(f.dazed).toBe(false);
+  });
+
+  it('pushes the ball sideways with a gust, and the ball can steer against it', () => {
+    const f = make();
+    const s = f.world.s;
+    const x0 = s.x;
+    s.drift = 60;
+    run(f, 1);
+    expect(s.x).toBeGreaterThan(x0 + 50);
+    const x1 = s.x;
+    run(f, 1, { ...idle, left: true });
+    expect(s.x).toBeLessThan(x1);
+    // Pinned to the right wall by the gust, it can still leave
+    s.x = 19 * TILE - BALL_R;
+    run(f, 0.3);
+    expect(s.x).toBe(19 * TILE - BALL_R);
+    run(f, 0.5, { ...idle, left: true });
+    expect(s.x).toBeLessThan(19 * TILE - BALL_R - 20);
   });
 });

@@ -37,6 +37,7 @@
     "validate:levels": "tsx scripts/validate-levels.ts",
     "check:bundle": "tsx scripts/check-bundle.ts",
     "check:fairness": "tsx scripts/check-fairness.ts",
+    "play:boss": "tsx scripts/play-boss.ts",
     "test:e2e": "playwright test",
     "lhci": "lhci autorun",
     "media": "tsx scripts/capture-media.ts",

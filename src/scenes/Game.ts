@@ -32,7 +32,7 @@ import { LEVELS_PER_WORLD } from '../levels/worlds';
 import { isUnlocked, loadSave, recordBossWin, recordWin } from '../save';
 import { currentSkin, shade } from '../skins';
 import { pauseBossMusic, setBossMusicPhase, startBossMusic, stopBossMusic } from '../audio/music';
-import { BOSSES } from '../bosses';
+import { bossOf, type Boss } from '../bosses';
 import { planFor } from '../custom/bot';
 import { recordDailyWin } from '../daily';
 import { parseCustom, type CustomRun } from '../custom/run';
@@ -126,7 +126,8 @@ export class Game extends Phaser.Scene {
   private tileSprites = new Map<number, Phaser.GameObjects.Image>();
   private flames = new Map<number, Phaser.GameObjects.Image>();
   /** Vents: the tile and its flame, which shows when lit and flickers just before. */
-  private vents: { img: Phaser.GameObjects.Image; flame: Phaser.GameObjects.Image }[] = [];
+  private vents: { idx: number; img: Phaser.GameObjects.Image; flame: Phaser.GameObjects.Image }[] =
+    [];
   /** Blocks that open and close during play: their solid texture key and sprite. */
   private toggles: { idx: number; tex: string; img: Phaser.GameObjects.Image }[] = [];
   private switches: Phaser.GameObjects.Image[] = [];
@@ -164,7 +165,7 @@ export class Game extends Phaser.Scene {
       this.level = LEVELS[this.index];
       this.theme = themeOf(worldOf(this.index).n);
     }
-    const boss = data.custom ? undefined : BOSSES[data.boss ?? 0];
+    const boss = data.custom ? undefined : bossOf(data.boss);
     this.bossN = boss?.world;
     this.fight = null;
     this.bossView = null;
@@ -206,7 +207,7 @@ export class Game extends Phaser.Scene {
     controls.enableGestures(true);
     if (!this.custom && !this.bot) trackLevelStart(this.level.id);
     this.world = new World(this.level, this.takenLives);
-    const boss = BOSSES[this.bossN ?? 0];
+    const boss = bossOf(this.bossN);
     // Every life starts the fight over: the boss gets its hits back
     if (boss) this.fight = new BossFight(this.world, boss.def);
 
@@ -219,7 +220,7 @@ export class Game extends Phaser.Scene {
     this.buildHud();
     this.showBanner();
     if (this.bot) this.askBot();
-    if (boss && this.fight) this.startBoss(boss.world, boss.note);
+    if (boss && this.fight) this.startBoss(boss);
 
     this.time.delayedCall(450, () => (this.started = true));
 
@@ -252,11 +253,19 @@ export class Game extends Phaser.Scene {
   }
 
   private buildTiles() {
+    for (let idx = 0; idx < this.world.s.tiles.length; idx++) this.placeTile(idx);
+    this.buildWind();
+    this.buildFields();
+    this.syncToggles(false);
+  }
+
+  /** The sprite (and flame) of one tile, if it has any. */
+  private placeTile(idx: number) {
     const { tiles } = this.world.s;
-    for (let idx = 0; idx < tiles.length; idx++) {
+    {
       const t = tiles[idx];
       const tex = TILE_TEX[t];
-      if (!tex) continue;
+      if (!tex) return;
       const c = idx % COLS;
       const r = Math.floor(idx / COLS);
       const img = this.add.image(c * TILE + TILE / 2, r * TILE + TILE / 2 + OY, tex).setScale(0.5);
@@ -277,7 +286,7 @@ export class Game extends Phaser.Scene {
           .setScale(0.5)
           .setDepth(-1)
           .setVisible(false);
-        this.vents.push({ img, flame });
+        this.vents.push({ idx, img, flame });
       }
       this.tileSprites.set(idx, img);
       if (t === T.FIRE) {
@@ -299,9 +308,6 @@ export class Game extends Phaser.Scene {
         this.flames.set(idx, fl);
       }
     }
-    this.buildWind();
-    this.buildFields();
-    this.syncToggles(false);
   }
 
   /**
@@ -484,7 +490,9 @@ export class Game extends Phaser.Scene {
     this.darkness = this.add
       .image(this.world.s.x, this.world.s.y + OY, key)
       .setScale(q)
-      .setDepth(7);
+      .setDepth(7)
+      // A boss's darkness fades in; a dark level starts dark
+      .setAlpha(this.level.dark ? 1 : 0);
   }
 
   private buildBall() {
@@ -608,11 +616,11 @@ export class Game extends Phaser.Scene {
   }
 
   /** The boss on screen, its hit bar and its music; the arena's exit is sealed away, so hidden. */
-  private startBoss(world: number, note: number) {
+  private startBoss(boss: Boss) {
     this.exitSprite.setVisible(false);
-    this.bossView = new BossView(this, this.fight!, world, OY);
-    startBossMusic(note);
-    setBossMusicPhase(this.fight!.phase);
+    this.bossView = new BossView(this, this.fight!, boss.world, OY);
+    startBossMusic(boss.theme);
+    setBossMusicPhase(this.fight!.phase, boss.def.hp);
     this.events.on(Phaser.Scenes.Events.PAUSE, () => pauseBossMusic(true));
     this.events.on(Phaser.Scenes.Events.RESUME, () => pauseBossMusic(false));
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => stopBossMusic());
@@ -625,15 +633,58 @@ export class Game extends Phaser.Scene {
         haptic('heavy');
         this.cameras.main.shake(160, 0.006);
         this.squash = 1;
-        setBossMusicPhase(this.fight!.phase);
+        setBossMusicPhase(this.fight!.phase, this.fight!.def.hp);
       } else if (e.type === 'boss-bonk') {
         sfx.bonk();
         this.squash = 1;
       } else if (e.type === 'boss-land') {
         sfx.bossLand();
         this.cameras.main.shake(90, 0.003);
-      } else if (e.type === 'boss-down') this.onBossDown();
+      } else if (e.type === 'boss-tiles') this.refreshTiles(e.idxs);
+      else if (e.type === 'boss-dark') this.setDarkness(e.on);
+      else if (e.type === 'boss-grab') {
+        sfx.bossFx('grab');
+        haptic('medium');
+      } else if (e.type === 'boss-release') sfx.bossFx('release');
+      else if (e.type === 'boss-warn') sfx.bossFx(`warn-${e.kind}`);
+      else if (e.type === 'boss-shot') sfx.bossFx(`shot-${e.kind}`);
+      else if (e.type === 'boss-shot-end') {
+        if (e.why === 'time') continue;
+        sfx.bossFx(`end-${e.kind}`);
+        this.burst(C.white, e.x, e.y + OY, 6, 110);
+      } else if (e.type === 'boss-fx') sfx.bossFx(e.name);
+      else if (e.type === 'boss-down') this.onBossDown();
     }
+  }
+
+  /** A boss changed tiles of its arena: their sprites are made again. */
+  private refreshTiles(idxs: number[]) {
+    for (const idx of idxs) {
+      this.tileSprites.get(idx)?.destroy();
+      this.tileSprites.delete(idx);
+      this.flames.get(idx)?.destroy();
+      this.flames.delete(idx);
+      const vent = this.vents.findIndex((v) => v.idx === idx);
+      if (vent >= 0) this.vents.splice(vent, 1)[0].flame.destroy();
+      this.toggles = this.toggles.filter((tg) => tg.idx !== idx);
+      this.placeTile(idx);
+    }
+    this.redrawSolids();
+    this.syncToggles(false);
+  }
+
+  /** A boss turned the light off or on: the veil of the dark levels fades in or out. */
+  private setDarkness(on: boolean) {
+    if (!this.darkness) this.buildDarkness();
+    const veil = this.darkness!;
+    this.tweens.killTweensOf(veil);
+    if (on) veil.setVisible(true);
+    this.tweens.add({
+      targets: veil,
+      alpha: on ? 1 : 0,
+      duration: 260,
+      onComplete: () => veil.setVisible(on),
+    });
   }
 
   /** The boss is beaten: the next world opens. Nothing else is recorded (no stars, no time). */
@@ -690,7 +741,7 @@ export class Game extends Phaser.Scene {
     const w = 420;
     const source = (controls.touchMode && this.level.hintTouch) || this.level.hint;
     const hint = this.bossN
-      ? t('game.bossHint')
+      ? t(`game.bossHint.${this.bossN}` as MessageKey)
       : this.bot
         ? t('game.botPlaying')
         : source
