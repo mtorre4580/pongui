@@ -198,6 +198,8 @@ export class Game extends Phaser.Scene {
     this.hudDrops = undefined;
     this.hudHammers = undefined;
     this.hudKeys = undefined;
+    // The veil of the last run went with its scene: a boss that puts the light out builds its own
+    this.darkness = undefined;
   }
 
   create() {
