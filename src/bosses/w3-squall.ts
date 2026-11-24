@@ -139,6 +139,7 @@ const DEF: BirdDef = {
   hp: 3,
   floorY: 11 * TILE,
   stun: 0.6,
+  shove: 140,
   seed: 3,
   // Its turns bring it under the inner edge of each cloud; the updrafts stay clear of it
   minX: 152,
