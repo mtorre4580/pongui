@@ -3,7 +3,7 @@ import type { LandingMessages } from './en';
 export const ptBR: LandingMessages = {
   'meta.title': 'Pongui · Um quebra-cabeça de quiques para qualquer tela',
   'meta.description':
-    'Pongui é um jogo grátis de quebra-cabeça com uma bola que quica, com 100 fases em 10 mundos: colete todas as gemas, desvie dos espinhos e encontre a saída. Roda no navegador do computador, do tablet e do celular, instala como um app, funciona offline e deixa você criar suas próprias fases.',
+    'Pongui é um jogo grátis de quebra-cabeça com uma bola que quica, com 100 fases em 10 mundos e um chefe no fim de cada um: colete todas as gemas, desvie dos espinhos, encontre a saída e vença o chefe. Roda no navegador do computador, do tablet e do celular, instala como um app, funciona offline e deixa você criar suas próprias fases.',
   skip: 'Pular para o conteúdo',
   'nav.label': 'Principal',
   'nav.how': 'Como jogar',
@@ -14,10 +14,11 @@ export const ptBR: LandingMessages = {
   'hero.kicker': 'Um quebra-cabeça de quiques',
   'hero.title': 'A bola nunca para de quicar. Você decide onde ela cai.',
   'hero.text':
-    'Guie uma bola saltitante por 100 fases de quebra-cabeça feitas à mão em 10 mundos: colete todas as gemas, desvie de espinhos, voe com o vento, atravesse portais e encontre a saída. Grátis, no seu navegador, em qualquer dispositivo.',
+    'Guie uma bola saltitante por 100 fases de quebra-cabeça feitas à mão em 10 mundos, cada um com o seu chefe: colete todas as gemas, desvie de espinhos, voe com o vento, atravesse portais e encontre a saída. Grátis, no seu navegador, em qualquer dispositivo.',
   'hero.play': 'Jogue agora, é grátis',
   'hero.install': 'Instalar o app',
-  'hero.meta': 'Sem cadastro · 100 fases · Funciona offline · English, Español, Português',
+  'hero.meta':
+    'Sem cadastro · 100 fases · 10 chefes · Funciona offline · English, Español, Português',
   'hero.video':
     'Pongui jogando a última fase do jogo, Cume Arco-íris: gemas, uma chave, saídas de fogo, blocos que desmoronam e uma ponte arco-íris até a saída',
   'video.pause': 'Pausar vídeo',
@@ -72,9 +73,9 @@ export const ptBR: LandingMessages = {
   'footer.rights': 'Todos os direitos reservados.',
   'nav.worlds': 'Mundos',
   'nav.create': 'Criar',
-  'worlds.title': '10 mundos, 100 fases, um truque novo de cada vez',
+  'worlds.title': '10 mundos, 100 fases, um chefe no fim de cada mundo',
   'worlds.text':
-    'Cada mundo tem seu próprio visual e duas mecânicas novas, ensinadas uma fase por vez. Escolha um mundo e comece a jogar.',
+    'Cada mundo tem seu próprio visual, duas mecânicas novas ensinadas uma fase por vez, e um chefe esperando depois da décima. Escolha um mundo e comece a jogar.',
   'create.title': 'Crie suas próprias fases',
   'create.text':
     'O editor de fases tem todas as peças dos dez mundos. Pinte uma fase, vença e mande para os seus amigos.',
@@ -98,6 +99,26 @@ export const ptBR: LandingMessages = {
   'faq.create.q': 'Posso criar minhas próprias fases?',
   'faq.create.a':
     'Sim. Em um computador, abra “Meus níveis” no menu do jogo e crie uma. Depois de vencer, você pode compartilhar como link ou código QR, e qualquer pessoa joga em qualquer dispositivo.',
+  'worlds.boss': 'Chefe',
+  'bosses.title': 'Dez chefes, dez lutas diferentes',
+  'bosses.text':
+    'Vença as dez fases de um mundo e o chefe dele aparece. Cada um luta do seu jeito, com a sua própria música, e o mundo seguinte se abre quando ele cai.',
+  'bosses.1.title': 'Veja o aviso',
+  'bosses.1.text': 'Cada ataque mostra onde vai cair antes de cair. Nada acerta sem avisar.',
+  'bosses.2.title': 'Ache o momento',
+  'bosses.2.text':
+    'Um escudo apaga, os braços se recolhem, uma ponte aparece: cada chefe tem um momento em que dá para acertá-lo.',
+  'bosses.3.title': 'Caia na cabeça dele',
+  'bosses.3.text': 'Quique em cima dele. Se encostar em qualquer outro lugar, você perde uma vida.',
+  'bosses.pic.2': 'Sai do meio do musgo e derruba o teto.',
+  'bosses.pic.3': 'Chama raios e sopra você para fora das nuvens.',
+  'bosses.pic.5': 'Agarra a bola: sacuda para a esquerda e a direita para se soltar.',
+  'bosses.pic.6': 'Avança pela neve, até escorregar no próprio gelo.',
+  'bosses.pic.7': 'O fogo dele racha o chão até não sobrar nada.',
+  'bosses.pic.10': 'O último. Ele traz de volta o que todos os outros fizeram.',
+  'faq.bosses.q': 'Tem chefes?',
+  'faq.bosses.a':
+    'Sim, um no fim de cada mundo. Vença as dez fases dele e o chefe aparece; vença o chefe e o mundo seguinte se abre. Os chefes não dão estrelas e o bot não mostra como vencê-los: são para você descobrir.',
   'world.1.text': 'Rampas, molas, pisos frágeis, fogo para apagar e muros para derrubar.',
   'world.2.text': 'Encontre a chave para abrir os cadeados e pouse suave no musgo.',
   'world.3.text': 'Pule através das nuvens e suba com as correntes de ar.',

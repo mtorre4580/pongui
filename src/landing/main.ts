@@ -32,10 +32,13 @@ function translate() {
   videos.forEach((v) => v.refreshLabel());
 }
 
-/** World names come from the game's own dictionary, so both always agree. */
+/** World and boss names come from the game's own dictionary, so both always agree. */
 function renderWorlds() {
   document.querySelectorAll<HTMLElement>('[data-world]').forEach((el) => {
     el.textContent = t(`world.${el.dataset.world}` as MessageKey);
+  });
+  document.querySelectorAll<HTMLElement>('[data-boss]').forEach((el) => {
+    el.textContent = t(`boss.${el.dataset.boss}` as MessageKey);
   });
 }
 
@@ -133,7 +136,10 @@ document.querySelectorAll<HTMLAnchorElement>('a[href^="./play/"]').forEach((link
   const from = link.closest('section, header')?.id || link.closest('section, header')?.className;
   link.addEventListener('click', () => track('play_click', { from: from ?? 'page' }));
 });
-document.querySelectorAll<HTMLElement>('.screen').forEach(setupClip);
+// (some screens hold a still picture: only the ones with a video are clips)
+document.querySelectorAll<HTMLElement>('.screen').forEach((figure) => {
+  if (figure.querySelector('video')) setupClip(figure);
+});
 setupInstall();
 setupLanguage();
 translate();
