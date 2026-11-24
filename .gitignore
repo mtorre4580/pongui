@@ -16,6 +16,9 @@ test-results
 # Native web build (copied into ios/ and android/ by `cap sync`)
 dist-native
 
+# Launch and social media notes: kept on the owner's machine only
+docs/marketing.md
+
 # Vertical videos for social networks (`pnpm media:social`): large, regenerated on demand
 docs/social
 
