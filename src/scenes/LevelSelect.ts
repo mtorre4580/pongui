@@ -7,7 +7,8 @@ import { button, ButtonGroup, goTo, setupCamera, text, type Button } from '../gf
 import { controls } from '../input/controls';
 import { localized, t, type MessageKey } from '../i18n';
 import { LEVELS, WORLDS, worldOf } from '../levels';
-import { isUnlocked, loadSave } from '../save';
+import { bossBeaten, bossGate, bossOpen, isUnlocked, loadSave } from '../save';
+import { BOSS_WORLDS } from '../levels/worlds';
 
 export interface LevelSelectData {
   /** 1-based world to show. Defaults to the world of the player's latest open level. */
@@ -36,6 +37,7 @@ export class LevelSelect extends Phaser.Scene {
   private worldN = 1;
   private focus = -1;
   private paging = false;
+  private note!: Phaser.GameObjects.Text;
 
   constructor() {
     super('LevelSelect');
@@ -96,7 +98,20 @@ export class LevelSelect extends Phaser.Scene {
       );
     });
     if (!isUnlocked(world.first, IDS))
-      text(this, GAME_W / 2, 116, t('select.locked', { n: world.n - 1 }), 13, '#c9cff7');
+      text(
+        this,
+        GAME_W / 2,
+        116,
+        // Behind a boss when the levels before it are done; behind those levels otherwise
+        t(
+          bossGate(world.first) !== null && IDS[world.first - 1] in save.levels
+            ? 'select.lockedBoss'
+            : 'select.locked',
+          { n: world.n - 1 },
+        ),
+        13,
+        '#c9cff7',
+      );
 
     // Arrows to the previous and next world (keyboard and gamepad page at the row edges)
     const prev = WORLDS[pos - 1];
@@ -109,8 +124,33 @@ export class LevelSelect extends Phaser.Scene {
       h: 32,
       size: 15,
     });
+    // The world's boss, once its ten levels are beaten; beating it opens the next world
+    const extras: Button[] = [back];
+    this.note = text(this, GAME_W / 2, GAME_H - 64, '', 13, '#ffd166').setAlpha(0);
+    if (BOSS_WORLDS.includes(world.n)) {
+      const open = bossOpen(world.n, IDS);
+      const beaten = bossBeaten(world.n);
+      const label = t('select.boss', { name: t(`boss.${world.n}` as MessageKey) });
+      const boss = button(
+        this,
+        GAME_W / 2,
+        GAME_H - 30,
+        beaten ? `${label} ✓` : label,
+        () => {
+          if (open) return goTo(this, 'Game', { index: world.first, boss: world.n });
+          sfx.bonk();
+          this.note.setText(t('select.bossLocked'));
+          this.tweens.killTweensOf(this.note);
+          this.note.setAlpha(1);
+          this.tweens.add({ targets: this.note, alpha: 0, delay: 1800, duration: 400 });
+        },
+        { w: 230, h: 34, size: 15, color: open ? 0x8e2f4f : 0x3a3f6b },
+      );
+      boss.setAlpha(open ? 1 : 0.7);
+      extras.push(boss);
+    }
     this.group = new ButtonGroup(
-      [...cards, back],
+      [...cards, ...extras],
       COLS,
       () => goTo(this, 'Menu'),
       (dir, focus) => {

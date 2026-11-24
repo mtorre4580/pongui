@@ -40,7 +40,7 @@ export interface InputState {
 }
 
 export type BounceKind = 'low' | 'high' | 'spring' | 'ramp' | 'push';
-export type DeathCause = 'fall' | 'spike' | 'fire' | 'vent';
+export type DeathCause = 'fall' | 'spike' | 'fire' | 'vent' | 'boss';
 
 export type WorldEvent =
   | { type: 'bounce'; kind: BounceKind; x: number; y: number; idx: number }

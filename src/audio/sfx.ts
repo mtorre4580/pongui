@@ -23,6 +23,11 @@ export function unlockAudio() {
   if (ctx.state === 'suspended') void ctx.resume();
 }
 
+/** The audio context and the node everything plays into, once sound has been unlocked. */
+export function audioOut(): { ctx: AudioContext; out: AudioNode } | null {
+  return ctx && master ? { ctx, out: master } : null;
+}
+
 export function soundEnabled() {
   return enabled;
 }
@@ -181,4 +186,17 @@ export const sfx = {
   },
   click: () => tone(700, 500, 0.05, 'sine', 0.15),
   star: (i: number) => tone(880 + i * 220, 880 + i * 220, 0.18, 'triangle', 0.18),
+  /** A stomp on a boss: a heavy thud and a falling growl. */
+  bossHit: () => {
+    noise(0.22, 0.5, 300, 0.7);
+    tone(220, 55, 0.35, 'sawtooth', 0.2);
+  },
+  /** The boss going down: a long rumble and a rising chord. */
+  bossDown: () => {
+    noise(0.7, 0.5, 220, 0.6);
+    tone(180, 40, 0.7, 'sawtooth', 0.22);
+    [392, 523, 659, 784].forEach((f, n) => tone(f, f, 0.3, 'triangle', 0.16, 0.5 + n * 0.09));
+  },
+  /** A boss landing after a hop. */
+  bossLand: () => noise(0.12, 0.35, 160, 0.8),
 };

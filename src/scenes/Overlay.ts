@@ -6,6 +6,8 @@ import { button, ButtonGroup, setupCamera, text, type Button } from '../gfx/ui';
 import { t } from '../i18n';
 import { controls } from '../input/controls';
 import { LEVELS, worldOf } from '../levels';
+import { LEVELS_PER_WORLD } from '../levels/worlds';
+import { bossBeaten, bossGate } from '../save';
 import { track } from '../analytics';
 import { leaveCustom, type CustomRun } from '../custom/run';
 import { gamePage, levelUrl, shareText, starsText } from '../share';
@@ -27,6 +29,8 @@ export interface OverlayData {
   daily?: boolean;
   /** Consecutive days with the level of the day beaten, after this win. */
   streak?: number;
+  /** A boss fight: the world whose boss it is. */
+  boss?: number;
 }
 
 export class Overlay extends Phaser.Scene {
@@ -69,7 +73,7 @@ export class Overlay extends Phaser.Scene {
 
     const w = 340;
     // Finished levels of the game can be shared: one more button
-    const shareable = d.mode === 'complete' && !custom;
+    const shareable = d.mode === 'complete' && !custom && !d.boss;
     const h = d.mode === 'complete' ? (shareable ? 344 : 300) : 250;
     const panel = this.add.container(GAME_W / 2, GAME_H / 2 + 20).setAlpha(0);
     const bg = this.add.graphics();
@@ -110,9 +114,41 @@ export class Overlay extends Phaser.Scene {
       add(t('overlay.retry'), () => this.startLevel(d.index), 0xe85d75);
       // Out of lives means three failed attempts: offer to see how the level is done. Not on a
       // level still being tested in the editor, which the bot may not be able to beat
-      if (custom?.from !== 'editor') add(t('overlay.watchBot'), () => this.watchBot());
+      // A boss is for the player to work out: no bot there either
+      if (custom?.from !== 'editor' && !d.boss) add(t('overlay.watchBot'), () => this.watchBot());
       add(backLabel, () => this.toLevels());
       layout(-h / 2 + (buttons.length > 2 ? 108 : 128));
+      this.group = new ButtonGroup(buttons, 1, () => this.toLevels());
+    } else if (d.boss) {
+      // A boss beaten: no stars, only the way forward
+      const next = d.boss * LEVELS_PER_WORLD;
+      panel.add(
+        text(this, 0, -h / 2 + 40, t('overlay.bossDown'), 28, '#ffd166', { fontStyle: '700' }),
+      );
+      panel.add(
+        text(
+          this,
+          0,
+          -h / 2 + 78,
+          next < LEVELS.length
+            ? t('overlay.bossDownText', { n: d.boss + 1 })
+            : t('overlay.time', { t: (d.time ?? 0).toFixed(1) }),
+          14,
+          '#c9cff7',
+        ),
+      );
+      if (next < LEVELS.length)
+        add(
+          t('overlay.nextWorld'),
+          () => {
+            this.scene.stop('Game');
+            this.scene.start('Game', { index: next });
+          },
+          0xe85d75,
+        );
+      add(t('overlay.fightAgain'), () => this.startLevel(d.index));
+      add(backLabel, () => this.toLevels());
+      layout(-h / 2 + 128);
       this.group = new ButtonGroup(buttons, 1, () => this.toLevels());
     } else if (d.mode === 'watched') {
       panel.add(
@@ -180,7 +216,11 @@ export class Overlay extends Phaser.Scene {
             '#a9b8ff',
           ),
         );
-      if (hasNext)
+      // The last level of a world with a boss still standing leads to the boss, not onwards
+      const gate = last ? bossGate(d.index + 1) : null;
+      if (gate !== null && !bossBeaten(gate))
+        add(t('overlay.toBoss'), () => this.startBoss(gate), 0xe85d75);
+      else if (hasNext)
         add(
           t(last ? 'overlay.nextWorld' : 'overlay.next'),
           () => this.startLevel(d.index + 1),
@@ -227,9 +267,15 @@ export class Overlay extends Phaser.Scene {
     this.scene.start('Game', { index: d.index, custom: d.custom, daily: d.daily, bot: true });
   }
 
+  private startBoss(world: number) {
+    this.scene.stop('Game');
+    this.scene.start('Game', { index: this.data_.index, boss: world });
+  }
+
   private startLevel(index: number) {
     this.scene.stop('Game');
-    this.scene.start('Game', { index, custom: this.data_.custom, daily: this.data_.daily });
+    const { custom, daily, boss } = this.data_;
+    this.scene.start('Game', { index, custom, daily, boss });
   }
 
   private toLevels() {
