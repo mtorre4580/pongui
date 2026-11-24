@@ -298,8 +298,8 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
   every boss with `pnpm play:boss`, it finds what unit tests cannot).
 - `bosses/index.ts` lists them (`BOSSES`, `bossOf(world)`); `bosses/types.ts` has `arena()`: a
   level map whose exit cell is turned into rock (the fight ends when the boss does). `Game`
-  runs a fight with `boss: <world>` (`play/?boss=N` opens one the player has reached, or any
-  while developing). `gfx/bossArt.ts` has each boss's vector body (one texture per pose), its
+  runs a fight with `boss: <world>` (`play/?boss=N` opens any boss with `pnpm dev`; the built game
+  ignores it). `gfx/bossArt.ts` has each boss's vector body (one texture per pose), its
   shots and the colors of its warnings; `gfx/bossView.ts` draws them, the line to a grabbed
   ball and the hit bar. `audio/music.ts` plays the boss's `BossTheme` (root, bass line, tempo
   per phase, timbres, beat), which follows the sound setting; `sfx.bossFx(name)` plays its
