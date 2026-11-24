@@ -248,4 +248,13 @@ const BOSS_FX: Record<string, (() => void) | undefined> = {
     noise(0.1, 0.3, 900, 2);
     tone(180, 90, 0.12, 'square', 0.1);
   },
+  // Inkwell: its arms reaching and coming back, ink bubbling up and popping
+  'warn-reach': () => tone(140, 320, 0.5, 'sine', 0.14),
+  'arms-back': () => tone(420, 160, 0.3, 'sine', 0.12),
+  'warn-ink': () => tone(240, 300, 0.12, 'sine', 0.08),
+  'shot-ink': () => {
+    tone(180, 360, 0.16, 'sine', 0.1);
+    noise(0.1, 0.12, 500, 1, 0, 'lowpass');
+  },
+  'end-ink': () => tone(700, 1100, 0.05, 'sine', 0.07),
 };

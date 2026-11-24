@@ -5,6 +5,7 @@ import { GRUMBLE } from './w1-grumble';
 import { SERPSTONE } from './w2-serpstone';
 import { SQUALL } from './w3-squall';
 import { SPROCKET } from './w4-sprocket';
+import { INKWELL } from './w5-inkwell';
 
 export type { Boss } from './types';
 
@@ -13,6 +14,7 @@ export const BOSSES = {
   2: SERPSTONE,
   3: SQUALL,
   4: SPROCKET,
+  5: INKWELL,
 } satisfies Record<number, Boss>;
 
 /** The boss of a world, if it has one. */

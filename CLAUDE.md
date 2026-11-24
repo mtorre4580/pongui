@@ -319,6 +319,12 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
      turns the shield off (the robot stands still, short-circuited) and closes the bridge of A
      blocks to its head, for 6 to 4.5 s. After a hit the shield is back at once, the bridge
      opens 2.4 s later, and the switch is locked away (a plain block) for 2.5 to 4 s.
+  5. **Inkwell** (4 hits): an octopus in the middle of a flooded arena (a low bounce climbs
+     about 100 px under water, so it is 112 px tall). Arms over its head: landing there bounces
+     off. Ink bubbles rise from the sand under the ball and pop after 2 s. Then it reaches to
+     the ball's side (dodged above 150 px or through the wall portals) and drags a caught ball
+     to its mouth: 4 to 6 changes of direction get it loose. Either way its head is open for
+     4.6 to 3.7 s afterwards.
 - To add one: `src/bosses/wN-name.ts` (brain, `BossDef`, arena, theme) and its entry in
   `BOSSES`; its world in `BOSS_WORLDS`; its art in `gfx/bossArt.ts` and sounds in `sfx.ts`;
   `boss.N` and `game.bossHint.N` in the three languages; its script in `bosses/scripts.ts`;
@@ -454,7 +460,8 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
 
 - Lighthouse (desktop) must stay at 100/100/100/100 on both pages (`/` and `/play/`). Main-thread
   blocking was 1.3 s with WebGL and is ~10 ms with Canvas.
-- Bundle budget in `bundle-budget.json` (Phaser is ~340 KB gzip of the 370 KB `index.js` limit).
+- Bundle budget in `bundle-budget.json` (Phaser is ~340 KB gzip of the 400 KB `play.js` limit;
+  the bosses take about 2 KB each).
 
 ## Accessibility (mandatory)
 
