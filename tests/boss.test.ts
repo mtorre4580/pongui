@@ -6,6 +6,7 @@ import type { Serpent } from '../src/bosses/w2-serpstone';
 import type { Bird } from '../src/bosses/w3-squall';
 import { SWITCH, type Robot } from '../src/bosses/w4-sprocket';
 import type { Octopus } from '../src/bosses/w5-inkwell';
+import { LEDGES, type Giant } from '../src/bosses/w6-flurry';
 import { BossFight, MIN_WARN, seeded, type BossBrain, type BossDef } from '../src/game/boss';
 import { BALL_R, COLS, STEP, TILE, V_LOW } from '../src/game/constants';
 import { World, type InputState } from '../src/game/physics';
@@ -769,6 +770,134 @@ describe('Inkwell (world 5)', () => {
     def.shakes.forEach((n, phase) =>
       expect(n / 4).toBeLessThan(def.squeeze + (1.5 * TILE) / def.drag[phase]),
     );
+  });
+});
+
+describe('Flurry (world 6)', () => {
+  const { def } = BOSSES[6];
+  const brain = (f: BossFight) => f.brain as Giant;
+  const LEDGE = { x: 176, y: 8 * TILE - BALL_R }; // on the left ledge
+  const FLOOR_ROW = 11 * COLS;
+  /** Steps with the given input until the giant is in `mode`. */
+  const until = (f: BossFight, mode: Giant['mode'], input: InputState = idle, seconds = 20) => {
+    const all = [];
+    for (
+      let i = 0;
+      i < seconds / STEP && brain(f).mode !== mode && f.world.s.status === 'playing';
+      i++
+    )
+      all.push(...f.step(STEP, input).boss);
+    return all;
+  };
+  const ice = (f: BossFight) =>
+    [...f.world.s.tiles.subarray(FLOOR_ROW, FLOOR_ROW + COLS)].filter((t) => t === T.ICE).length;
+
+  it('throws snowballs at the ball: announced, deadly, and they leave ice on the floor', () => {
+    const still = fightOf(6);
+    const events = still.run(8);
+    expect(events).toContainEqual(expect.objectContaining({ type: 'boss-warn', kind: 'snow' }));
+    expect(still.s.status).toBe('dead');
+    // Stepping away from the mark, towards the far wall
+    const moved = fightOf(6);
+    const x0 = moved.s.x;
+    let landed = false;
+    for (let i = 0; i < 8 / STEP && !landed && moved.s.status === 'playing'; i++) {
+      const goal = moved.f.warns.length || moved.f.shots.length ? x0 - 50 : x0;
+      landed = moved.f
+        .step(STEP, { ...idle, left: moved.s.x > goal + 3, right: moved.s.x < goal - 3 })
+        .boss.some((e) => e.type === 'boss-shot-end');
+    }
+    expect(landed).toBe(true);
+    expect(moved.s.status).toBe('playing');
+    expect(ice(moved.f)).toBe(1);
+    expect(moved.s.tiles[FLOOR_ROW + Math.floor(x0 / TILE)]).toBe(T.ICE);
+  });
+
+  it('charges across the whole floor after its snowballs: only a ledge is out of its way', () => {
+    const floor = fightOf(6);
+    brain(floor.f).left = 0;
+    const warned = until(floor.f, 'charge', idle, 6);
+    expect(warned).toContainEqual(expect.objectContaining({ type: 'boss-warn', kind: 'charge' }));
+    Object.assign(floor.s, { x: 48, y: def.floorY - BALL_R, vx: 0 });
+    floor.run(4);
+    expect(floor.s.status).toBe('dead');
+    // On a ledge it runs by underneath; with no ice on its way it stops at the far end, shielded
+    const up = fightOf(6);
+    brain(up.f).left = 0;
+    until(up.f, 'charge', idle, 6);
+    Object.assign(up.s, { ...LEDGE, vx: 0, vy: 0 });
+    until(up.f, 'throw', idle, 6);
+    expect(up.s.status).toBe('playing');
+    expect(up.f.boss.x).toBe(def.minX);
+    expect(up.f.boss.armor).toBe(true);
+    expect(up.f.boss.dir).toBe(1);
+  });
+
+  it('slips on its own ice, slams into the wall and sits there open to a hit', () => {
+    const { f, s } = fightOf(6);
+    brain(f).left = 0;
+    f.setTile(FLOOR_ROW + 9, T.ICE);
+    until(f, 'charge', idle, 6);
+    Object.assign(s, { ...LEDGE, vx: 0, vy: 0 });
+    const events = until(f, 'sit', idle, 6);
+    expect(events).toContainEqual(expect.objectContaining({ type: 'boss-fx', name: 'slip' }));
+    expect(f.boss.x).toBe(def.minX);
+    expect(f.boss.armor).toBe(false);
+    // The ice it ran over is gone
+    expect(ice(f)).toBe(0);
+    // Off the edge of the ledge, onto its head
+    let hit = false;
+    for (let i = 0; i < def.sit[0] / STEP && !hit && s.status === 'playing'; i++)
+      hit = f
+        .step(STEP, { ...idle, left: s.x > f.boss.x + 3 })
+        .boss.some((e) => e.type === 'boss-hit');
+    expect(hit).toBe(true);
+    expect(f.boss.armor).toBe(true);
+  });
+
+  it('gets back up, shielded, if nobody hits it in time', () => {
+    const { f, s } = fightOf(6);
+    brain(f).left = 0;
+    f.setTile(FLOOR_ROW + 9, T.ICE);
+    until(f, 'charge', idle, 6);
+    Object.assign(s, { ...LEDGE, vx: 0, vy: 0 });
+    until(f, 'sit', idle, 6);
+    const t0 = s.time;
+    f.grab = { ...LEDGE, need: Infinity, wiggles: 0, last: 0 };
+    until(f, 'throw', idle, 8);
+    expect(s.time - t0).toBeGreaterThan(def.sit[0] - 0.1);
+    expect(f.boss.armor).toBe(true);
+  });
+
+  it('stomps a ledge out from under a ball that stays on it, and the ledge grows back', () => {
+    const { f, s } = fightOf(6);
+    Object.assign(s, { ...LEDGE, vx: 0, vy: 0 });
+    brain(f).t = 99; // no snowballs meanwhile
+    const warned = until(f, 'stomp', idle, 6);
+    expect(warned).toContainEqual(expect.objectContaining({ type: 'boss-warn', kind: 'stomp' }));
+    expect(s.time).toBeGreaterThan(def.camp - 0.1);
+    until(f, 'throw', idle, 3);
+    for (const idx of LEDGES[0]) expect(s.tiles[idx]).toBe(T.EMPTY);
+    // The ball falls to the floor
+    brain(f).t = 99;
+    for (let i = 0; i < 1 / STEP; i++) f.step(STEP, idle);
+    expect(s.y).toBeGreaterThan(9 * TILE);
+    brain(f).t = 99;
+    f.grab = { x: 320, y: 150, need: Infinity, wiggles: 0, last: 0 };
+    for (let i = 0; i < (def.regrow + 0.5) / STEP; i++) f.step(STEP, idle);
+    for (const idx of LEDGES[0]) expect(s.tiles[idx]).toBe(T.THIN_ICE);
+  });
+
+  it('charges faster, warns less and sits for less time with each phase', () => {
+    for (const up of [def.throws, def.chargeSpeed])
+      expect([...up]).toEqual([...up].sort((a, b) => a - b));
+    for (const down of [def.throwEvery, def.chargeWarn, def.sit])
+      expect([...down]).toEqual([...down].sort((a, b) => b - a));
+    expect(Math.min(...def.chargeWarn, def.snowWarn, def.stompWarn)).toBeGreaterThanOrEqual(
+      MIN_WARN,
+    );
+    // It fits under the ledges
+    expect(def.floorY - def.height).toBeGreaterThan(9 * TILE);
   });
 });
 

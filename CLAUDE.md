@@ -325,6 +325,12 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
      the ball's side (dodged above 150 px or through the wall portals) and drags a caught ball
      to its mouth: 4 to 6 changes of direction get it loose. Either way its head is open for
      4.6 to 3.7 s afterwards.
+  6. **Flurry** (4 hits): a snow giant, shielded while on its feet. From one end it throws 2
+     or 3 snowballs at the ball (each leaves a patch of ice on the floor), then charges to the
+     other end: only the two ledges of thin ice are out of its way (land on them without
+     holding jump). Running over its own ice it slips, slams into the wall and sits there,
+     open, for 4 to 2.9 s: walk off the ledge onto its head. A ball that stays 2.5 s on a
+     ledge while snowballs fly gets the ledge stomped away (it grows back in 6 s).
 - To add one: `src/bosses/wN-name.ts` (brain, `BossDef`, arena, theme) and its entry in
   `BOSSES`; its world in `BOSS_WORLDS`; its art in `gfx/bossArt.ts` and sounds in `sfx.ts`;
   `boss.N` and `game.bossHint.N` in the three languages; its script in `bosses/scripts.ts`;

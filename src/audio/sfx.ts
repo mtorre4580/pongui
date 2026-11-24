@@ -257,4 +257,19 @@ const BOSS_FX: Record<string, (() => void) | undefined> = {
     noise(0.1, 0.12, 500, 1, 0, 'lowpass');
   },
   'end-ink': () => tone(700, 1100, 0.05, 'sine', 0.07),
+  // Flurry: a snowball thrown and landing, the charge, the slip on its own ice, the stomp
+  'warn-snow': () => tone(520, 420, 0.12, 'triangle', 0.07),
+  'shot-snow': () => noise(0.18, 0.2, 1500, 0.8, 0, 'highpass'),
+  'end-snow': () => noise(0.12, 0.3, 700, 0.8, 0, 'lowpass'),
+  'warn-charge': () => [0, 0.3, 0.6].forEach((d) => noise(0.12, 0.35, 140, 0.8, d)),
+  charge: () => {
+    noise(0.5, 0.3, 300, 0.6);
+    tone(110, 70, 0.5, 'sawtooth', 0.14);
+  },
+  slip: () => tone(900, 200, 0.5, 'triangle', 0.14),
+  'warn-stomp': () => tone(200, 120, 0.4, 'sawtooth', 0.1),
+  stomp: () => {
+    noise(0.3, 0.4, 4200, 0.8, 0, 'highpass');
+    noise(0.2, 0.4, 120, 0.8);
+  },
 };
