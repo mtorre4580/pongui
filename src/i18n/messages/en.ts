@@ -52,6 +52,7 @@ export const en = {
   'boss.6': 'Flurry',
   'boss.7': 'Cinder',
   'boss.8': 'Orbit',
+  'boss.9': 'Gloom',
   'select.boss': 'Boss: {name}',
   'select.bossLocked': 'Finish the ten levels to face the boss',
   'select.lockedBoss': 'Beat the boss of world {n} to open this one',
@@ -70,6 +71,8 @@ export const en = {
     'Its fire cracks the rock: cracked tiles hold one bounce. From a ledge, bounce high onto its head!',
   'game.bossHint.8':
     'Keep away from its orbs. When it comes down, stay out of the beam and bounce high onto its dome!',
+  'game.bossHint.9':
+    'Its eyes glow where it will appear. Wait on the block above them: when it opens, you drop on its head!',
   'overlay.toBoss': 'Face the boss',
   'overlay.bossDown': 'Boss defeated!',
   'overlay.bossDownText': 'World {n} is open.',

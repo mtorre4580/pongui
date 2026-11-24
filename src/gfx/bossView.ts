@@ -10,6 +10,7 @@ export class BossView {
   private readonly bar: Phaser.GameObjects.Graphics;
   /** Warnings and the line to a grabbed ball: redrawn every frame while there are any. */
   private readonly marks: Phaser.GameObjects.Graphics;
+  private glow?: Phaser.GameObjects.Image;
   private readonly shots = new Map<number, Phaser.GameObjects.Image>();
   private marked = false;
   private pose = '';
@@ -32,6 +33,13 @@ export class BossView {
       .setOrigin(0.5, 1)
       .setScale(1 / TEX)
       .setDepth(this.art.depth ?? 4);
+    // Eyes that glow: the same place as the body, over the darkness
+    if (this.art.glow)
+      this.glow = scene.add
+        .image(0, 0, bossTexture(scene, world, def.width, def.height, this.art.glow))
+        .setOrigin(0.5, 1)
+        .setScale(1 / TEX)
+        .setDepth(9);
     this.marks = scene.add.graphics().setDepth(3);
     this.bar = scene.add.graphics().setDepth(11);
     this.update();
@@ -60,6 +68,16 @@ export class BossView {
     const blink = dazed ? (Math.floor(fight.world.s.time * 12) % 2 ? 0.35 : 0.8) : 1;
     this.body.setAlpha(blink * boss.alpha * (boss.away ? 0.4 : 1));
     this.body.setScale(1 / TEX, (dazed ? 0.86 : 1) / TEX);
+    if (this.glow) {
+      const shown = boss.alpha > 0 && (boss.pose === this.art.glow || !boss.away);
+      // Waiting to appear, they pulse
+      const pulse = boss.away ? 0.65 + 0.35 * Math.sin(this.scene.time.now / 110) : 1;
+      this.glow
+        .setVisible(shown)
+        .setPosition(boss.x, bottom + this.oy)
+        .setFlipX(boss.dir > 0)
+        .setAlpha(blink * pulse);
+    }
     this.drawShots();
     this.drawMarks();
     if (boss.hp === this.shownHp) return;
@@ -153,6 +171,7 @@ export class BossView {
     this.marks.clear();
     this.shots.forEach((img) => img.destroy());
     this.shots.clear();
+    this.glow?.destroy();
     this.scene.tweens.add({
       targets: this.body,
       scaleX: 0,

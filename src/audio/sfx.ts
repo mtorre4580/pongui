@@ -289,4 +289,13 @@ const BOSS_FX: Record<string, (() => void) | undefined> = {
     tone(450, 440, 0.5, 'sine', 0.1);
   },
   'beam-off': () => tone(700, 90, 0.5, 'sawtooth', 0.1),
+  // Gloom: its eyes opening somewhere, and the specter turning solid
+  'warn-eyes': () => {
+    tone(1568, 1568, 0.5, 'sine', 0.05);
+    tone(1175, 1175, 0.5, 'sine', 0.04, 0.12);
+  },
+  appear: () => {
+    noise(0.3, 0.25, 400, 0.6, 0, 'lowpass');
+    tone(110, 220, 0.3, 'triangle', 0.14);
+  },
 };

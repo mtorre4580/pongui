@@ -14,6 +14,11 @@ export interface BossArt {
   depth?: number;
   /** Out of reach (`boss.away`) it is still drawn, faintly, instead of hidden. */
   faint?: boolean;
+  /**
+   * A pose drawn again over everything, darkness included, while the boss is there or shows
+   * that pose: eyes that glow in the dark.
+   */
+  glow?: string;
   /** It comes out of the ground: the part of it under its floor is not drawn. */
   buried?: boolean;
   /** Draws the body for a pose. `w` and `h` are its box in texture pixels, from (0, top). */
@@ -410,6 +415,45 @@ const ART: Record<number, BossArt> = {
         g.fillStyle(lit, 1).fillRoundedRect(W * 0.38, TOP + H * 0.92, W * 0.24, H * 0.08, 4);
     },
   },
+  // Gloom: a hooded specter with a ragged hem. 'eyes': nothing but its two glowing eyes
+  9: {
+    top: 12,
+    side: 8,
+    glow: 'eyes',
+    draw(g, W, H, pose) {
+      const TOP = 12;
+      const shade = { body: 0x4b3f72, dark: 0x2a2145, light: 0x7d6bb0, eye: 0xfff3b0 };
+      const eyeY = TOP + H * 0.36;
+      if (pose !== 'eyes') {
+        // Hood and robe, with a hem cut in points
+        g.fillStyle(shade.dark, 1).fillRoundedRect(0, TOP, W, H - 16, {
+          tl: 50,
+          tr: 50,
+          bl: 0,
+          br: 0,
+        });
+        for (let i = 0; i < 4; i++) {
+          const x = (i * W) / 4;
+          g.fillTriangle(x, TOP + H - 18, x + W / 4, TOP + H - 18, x + W / 8, TOP + H);
+        }
+        g.fillStyle(shade.body, 1).fillRoundedRect(0, TOP, W - 10, H - 22, {
+          tl: 50,
+          tr: 44,
+          bl: 0,
+          br: 0,
+        });
+        g.fillStyle(shade.light, 1).fillEllipse(W * 0.4, TOP + 14, W * 0.44, 12);
+        // The dark of its face
+        g.fillStyle(0x120c24, 1).fillEllipse(W * 0.48, eyeY + 6, W * 0.74, H * 0.42);
+        // A grin
+        g.fillStyle(shade.eye, 0.9).fillRoundedRect(W * 0.3, eyeY + H * 0.16, W * 0.36, 6, 3);
+      }
+      // Slanted eyes
+      g.fillStyle(shade.eye, 1);
+      g.fillTriangle(W * 0.16, eyeY - 10, W * 0.42, eyeY + 2, W * 0.2, eyeY + 10);
+      g.fillTriangle(W * 0.8, eyeY - 10, W * 0.54, eyeY + 2, W * 0.76, eyeY + 10);
+    },
+  },
 };
 
 /** A round shot: a ball of one color with a lighter core. */
@@ -504,6 +548,7 @@ const WARNS: Record<string, WarnArt> = {
   orb: { color: 0xc77dff, shape: 'spot' },
   beam: { color: 0x80ffdb },
   tractor: { color: 0x80ffdb },
+  eyes: { color: 0x7d6bb0, shape: 'spot' },
   'gust-left': { color: 0xffffff, shape: 'wind', dir: -1, soft: true },
   'gust-right': { color: 0xffffff, shape: 'wind', dir: 1, soft: true },
   'blow-left': { color: 0xffffff, shape: 'wind', dir: -1 },
