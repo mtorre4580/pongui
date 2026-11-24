@@ -2,11 +2,11 @@ import Phaser from 'phaser';
 import { track } from '../analytics';
 import { createTextures } from '../gfx/textures';
 import { decodeLevel } from '../game/custom';
-import { LEVELS, levelFromParam } from '../levels';
+import { levelFromParam } from '../levels';
 import { bossOf } from '../bosses';
 import { addReceived } from '../custom/store';
 import { hideSplash } from '../native';
-import { bossOpen, isFirstVisit } from '../save';
+import { isFirstVisit } from '../save';
 
 export class Boot extends Phaser.Scene {
   constructor() {
@@ -34,17 +34,10 @@ export class Boot extends Phaser.Scene {
       return;
     }
     const index = levelFromParam(params.get('level'));
-    // `?boss=2`: straight to a boss the player has reached (any boss while developing)
-    const boss = bossOf(Number(params.get('boss')));
-    if (
-      boss &&
-      (import.meta.env.DEV ||
-        bossOpen(
-          boss.world,
-          LEVELS.map((l) => l.id),
-        ))
-    )
-      this.scene.start('Game', { index: 0, boss: boss.world });
+    // `?boss=2`: straight to a boss, to try it without playing its world. Development only:
+    // the built game ignores it
+    const boss = import.meta.env.DEV ? bossOf(Number(params.get('boss'))) : undefined;
+    if (boss) this.scene.start('Game', { index: 0, boss: boss.world });
     else if (index !== null) this.scene.start('Game', { index });
     // Someone new plays at once: the first level teaches the game better than a menu, and the
     // menu is one step away (pause, then the level list)
