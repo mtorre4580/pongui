@@ -94,6 +94,8 @@ const DEF: WalkerDef = {
   hopSpeed: 330,
   hopGravity: 1000,
   stun: 0.5,
+  // A ball left alone after a hit comes down beside it, not on its head again
+  shove: 140,
   brain: () => new Walker(() => DEF),
 };
 
