@@ -216,6 +216,20 @@ describe('every boss', () => {
     }
   });
 
+  it('shakes off a ball that stays still after a hit: it does not stay dazed forever', () => {
+    for (const world of BOSS_WORLDS)
+      expect(bossOf(world)!.def.shove, `boss ${world}`).toBeGreaterThan(0);
+    // Grumble, hit for real and left alone: the ball lands beside it and it wakes up
+    const { f, s } = fightOf(1);
+    Object.assign(s, { x: f.boss.x, y: f.box[1] - BALL_R - 1, vx: 0, vy: 300 });
+    expect(f.step(STEP, idle).boss).toContainEqual({ type: 'boss-hit', hp: 2 });
+    let bonks = 0;
+    for (let i = 0; i < 6 / STEP && f.dazed && s.status === 'playing'; i++)
+      bonks += f.step(STEP, idle).boss.filter((e) => e.type === 'boss-bonk').length;
+    expect(f.dazed).toBe(false);
+    expect(bonks).toBeLessThanOrEqual(1);
+  });
+
   it('is taller than a low bounce climbs, or standing still would beat it', () => {
     for (const world of BOSS_WORLDS) expect(bossOf(world)!.def.height).toBeGreaterThan(51);
   });

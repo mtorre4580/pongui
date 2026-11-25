@@ -289,8 +289,8 @@ scripts/               # validate-levels, check-bundle, capture-media, make-icon
     `boss.pose` (which of its textures is shown); `emit({ type: 'boss-fx', name })` for sounds.
 - A boss must be taller than a low bounce climbs (51 px), or standing still would beat it.
 - `BossDef.shove`: a bounce off its head that does no damage (dazed or shielded) throws the
-  ball sideways until it lands. Every boss but Grumble sets it: without it, bouncing on a
-  dazed boss forever was a spot where nothing could reach the ball.
+  ball sideways until it lands. Every boss sets it: without it, a ball left alone after a hit
+  kept bouncing on the dazed boss's head, which kept it dazed, forever.
 - Things learnt building them: what is thrown in an arc crosses the spots next to its mark, so
   marks are only honest for things that come straight down; an attack that starts at the boss's
   head hits the ball on its way there; a body moving faster than the ball cannot be jumped
